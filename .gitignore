@@ -1,0 +1,34 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tmp/
+
+# Secrets and local overrides
+.env
+*.local.yaml
+
+# Third-party and generated dataset material
+data/external/
+data/cache/
+data/processed/
+data/runtime_views/
+data/ground_truth/
+
+# Generated experiment artifacts
+artifacts/
+runs/
+tools/
+/models/
+*.sarif
+
+# Editors / operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

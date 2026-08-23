@@ -1,0 +1,856 @@
+cwe_normalization:
+  alias_collisions: {}
+  rule: strip zero-padding from numeric CWE identifier
+dataset_name: cwe_bench_java
+downloaded_at: '2026-08-23T12:58:06Z'
+file_hashes:
+  .gitignore:
+    sha256: 361b4ac687351b495499a5d5f661244c6fb7885a00709196a25c03464343a93a
+    size_bytes: 55
+  LICENSE:
+    sha256: 40adf5e8cb80a0b782e039f8cd93011db6645885eb9cb283b28be356f07b259a
+    size_bytes: 1087
+  README.md:
+    sha256: 5f27f1cd529761a3ad8baa74c57fdff8d77320549e04c713ba6d87493b0259db
+    size_bytes: 10787
+  advisory/DSpace__DSpace_CVE-2016-10726_4.4.json:
+    sha256: 21b31bb3bacdb6381e05029ecc31520c7ea45d21d6667e450acf6d8ed8a9a289
+    size_bytes: 2547
+  advisory/DSpace__DSpace_CVE-2022-31192_5.10.json:
+    sha256: b2763eb9b215bc308040fe02a23a6c57ccac74389d89f0c0a4e91700b041582a
+    size_bytes: 4401
+  advisory/DSpace__DSpace_CVE-2022-31194_5.10.json:
+    sha256: abdef315070ef979da0064950904c1cbb479b0fb30889261b3afacaecef866df
+    size_bytes: 4499
+  advisory/DSpace__DSpace_CVE-2022-31195_5.10.json:
+    sha256: efe2acf1e6facb775a21ed24c76d816de10319d40d7b9cc8bd96b862d3734326
+    size_bytes: 5060
+  advisory/ESAPI__esapi-java-legacy_CVE-2022-23457_2.2.3.1.json:
+    sha256: ca4779e4be9d29dfab6eafbf077607998c39c4fe6d41c7ddc7612a6d22202dc6
+    size_bytes: 3692
+  advisory/ESAPI__esapi-java-legacy_CVE-2022-24891_2.2.3.1.json:
+    sha256: 15b26c83a709329eb6331ef0823956dd17ea4231346edad39945a260c2d215ff
+    size_bytes: 3282
+  advisory/Graylog2__graylog2-server_CVE-2023-41044_5.1.2.json:
+    sha256: 3d7efa1418fe5874dbd17975a9936030c73d1ca71457ef99e657f4b659fe2c58
+    size_bytes: 3426
+  advisory/OWASP__json-sanitizer_CVE-2020-13973_1.2.0.json:
+    sha256: 76555d0a6d3129fc5171791b06ef32b55d334dfe52576dd122967ec2ac36893a
+    size_bytes: 1588
+  advisory/SpringSource__spring-security-oauth_CVE-2018-1260_2.3.2.RELEASE.json:
+    sha256: 2ff987a2ed25cf553867cb5148eb3112501e825d60bba5659c48418a54c40869
+    size_bytes: 3205
+  advisory/alibaba__nacos_CVE-2021-44667_2.0.3.json:
+    sha256: 611bf7414a153a3a33327b74b7b4632d58e882d7a31cc561d6ed6c6500786092
+    size_bytes: 1581
+  advisory/alibaba__one-java-agent_CVE-2022-25842_0.0.1.json:
+    sha256: c5e1c4c29c014a11fdc98d4016d4274e8ae1d7bfb79b720ac95c79210b8bb4a3
+    size_bytes: 2456
+  advisory/apache__activemq_CVE-2014-3576_5.10.2.json:
+    sha256: 6d2965ae3ac8e8cf0f49fb142ef0d44f1b041291174dc4ff5d3c27d67b2d9020
+    size_bytes: 2662
+  advisory/apache__activemq_CVE-2019-0222_5.15.8.json:
+    sha256: 9cff32a6f1a02bfc9fb9e454a348e30db287be8b9748be9ad11ba635f756ec6f
+    size_bytes: 4544
+  advisory/apache__activemq_CVE-2020-11998_5.15.12.json:
+    sha256: 8aeaa835e2849b0e59951acac0eeab40d933f54fa4ea08cab6ac5b5eb382f25f
+    size_bytes: 2999
+  advisory/apache__camel_CVE-2018-8041_2.20.3.json:
+    sha256: dff3365a31c8b1baa87a3cadc2b82d9c5ddeffd71b615235d79654d6643ad673
+    size_bytes: 3592
+  advisory/apache__camel_CVE-2019-0194_2.21.4.json:
+    sha256: c601fb16485231a0985acdbae5cc8b4d8c6bb35b8558b59f053c9aa1c4a5d1bb
+    size_bytes: 3312
+  advisory/apache__dolphinscheduler_CVE-2022-26884_2.0.5.json:
+    sha256: 6c1deb65de0c887dcdee11670d81b456d39884f1e89d35b62dc01fa7ad1601de
+    size_bytes: 1724
+  advisory/apache__dolphinscheduler_CVE-2022-34662_2.0.9.json:
+    sha256: 07b014eb0500b816b142d0c8228ad094a6a0d6de66dbbb27e6486efd9647c976
+    size_bytes: 1589
+  advisory/apache__dolphinscheduler_CVE-2023-49109_3.2.0.json:
+    sha256: 134fe007546ec1611cac8d178b1f9713578a263bdcf2bc18a88a3b75ff26849d
+    size_bytes: 1775
+  advisory/apache__dolphinscheduler_CVE-2023-51770_3.2.0.json:
+    sha256: 37479abc085fdb6c3a3fa36e1cc748ebb969758372857558a1d1c0e552cbee0b
+    size_bytes: 1846
+  advisory/apache__dubbo_CVE-2021-30180_2.7.9.json:
+    sha256: 4d841be380293f9303eb4a5115695d49830d2ecabf4cd5418f49ea15b00d1630
+    size_bytes: 1631
+  advisory/apache__flink_CVE-2020-17519_1.11.2.json:
+    sha256: f51fafe4d4fcf934dde2000a677ab7f64c778a3f4dab1aa58c650d4ea0e39ac0
+    size_bytes: 4830
+  advisory/apache__incubator-dubbo_CVE-2021-30181_2.6.8.json:
+    sha256: 4ba20561163180e89b64c61c1fdb401d000342fb235b1840b9779e65e1530176
+    size_bytes: 2052
+  advisory/apache__jspwiki_CVE-2019-0225_2.11.0.M2.json:
+    sha256: e288e028e090df2c2ae60a0b8ce9d999f5c4368996147cb34adf19def189f8f9
+    size_bytes: 2792
+  advisory/apache__jspwiki_CVE-2019-10076_2.11.0.M3.json:
+    sha256: 232b4ec45909c2902e5661f9c7cfc5f99b5534c41a5593fe696417c21c965666
+    size_bytes: 2354
+  advisory/apache__jspwiki_CVE-2019-10077_2.11.0.M3.json:
+    sha256: 06b18cdf442ecac9b80480ab861503742dd2a5ec3a9d9aae2f6a851cde56f167
+    size_bytes: 1984
+  advisory/apache__jspwiki_CVE-2019-10078_2.11.0.M3.json:
+    sha256: 163c818fad27620770cca76f25572c87489be59927a047fd5947cd72a434e140
+    size_bytes: 2107
+  advisory/apache__jspwiki_CVE-2019-10089_2.11.0.M4.json:
+    sha256: 4e85a4155039ea1468b23d34bc0d5e67cd8bfdc258b0264975f213696500250f
+    size_bytes: 1666
+  advisory/apache__jspwiki_CVE-2022-46907_2.11.3.json:
+    sha256: 653af42a27eb1f3cca171cb41d8f97c2a23a3e8b3eb2fdba6601ec97552d7d36
+    size_bytes: 3377
+  advisory/apache__mina-sshd_CVE-2023-35887_2.9.2.json:
+    sha256: fc7e1d20fbdb24fff750b222a7c0db8b3118aceabdd25f9260640072608ae455
+    size_bytes: 3572
+  advisory/apache__myfaces_CVE-2011-4367_2.0.11.json:
+    sha256: f762ebdefc39bc37a24ba21fef877764bafe7989245d469d954c1250688dd6c2
+    size_bytes: 2275
+  advisory/apache__nifi_CVE-2022-33140_1.16.2.json:
+    sha256: 5742b86d51bfbcc8a21765f7859dfd39f3a75792134d554cd2be927f94de8bb4
+    size_bytes: 2711
+  advisory/apache__rocketmq_CVE-2019-17572_4.6.0.json:
+    sha256: 9b8ef5e05ada212e350e61d6fcab07398ab830136457ed0ccd55a10f54e5577e
+    size_bytes: 2080
+  advisory/apache__rocketmq_CVE-2023-33246_5.1.0.json:
+    sha256: 567d97d692e3605cdbafa10ce9fcdd48ede0f10036b23b68ec73c96e26d87197
+    size_bytes: 3759
+  advisory/apache__rocketmq_CVE-2023-37582_4.9.6.json:
+    sha256: 6e977bd55a64063179503b55f0a95f4022f6fd39111e8a604876525f5ce9cc63
+    size_bytes: 2460
+  advisory/apache__shiro_CVE-2023-34478_1.11.0.json:
+    sha256: 2c48c7db64181a5c79de5b589810e4fe1d9c8c77b8f112f4a13aa416003ac363
+    size_bytes: 2381
+  advisory/apache__shiro_CVE-2023-46749_1.12.0.json:
+    sha256: c0cddb70ee8fa8a6fdcac50d9a421ae049a7af7eae05bb09c0ea300f3fa8fd9f
+    size_bytes: 2047
+  advisory/apache__sling-org-apache-sling-servlets-resolver_CVE-2024-23673_2.10.0.json:
+    sha256: e209bb01535c976e1be4a85d264f06689f0cf0dead21136b4a3960da5ed33e12
+    size_bytes: 2362
+  advisory/apache__sling-org-apache-sling-xss_CVE-2016-5394_1.0.8.json:
+    sha256: 106d4c93e2c3f2b1bfe5a2d3a6d296b4afb14fbadc5392178a74e21b06f799b7
+    size_bytes: 2338
+  advisory/apache__struts_CVE-2020-17530_2.5.25.json:
+    sha256: 68a8838e9cbb239eeacbfd08e0a9eddea16085790489a6d51dd5ca4d69419712
+    size_bytes: 2492
+  advisory/apache__tika_CVE-2018-11762_1.18.json:
+    sha256: d32a9aa68df1c44db89071120e24448c5396f8fa8289caa2a804b87bb08be0b9
+    size_bytes: 1784
+  advisory/apache__uima-uimaj_CVE-2022-32287_3.3.0.json:
+    sha256: ed93469fe5ed0d3dccd415192b3498dfda4a252f61e0d69a6fedccec4e6d34ba
+    size_bytes: 1909
+  advisory/asf__commons-io_CVE-2021-29425_2.6.json:
+    sha256: 0fd3649a355c50faefc3838bb8e30308a90b627669050423d7c522cabed3d3e1
+    size_bytes: 12661
+  advisory/asf__commons-text_CVE-2022-42889_1.9.json:
+    sha256: 73f1b45400bcb04a692d89924a7630f741ca64018b12f983b312c852c3a61ad2
+    size_bytes: 3951
+  advisory/asf__cxf_CVE-2016-6812_3.0.11.json:
+    sha256: 101a4233a347809d5e6b81a35ca992979e90ad1be89d1ec4b38f5a29574821c2
+    size_bytes: 4306
+  advisory/asf__cxf_CVE-2019-17573_3.2.11.json:
+    sha256: 604ebee9513fd94895a6e232400473fa6c070fd1f9ea52902a1d3a5e186bf7c6
+    size_bytes: 5082
+  advisory/asf__james-project_CVE-2022-22931_3.6.0.json:
+    sha256: be9f0a7d30b699703a12d7e94dd06d942331b6f2c7d69c85ce1717c100269fc7
+    size_bytes: 2005
+  advisory/asf__karaf_CVE-2022-22932_4.3.5.json:
+    sha256: 649e7c68365b32343e6c9871256db9c595e44600f89a074e90f3643ba8405106
+    size_bytes: 2671
+  advisory/asf__nifi_CVE-2023-34468_1.21.0.json:
+    sha256: 2fe37b7d3ddde1e74539288473abc474868c49d360023244355fccc7e10810ad
+    size_bytes: 2992
+  advisory/asf__nifi_CVE-2023-36542_1.22.0.json:
+    sha256: 2ea07b2b15a9b24f0d73ebb41549a85168e58703feca8b63ca3259c0a6113303
+    size_bytes: 5191
+  advisory/asf__tapestry-5_CVE-2019-0207_5.4.4.json:
+    sha256: 7ffc17b31b619fa3e67a54cab6ca545c81ccde1a63cfc1055b005493501f8bb7
+    size_bytes: 2115
+  advisory/aws__aws-sdk-java_CVE-2022-31159_1.12.260.json:
+    sha256: 984ab24530f6beba146dc4fd456d79a330cec637c1bfc656f13be74a1e6815d6
+    size_bytes: 5158
+  advisory/codecentric__spring-boot-admin_CVE-2022-46166_2.6.9.json:
+    sha256: 895bb8f4ab521b64f91d6764afe8c486b7d1bb21685185eba9a8ba64b641cc46
+    size_bytes: 2588
+  advisory/codehaus-plexus__plexus-archiver_CVE-2018-1002200_3.5.json:
+    sha256: f314256fc12c754523f5e94d8e44ba30d342714c1a0c58fbc5572e2fe4d8787b
+    size_bytes: 2418
+  advisory/codehaus-plexus__plexus-archiver_CVE-2023-37460_4.7.1.json:
+    sha256: 9a49dc7c1d371ade6fc83cae22c3ebb8fa2f9ee2e40d99fddd58f0121a46fb76
+    size_bytes: 8784
+  advisory/codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15.json:
+    sha256: b7e38841df8455c0222063bb5287b8b504011e4172c13d9e59a77665f38e70db
+    size_bytes: 2898
+  advisory/codehaus-plexus__plexus-utils_CVE-2022-4244_3.0.23.json:
+    sha256: 6ec38c046f4023234d5e1dbf9094f9f584eb67557ed354b350c25edac1ace326
+    size_bytes: 2291
+  advisory/diffplug__goomph_CVE-2022-26049_3.37.1.json:
+    sha256: 1be74f0ecc81bb0851e70081af0d8e247200403ce2f56133996abbd5f85f48ba
+    size_bytes: 2274
+  advisory/dromara__hutool_CVE-2018-17297_4.1.11.json:
+    sha256: 1b815091ec3564b1a6c5483b5c9cc651aab3a249cbc266daaca43a206b5d573a
+    size_bytes: 2390
+  advisory/eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5.json:
+    sha256: d7d87a48de37ccfc3afe5c098b82d874739546b9d12bd63c6b33e90ca2635caf
+    size_bytes: 1647
+  advisory/eclipse__hawkbit_CVE-2020-27219_0.3.0M6.json:
+    sha256: f37ccb8320e2cb775b856115d771704c5e783eca7ac07f8bc8cff870ca90fdc8
+    size_bytes: 1887
+  advisory/fabric8io__kubernetes-client_CVE-2021-4178_5.0.2.json:
+    sha256: 134b868bc0cd0cf6c04fde194bb0dcdac0cc63d6ce230afc332416e28e16a9fb
+    size_bytes: 4271
+  advisory/ff4j__ff4j_CVE-2022-44262_1.8.13.json:
+    sha256: 43f304bad9b7ad2c678e862803524c1c0d12aee4391aa654ac7961f1b7c1cdf2
+    size_bytes: 1552
+  advisory/hapifhir__org.hl7.fhir.core_CVE-2023-24057_5.6.91.json:
+    sha256: 6ae20b9d8fd60c91d6db68a3b14edc9a76e28b72d2fa9da053392597da0fe3f7
+    size_bytes: 6681
+  advisory/hapifhir__org.hl7.fhir.core_CVE-2023-28465_5.6.105.json:
+    sha256: d569401fb3f22c106550549c2040fa12f9698865aa7913cae13fc32e61468dd1
+    size_bytes: 6393
+  advisory/hibernate__hibernate-validator_CVE-2019-10219_6.0.17.Final.json:
+    sha256: b248113b264b90a4970671ae61dcefe8938b9f7679f2270a923256b6253e1572
+    size_bytes: 3804
+  advisory/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17.json:
+    sha256: cd0499386aa304ed265e6aeb25765c65a8e0ca6da9ee026a7be9c1737fabe065
+    size_bytes: 2040
+  advisory/jenkinsci__git-client-plugin_CVE-2019-10392_2.8.4.json:
+    sha256: cabd002b4446b5e7a029de78e22e8e3f6bdc2bb5843830a93014310e02ff860f
+    size_bytes: 1838
+  advisory/jenkinsci__perfecto-plugin_CVE-2020-2261_1.17.json:
+    sha256: 5b32990dd0407b637a63ff1526de3b16152874f5413673088330b26b3acf14a5
+    size_bytes: 1970
+  advisory/jenkinsci__script-security-plugin_CVE-2023-24422_1228.vd93135a_2fb_25.json:
+    sha256: 7d7471fffb25188aa91f0465a47cbaeade0eb7e797e44f86a38bf28e74513ea4
+    size_bytes: 1865
+  advisory/jenkinsci__workflow-cps-global-lib-plugin_CVE-2022-25174_544.vff04fa68714d.json:
+    sha256: af99db02c29a20a610c61b3ee13243b5aa010cc6f6dd41ffb67ca08dd0ce4f75
+    size_bytes: 2806
+  advisory/jenkinsci__workflow-cps-plugin_CVE-2022-25173_2646.v6ed3b5b01ff1.json:
+    sha256: cc4cef04dda347fa5cbe1f5620841dd5b9391cc2d9b8cc5af3639ada48297d6d
+    size_bytes: 2888
+  advisory/jenkinsci__workflow-multibranch-plugin_CVE-2022-25175_706.vd43c65dec013.json:
+    sha256: 5e18ad3becfca2ca96a80596d0de3b01a8a88633a077f089438f3325b46d2ef2
+    size_bytes: 1858
+  advisory/jeremylong__DependencyCheck_CVE-2018-12036_3.1.2.json:
+    sha256: d9761d9de91d8d3b302011f4fb35492466b3980d202cb3587c420127d678f4d5
+    size_bytes: 1640
+  advisory/jlangch__venice_CVE-2022-36007_1.10.16.json:
+    sha256: 26642cbd38c9073e1e5394cca379fbef74f3b9de766aff7f40ae85e19905fcc9
+    size_bytes: 3984
+  advisory/jmrozanec__cron-utils_CVE-2021-41269_9.1.5.json:
+    sha256: ad82b8cd1ed511f8fa4b9b37f08a7e0768f96c6a9eb29f64019899df48178ebc
+    size_bytes: 2601
+  advisory/joniles__mpxj_CVE-2020-35460_8.3.4.json:
+    sha256: c12a0b25b27e027cedeb61bbfc85ad81619a7c88f8c53fdd438825db63a2886a
+    size_bytes: 1638
+  advisory/jstachio__jstachio_CVE-2023-33962_1.0.0.json:
+    sha256: dd662490fbad4f64cd83870d6464679429e58d17b80275261bb73f7a56696b64
+    size_bytes: 3931
+  advisory/keycloak__keycloak_CVE-2014-3656_1.0.5.Final.json:
+    sha256: c29f65b8506b1b0244c7d84f66c388a0c7a7d90a48741a447cea6ecc753a3cc0
+    size_bytes: 2054
+  advisory/keycloak__keycloak_CVE-2022-1274_20.0.4.json:
+    sha256: e4595601af923d4053d30e5a4a6b8fef95bc631100dcfa8c222c29ef207620f6
+    size_bytes: 1993
+  advisory/keycloak__keycloak_CVE-2022-3782_20.0.1.json:
+    sha256: a2eddc74ccffa9f7fadede1377f240a2c72d0c174b2b16f5c299f9cf29c31daf
+    size_bytes: 2008
+  advisory/keycloak__keycloak_CVE-2022-4137_20.0.4.json:
+    sha256: 6bc50cca5abedd633ddb4a45aa1b8eea039e1a61158f9daed675fc896077def4
+    size_bytes: 2471
+  advisory/keycloak__keycloak_CVE-2022-4361_21.1.1.json:
+    sha256: 1a9d22ac8361190d76469f7fd82197f9c0bebef50388d782827af3cc1bb71e20
+    size_bytes: 1947
+  advisory/kubernetes-client__java_CVE-2020-8570_client-java-parent-9.0.1.json:
+    sha256: 56340925477e4e9bba3aaf41b41caa30b684aba84a6f65771f49d20d5ac6a528
+    size_bytes: 3170
+  advisory/nahsra__antisamy_CVE-2016-10006_1.5.3.json:
+    sha256: f38878b0e1b039a651823a750e0644bd641b5c8f3b2f2fcbcffea1115f73bdd2
+    size_bytes: 1847
+  advisory/nahsra__antisamy_CVE-2017-14735_1.5.6.json:
+    sha256: c115b492dde9fae541dfd07e6d232747c7692afbdc3275aec7923801ccfbd8fd
+    size_bytes: 2378
+  advisory/nahsra__antisamy_CVE-2022-28367_1.6.5.json:
+    sha256: 7700c4b987e6d3aee23fef252e232d504650ff936a9bbb615c61e62aa9550dc4
+    size_bytes: 1776
+  advisory/nahsra__antisamy_CVE-2022-29577_1.6.6.1.json:
+    sha256: 940766a8fe62add3a99e3c616163d54ded1db36548a506d4d5d2a206141661bf
+    size_bytes: 1957
+  advisory/payara__Payara_CVE-2022-37422_5.2022.2.json:
+    sha256: e62ba4143654cf46bd6840ae0da8d0a64d1582cd64dc2e36c5eb1ba94046d56c
+    size_bytes: 1372
+  advisory/perwendel__spark_CVE-2016-9177_2.5.1.json:
+    sha256: 350d63ef3ecf7ff563d2ac2a6c760fec7b5d5c497cb2d638e841288b74af1436
+    size_bytes: 1874
+  advisory/perwendel__spark_CVE-2018-9159_2.7.1.json:
+    sha256: b5aee1cacd4624a1927550f2b9586ba66d3b09843f9477bacd0a7991caa955ae
+    size_bytes: 2413
+  advisory/rhuss__jolokia_CVE-2018-1000129_1.4.0.json:
+    sha256: c2c12eaf1f8c3658502a92fda7fa4aec769042eaddeb8f0a989b79cdaefb423f
+    size_bytes: 1976
+  advisory/spring-cloud__spring-cloud-config_CVE-2020-5405_2.1.6.RELEASE.json:
+    sha256: 36d60897a5f676ef1b99f47ec8c6ec01b691da5c3c4d850b765d71f430141ae1
+    size_bytes: 2163
+  advisory/spring-cloud__spring-cloud-config_CVE-2020-5410_2.1.8.RELEASE.json:
+    sha256: b940ca36b2daca9458578714b54d38c1c726979a4e5506acdf03331720626b12
+    size_bytes: 2141
+  advisory/spring-cloud__spring-cloud-gateway_CVE-2022-22947_3.0.6.json:
+    sha256: aeeab889141b3e0e63457218e04e31b66fe3003e13840a253b94c077904370a9
+    size_bytes: 2562
+  advisory/spring-projects__spring-framework_CVE-2022-22965_5.2.19.RELEASE.json:
+    sha256: 120f4e5d5b775c7e3ff3d28f0040ce0c89f1cd3bcf49b286abd0905a967a493b
+    size_bytes: 8399
+  advisory/spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE.json:
+    sha256: d9af485de50dca91f5ab7df9c018be299171653071aebd9f46f731735a349292
+    size_bytes: 2071
+  advisory/square__retrofit_CVE-2018-1000850_2.4.0.json:
+    sha256: 82adcecc05e5e00b689dcd1741e09350a7cad634063e5bb1c3fdad2167d324d6
+    size_bytes: 2787
+  advisory/srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2.json:
+    sha256: 66a2180acd5a12d698b5b72a12f187898040f735d5906a793e36d094a2f9eca0
+    size_bytes: 1862
+  advisory/testng-team__testng_CVE-2022-4065_7.5.json:
+    sha256: 54db84df3678b9dcef1fc56536d606362fb8e501bbe8b1dcaee16861b2ab92ea
+    size_bytes: 3650
+  advisory/undertow-io__undertow_CVE-2014-7816_1.0.16.Final.json:
+    sha256: 05e23fc2437f63f1ce1bac0e0b94743ff66c217c63105bd06b38818a3dbd2a19
+    size_bytes: 2762
+  advisory/vert-x3__vertx-web_CVE-2018-12542_3.5.3.CR1.json:
+    sha256: 399caacdcfe64eff444b622f47e3febf350b789b7d434953948801cde7b9c1b4
+    size_bytes: 2255
+  advisory/vert-x3__vertx-web_CVE-2019-17640_3.9.3.json:
+    sha256: 1d6f7721320be0aa937c8ab2ba77344318dfa5946063a20a42b4c66fb7dfb4b4
+    size_bytes: 2723
+  advisory/whitesource__curekit_CVE-2022-23082_1.1.3.json:
+    sha256: e30e70657ad0de155e95c645d0fc21eb9c0cc4b12c8ff34e664af958af0ec3ae
+    size_bytes: 1641
+  advisory/wildfly__wildfly_CVE-2018-1047_11.0.0.Final.json:
+    sha256: e671bf635534c817244a4fa811709ed5484757379dec7968a7e29c8b4c1a25bd
+    size_bytes: 2316
+  advisory/x-stream__xstream_CVE-2013-7285_1.4.6.json:
+    sha256: dccc2b0ff2682b8ca7dfba92d5de5f1062c09d5c7f0ceb6345e304d9cc3a740f
+    size_bytes: 3183
+  advisory/x-stream__xstream_CVE-2020-26217_1.4.14-java7.json:
+    sha256: 8c25171aac227f95491a61671ffff1037da910046dd4179665d515685ff34ea3
+    size_bytes: 6426
+  advisory/x-stream__xstream_CVE-2021-21345_1.4.15.json:
+    sha256: 0fc9c6d9aa2d97e1d4ce18768e71807c4488b9e12002c04cfcec794ec562f693
+    size_bytes: 4588
+  advisory/xerial__sqlite-jdbc_CVE-2023-32697_3.41.2.1.json:
+    sha256: 8f8f8c2388b1a236fdddb7fd0cc91c30afb08b2191f61f82b6b58ecc3b7c8c5f
+    size_bytes: 1742
+  advisory/xuxueli__xxl-job_CVE-2020-29204_2.2.0.json:
+    sha256: 0eb0962b518ee394c8aa815798f27570c6ea7d8e360807b4eee246b779952924
+    size_bytes: 1617
+  advisory/xwiki__xwiki-commons_CVE-2022-24897_12.6.6.json:
+    sha256: d38fab70a9b29077389c0aa3e714296e3c2a06b96a9e1e576c7aab79452cf154
+    size_bytes: 2960
+  advisory/xwiki__xwiki-commons_CVE-2023-29201_14.6.json:
+    sha256: b07ae5d894775e79e82c7ec5d9901a82ea38f9bd98672bb592b97088f55ec421
+    size_bytes: 3952
+  advisory/xwiki__xwiki-commons_CVE-2023-29528_14.9-rc-1.json:
+    sha256: f3287bd34bcade6d9961827252bf827f1cd51bc7375d4d66fa577e380be25f62
+    size_bytes: 3788
+  advisory/xwiki__xwiki-commons_CVE-2023-31126_14.10.3.json:
+    sha256: a34d088255a186878de7b9103670585496d86ebdbbca2d10f0c8991ba216ff12
+    size_bytes: 3226
+  advisory/xwiki__xwiki-commons_CVE-2023-36471_14.10.5.json:
+    sha256: 7aae5e4dc036043c2ec542223c8e21306f7bc57a34f9f1717858142cbca805ef
+    size_bytes: 3347
+  advisory/xwiki__xwiki-rendering_CVE-2023-32070_14.6.json:
+    sha256: 330270b75de6c7990fb3b4b1d994c28c8865391acb5729506be3a227f02077bf
+    size_bytes: 4788
+  advisory/xwiki__xwiki-rendering_CVE-2023-37908_14.10.3.json:
+    sha256: aa40b7d209fdfb0e565025512e7f28a9ea5f59e3fafcb76f53ca095a21005607
+    size_bytes: 3745
+  advisory/yamcs__yamcs_CVE-2023-45277_5.8.6.json:
+    sha256: 652387bc15e4b7ac93c768556931d2a5edcdb7d51684aee0aba822942b2bd1fa
+    size_bytes: 1712
+  advisory/yamcs__yamcs_CVE-2023-45278_5.8.6.json:
+    sha256: ad54cb89ae45a0db6e977b8aea9184f20155781aab7d99c095e1871e962006f0
+    size_bytes: 1642
+  advisory/zeroturnaround__zt-zip_CVE-2018-1002201_1.12.json:
+    sha256: 53b1ed8cd9d4f03eded63e4d4d6ce28b1a8e14c0caccb30c40a6a818ae87a957
+    size_bytes: 1985
+  baselines/output_infer_result.py:
+    sha256: 5e372e4cb67ec3cdf2ff52e416e1978cc93e5c09af2f68b964cbdaffc3df2761
+    size_bytes: 1502
+  baselines/output_snyk_result.py:
+    sha256: b8f6d6989058788d1b8b54b91b84fb8fe80bc48413a8ea1fcbecc9e090714570
+    size_bytes: 2031
+  baselines/output_spotbugs_result.py:
+    sha256: 5e7f103265839915af9592f2aad3597a3f73b4e6d572ab5d4310397006577949
+    size_bytes: 1390
+  baselines/readme.md:
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    size_bytes: 0
+  baselines/results/.gitignore:
+    sha256: 318f34325d8af3061c3bffed92ef1d57bb7433ff2381ce92e64bffb06c4e82cd
+    size_bytes: 7
+  baselines/results/.keep:
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    size_bytes: 0
+  baselines/run_codeql.py:
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    size_bytes: 0
+  baselines/run_infer.py:
+    sha256: 0f24fe5a01563f19dc04431f6cf8bb8aeace4a96b1560fa05177199eb6504fd5
+    size_bytes: 3399
+  baselines/run_snyk.py:
+    sha256: 61a385580ba47669c21bcbcaff3336f76ad786770a1febe27cfaacfee4d79aff
+    size_bytes: 2899
+  baselines/run_spotbugs.py:
+    sha256: 937f71a7698d2d98aa960b66c4f4a0bf25776c335c31ccb68c743c948dce787a
+    size_bytes: 3404
+  data/build_info.csv:
+    sha256: 9f19f701079f43396a89d9546169fb648f37fb79ac3ea0082ff1d2f440870c9e
+    size_bytes: 8683
+  data/fix_info.csv:
+    sha256: 86550477222ee95d46c1867b622b1e6759005d7d4ac9ff4f83f1253595421892
+    size_bytes: 343943
+  data/project_info.csv:
+    sha256: c4576f273f8cfc52bc530940ba5e52f5a7c56952b5f740f83ff62987db3f8710
+    size_bytes: 39501
+  java-env/.gitignore:
+    sha256: 9ef39e318c34fb369a2f0dff605700abf083ee0a2ad57ae3e0e552816ce1ec86
+    size_bytes: 49
+  java-env/.keep:
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    size_bytes: 0
+  package-names/DSpace__DSpace_CVE-2016-10726_4.4.txt:
+    sha256: 45081aeda207d45049bd87ee775fee37a8133122315ed7ccbe176ddc74e537c4
+    size_bytes: 5290
+  package-names/DSpace__DSpace_CVE-2022-31192_5.10.txt:
+    sha256: 39447edccc9f30db233e577c565e646e39a6c41d2a4c59ae950ffa21adfc9783
+    size_bytes: 6958
+  package-names/DSpace__DSpace_CVE-2022-31194_5.10.txt:
+    sha256: 39447edccc9f30db233e577c565e646e39a6c41d2a4c59ae950ffa21adfc9783
+    size_bytes: 6958
+  package-names/DSpace__DSpace_CVE-2022-31195_5.10.txt:
+    sha256: 39447edccc9f30db233e577c565e646e39a6c41d2a4c59ae950ffa21adfc9783
+    size_bytes: 6958
+  package-names/ESAPI__esapi-java-legacy_CVE-2022-23457_2.2.3.1.txt:
+    sha256: 4b17f366e6ab17520779316773446f55fc451aa4ff07dc869ea7846efd0eb5d5
+    size_bytes: 874
+  package-names/ESAPI__esapi-java-legacy_CVE-2022-24891_2.2.3.1.txt:
+    sha256: 4b17f366e6ab17520779316773446f55fc451aa4ff07dc869ea7846efd0eb5d5
+    size_bytes: 874
+  package-names/Graylog2__graylog2-server_CVE-2023-41044_5.1.2.txt:
+    sha256: c3311d4f9ae3b180a8f3196232dfaeac142c06f2c1039a061ac40b8035411bd4
+    size_bytes: 24550
+  package-names/OWASP__json-sanitizer_CVE-2020-13973_1.2.0.txt:
+    sha256: e6be8f044c14657c1b89838590a93939d22a7e440c702e345db358e90d957545
+    size_bytes: 17
+  package-names/SpringSource__spring-security-oauth_CVE-2018-1260_2.3.2.RELEASE.txt:
+    sha256: 0ce30d25993584cfb567e3f4b8aa8805c4bf03ec3a1a082ed2f8bca969677afc
+    size_bytes: 4244
+  package-names/alibaba__nacos_CVE-2021-44667_2.0.3.txt:
+    sha256: 2111155bcebd2527b3699a1d3a8de041061d03d6640c857b63d0e8b2ba97a65c
+    size_bytes: 11087
+  package-names/alibaba__one-java-agent_CVE-2022-25842_0.0.1.txt:
+    sha256: 6ff9dd3302afacdc52f33e800d1521d2523577d955934a600139c5874b30531a
+    size_bytes: 394
+  package-names/apache__activemq_CVE-2014-3576_5.10.2.txt:
+    sha256: 6cb6e26cd5ac1e4751d1fca7233796cfa30d779e9777826911f502fb48214f12
+    size_bytes: 6516
+  package-names/apache__activemq_CVE-2019-0222_5.15.8.txt:
+    sha256: 3f17ac98dd6026ccfd627b914b10330533c38e50d51c4cda0505f15bd9bff78b
+    size_bytes: 7645
+  package-names/apache__activemq_CVE-2020-11998_5.15.12.txt:
+    sha256: 3f17ac98dd6026ccfd627b914b10330533c38e50d51c4cda0505f15bd9bff78b
+    size_bytes: 7645
+  package-names/apache__camel_CVE-2018-8041_2.20.3.txt:
+    sha256: 4d5c69f9a1d456a5f9cebb152206012782b6988992f5a72e31f523ddb7818697
+    size_bytes: 71231
+  package-names/apache__camel_CVE-2019-0194_2.21.4.txt:
+    sha256: 39dab1fe01ae9ed16d8b488a531f7d26baac58367525017153ebba76be0f1f63
+    size_bytes: 73850
+  package-names/apache__dolphinscheduler_CVE-2022-26884_2.0.5.txt:
+    sha256: d8b73aae15b176df85a7af78049ae3e04f771f30215edc02a76117c6bff1f341
+    size_bytes: 10220
+  package-names/apache__dolphinscheduler_CVE-2022-34662_2.0.9.txt:
+    sha256: d8b73aae15b176df85a7af78049ae3e04f771f30215edc02a76117c6bff1f341
+    size_bytes: 10220
+  package-names/apache__dolphinscheduler_CVE-2023-49109_3.2.0.txt:
+    sha256: f8d701991fbb47b0aa47be4f7e62665f7edd2b042f46be4141d7864b43acc226
+    size_bytes: 19978
+  package-names/apache__dolphinscheduler_CVE-2023-51770_3.2.0.txt:
+    sha256: f8d701991fbb47b0aa47be4f7e62665f7edd2b042f46be4141d7864b43acc226
+    size_bytes: 19978
+  package-names/apache__dubbo_CVE-2021-30180_2.7.9.txt:
+    sha256: 482abbeeebd7837e1818b81754cce3cc916a5c93ee8020e96812ba8f993b9eaa
+    size_bytes: 16597
+  package-names/apache__flink_CVE-2020-17519_1.11.2.txt:
+    sha256: 6ade78a38688ea3d3fa3e1c76e6e688ce0d79e56006b71a2ddf3cd10d6c29ea6
+    size_bytes: 42426
+  package-names/apache__incubator-dubbo_CVE-2021-30181_2.6.8.txt:
+    sha256: caf02dd6121dab2cabfece144a8ea6afbbc51bb9c65d8df8756aa216e38759ae
+    size_bytes: 11492
+  package-names/apache__jspwiki_CVE-2019-0225_2.11.0.M2.txt:
+    sha256: 0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65
+    size_bytes: 2092
+  package-names/apache__jspwiki_CVE-2019-10076_2.11.0.M3.txt:
+    sha256: 0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65
+    size_bytes: 2092
+  package-names/apache__jspwiki_CVE-2019-10077_2.11.0.M3.txt:
+    sha256: 0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65
+    size_bytes: 2092
+  package-names/apache__jspwiki_CVE-2019-10078_2.11.0.M3.txt:
+    sha256: 0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65
+    size_bytes: 2092
+  package-names/apache__jspwiki_CVE-2019-10089_2.11.0.M4.txt:
+    sha256: 5830253b52f2a84e7b25399a6991c1f542ceb4d3bee6614ef917848e1f30200f
+    size_bytes: 2121
+  package-names/apache__jspwiki_CVE-2022-46907_2.11.3.txt:
+    sha256: b0a085a3c83b081eca51e43475dd92ca97ef7fdb0e1ad4b158b67a59c9d9e9b8
+    size_bytes: 2796
+  package-names/apache__mina-sshd_CVE-2023-35887_2.9.2.txt:
+    sha256: a9466cab06e990d045e54933edfb39342cb92edeb5c2453bf8fec1615199567f
+    size_bytes: 5430
+  package-names/apache__myfaces_CVE-2011-4367_2.0.11.txt:
+    sha256: 1dcf6eee09af8d43cd64e452a5c1918185a8a507994489e4fca827859fc3000a
+    size_bytes: 3755
+  package-names/apache__nifi_CVE-2022-33140_1.16.2.txt:
+    sha256: bd6453ed4618e3bd552cc1c02091423512b8d4339012f8ea1351383aa02ee117
+    size_bytes: 40451
+  package-names/apache__rocketmq_CVE-2019-17572_4.6.0.txt:
+    sha256: 58be8bb4129b3219f95711e72c418a85db5d3eb35685bd469262be01fae8bf94
+    size_bytes: 6642
+  package-names/apache__rocketmq_CVE-2023-33246_5.1.0.txt:
+    sha256: f2ed07092fe94556336b4a521568bf6a6da792a38fe4afa309bbae5bc9e25a02
+    size_bytes: 10938
+  package-names/apache__rocketmq_CVE-2023-37582_4.9.6.txt:
+    sha256: 5b1a2c2fdb502c12de04b64c3b7ebe119104c1a852074b21ea9d47b8ba7db776
+    size_bytes: 6850
+  package-names/apache__shiro_CVE-2023-34478_1.11.0.txt:
+    sha256: b0e5491684ff30738dd5b67a30546821747658b3f9f43ed8b572ba55c6dca8d1
+    size_bytes: 3077
+  package-names/apache__shiro_CVE-2023-46749_1.12.0.txt:
+    sha256: 0a3abe0c2a2f0b6c5cd4a306da33053399dfff407182cc9216bff726163a5920
+    size_bytes: 3108
+  package-names/apache__sling-org-apache-sling-servlets-resolver_CVE-2024-23673_2.10.0.txt:
+    sha256: be49be64997c1a055f4e2e94ced689e6b0a24c6323d382950d602d77de83d96d
+    size_bytes: 445
+  package-names/apache__sling-org-apache-sling-xss_CVE-2016-5394_1.0.8.txt:
+    sha256: d206b9a27de1b8898ced0c9dd241e475f2660ba3d4364715769407c314bc5997
+    size_bytes: 49
+  package-names/apache__struts_CVE-2020-17530_2.5.25.txt:
+    sha256: 233e4bcecb238fda8e66f4cb8cbb25b12f02fac65e21f6ce4ee56c89dd1eaeda
+    size_bytes: 7334
+  package-names/apache__tika_CVE-2018-11762_1.18.txt:
+    sha256: 8d32a6ed07a493c585d8b26175a0474ab053caf4396cb82fcdb06e2e295b1b29
+    size_bytes: 3858
+  package-names/apache__uima-uimaj_CVE-2022-32287_3.3.0.txt:
+    sha256: 2e664ba2e03efda70c2b8baa2eaa051fbbde1bebbc45b74f2d1a33610232d2a7
+    size_bytes: 5798
+  package-names/asf__commons-io_CVE-2021-29425_2.6.txt:
+    sha256: dd5bb65380b47487e62394962817db079848ec028b2f0da0884e0de36d600c9e
+    size_bytes: 294
+  package-names/asf__commons-text_CVE-2022-42889_1.9.txt:
+    sha256: 85385e0ff8144731e25e7b23ca14cc24a8ddb437b6d758f40c5b4fed92e4197b
+    size_bytes: 219
+  package-names/asf__cxf_CVE-2016-6812_3.0.11.txt:
+    sha256: 35fb55fdc59a79eb2a60d2755a249f26dd00331a4fa8f5a3a4a5681e41649758
+    size_bytes: 41439
+  package-names/asf__cxf_CVE-2019-17573_3.2.11.txt:
+    sha256: 4cd80d3d9f3ce76e0ad7d6aae2854819dc3a8e3722ef239cc781c877aa7db143
+    size_bytes: 44992
+  package-names/asf__james-project_CVE-2022-22931_3.6.0.txt:
+    sha256: 7f3973cfdae3d656778fc1a35835e1cc1b3bf393f4e48be26d2529724c1b850d
+    size_bytes: 21073
+  package-names/asf__karaf_CVE-2022-22932_4.3.5.txt:
+    sha256: b0bee81ca7fc8a517740c4e38253413207799f30aba069f20af92cc37187ec7a
+    size_bytes: 13945
+  package-names/asf__nifi_CVE-2023-34468_1.21.0.txt:
+    sha256: 42872e032102b507a7e9b383120f80c8518ae89b8e52d2fb9a9ee439a6b6ed6a
+    size_bytes: 45914
+  package-names/asf__nifi_CVE-2023-36542_1.22.0.txt:
+    sha256: 91f8ab2263d5abc13bff8fc970de7524bf8e77f5eacec9aa7d9a457ffc51ba30
+    size_bytes: 46509
+  package-names/asf__tapestry-5_CVE-2019-0207_5.4.4.txt:
+    sha256: 6f43c5250914773e85c66c1579badf55fa99ca9241a1142c320dcf8dd3e8848f
+    size_bytes: 9821
+  package-names/aws__aws-sdk-java_CVE-2022-31159_1.12.260.txt:
+    sha256: dfca2e281b0d2682be98849e8bbc4162282678b837253aa618102926f09d59c1
+    size_bytes: 52899
+  package-names/codecentric__spring-boot-admin_CVE-2022-46166_2.6.9.txt:
+    sha256: 169b51becaa748cb20d613ca7782289ea1da3ccaa6c99f9264293bd24d72496e
+    size_bytes: 1486
+  package-names/codehaus-plexus__plexus-archiver_CVE-2018-1002200_3.5.txt:
+    sha256: 7487f33f047c065b8e32fd2ffa9552ae4d10ad5321db50ac35756e1e29be7a0e
+    size_bytes: 716
+  package-names/codehaus-plexus__plexus-archiver_CVE-2023-37460_4.7.1.txt:
+    sha256: abf688e2eb5830f6bcac1ff0aca0a07c6b341ef92e4f3c6a23f667042fbac94d
+    size_bytes: 938
+  package-names/codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15.txt:
+    sha256: e2606aedf404c37e8364fab05f0bbfe22c024b2a676ddb02dca6bb06e41278fe
+    size_bytes: 293
+  package-names/codehaus-plexus__plexus-utils_CVE-2022-4244_3.0.23.txt:
+    sha256: e2606aedf404c37e8364fab05f0bbfe22c024b2a676ddb02dca6bb06e41278fe
+    size_bytes: 293
+  package-names/diffplug__goomph_CVE-2022-26049_3.37.1.txt:
+    sha256: fe0eb2709598ad9e442823cbc2208a89c8475a95df64d116c0896092bf423532
+    size_bytes: 349
+  package-names/dromara__hutool_CVE-2018-17297_4.1.11.txt:
+    sha256: 87ed090ba598f4e4d1aa836ca8449c4acc38d0299a7778da1e7e57f0f0115e3c
+    size_bytes: 6106
+  package-names/eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5.txt:
+    sha256: 540464a7c6ca029bdf51d11a57e1f85b1072fa9d14026e52cb50e4821089c644
+    size_bytes: 67667
+  package-names/eclipse__hawkbit_CVE-2020-27219_0.3.0M6.txt:
+    sha256: df2fcef7a2d3b28d059e4e5a1e48a5208b4c5c0fc31621e6cf712c7f39dac549
+    size_bytes: 7293
+  package-names/fabric8io__kubernetes-client_CVE-2021-4178_5.0.2.txt:
+    sha256: 4c65dff662eef9cd4cfb43dab59d267db05ac132a6082071b3f2b65af923a087
+    size_bytes: 10936
+  package-names/ff4j__ff4j_CVE-2022-44262_1.8.13.txt:
+    sha256: d5fc1a8ccc17634a1c4c3a4f2f18a9b850db3206cb8312a115fa4be0a87a4af8
+    size_bytes: 3241
+  package-names/hapifhir__hapi-fhir_CVE-2023-24057_5.6.91.txt:
+    sha256: e2af6f40e2f32101c6aae2562afe03015ea57b8f6f3dd1aa6076f3889f07f9ca
+    size_bytes: 15767
+  package-names/hapifhir__hapi-fhir_CVE-2023-28465_5.6.105.txt:
+    sha256: e2af6f40e2f32101c6aae2562afe03015ea57b8f6f3dd1aa6076f3889f07f9ca
+    size_bytes: 15767
+  package-names/hibernate__hibernate-validator_CVE-2019-10219_6.0.17.Final.txt:
+    sha256: 893a3900d5c1b3a8bea991c8ef31a25cd2fccb346dd3902c090a2bf7d560e3dd
+    size_bytes: 15408
+  package-names/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17.txt:
+    sha256: 843708b8cf8ff09289b0dabfd78d13dd72ca94c2a0ec6ba45fd652ceb674e34c
+    size_bytes: 268
+  package-names/jenkinsci__git-client-plugin_CVE-2019-10392_2.8.4.txt:
+    sha256: 80e25d88df7c362224d3eff26213fcdb7911f23a0435a8f18f1c148eb8426b2d
+    size_bytes: 175
+  package-names/jenkinsci__perfecto-plugin_CVE-2020-2261_1.17.txt:
+    sha256: 869d19d8e47cf56bc02648172a0d64f1983c929c905bf7915979ca5eac0c3434
+    size_bytes: 83
+  package-names/jenkinsci__script-security-plugin_CVE-2023-24422_1228.vd93135a_2fb_25.txt:
+    sha256: 39c653a03de39fb3183368b7722fe2c1ce6aa3c2ee72aaabea2c53f070875e0d
+    size_bytes: 258
+  package-names/jenkinsci__workflow-cps-global-lib-plugin_CVE-2022-25174_544.vff04fa68714d.txt:
+    sha256: 0f30ef787dd6bb3f49ffc69d3052b902a0def38b9390cb7ae730be6324ba58bf
+    size_bytes: 166
+  package-names/jenkinsci__workflow-cps-plugin_CVE-2022-25173_2646.v6ed3b5b01ff1.txt:
+    sha256: 6a222da73611b0e1b402aa49960e5dc5d59aecaa3dbf59bfea3f27a477278553
+    size_bytes: 427
+  package-names/jenkinsci__workflow-multibranch-plugin_CVE-2022-25175_706.vd43c65dec013.txt:
+    sha256: 17314645742b9aa2e0fa3d52d2377f5dbd46decec7f140ef74a8cf14fa8905a3
+    size_bytes: 44
+  package-names/jeremylong__DependencyCheck_CVE-2018-12036_3.1.2.txt:
+    sha256: 7be735606f8f851248b3b9b8ff17017f446eaac5969d83b1039abb1a6c444b51
+    size_bytes: 1074
+  package-names/jlangch__venice_CVE-2022-36007_1.10.16.txt:
+    sha256: 3e57702219414066994f75c7e7b5d9919d5ac24d5ac85c1cbf60d64aa6476eb5
+    size_bytes: 2716
+  package-names/jmrozanec__cron-utils_CVE-2021-41269_9.1.5.txt:
+    sha256: f48e364fb168fd13a9cb4f614cb4d140b871292ef8abd1a35814ce00cc486e02
+    size_bytes: 646
+  package-names/joniles__mpxj_CVE-2020-35460_8.3.4.txt:
+    sha256: d412016fc0ce668ca3dcb47c1738c44dcdbed1c519a0dbde6a6cd4a872857c8c
+    size_bytes: 1117
+  package-names/jstachio__jstachio_CVE-2023-33962_1.0.0.txt:
+    sha256: 908dfc8f64390dee274195f9d1b4e3d9f8850dd1452a9c3235b4f60dbb23d239
+    size_bytes: 1846
+  package-names/keycloak__keycloak_CVE-2014-3656_1.0.5.Final.txt:
+    sha256: c6e0f33fbd27ddadd4d94ab6040a48162941e73c62d5fa9c59669b02c3e014d1
+    size_bytes: 3677
+  package-names/keycloak__keycloak_CVE-2022-1274_20.0.4.txt:
+    sha256: 7c5e2533705a4a5c6cdea21506c5656aabbab1b042a7e7c6f4dfd76da81ed5cd
+    size_bytes: 34426
+  package-names/keycloak__keycloak_CVE-2022-3782_20.0.1.txt:
+    sha256: 7c5e2533705a4a5c6cdea21506c5656aabbab1b042a7e7c6f4dfd76da81ed5cd
+    size_bytes: 34426
+  package-names/keycloak__keycloak_CVE-2022-4137_20.0.4.txt:
+    sha256: 7c5e2533705a4a5c6cdea21506c5656aabbab1b042a7e7c6f4dfd76da81ed5cd
+    size_bytes: 34426
+  package-names/keycloak__keycloak_CVE-2022-4361_21.1.1.txt:
+    sha256: 637a4f69a86b8d5a5bcc916c34e59ec6105404545b63129e4c665fe7305e7404
+    size_bytes: 33263
+  package-names/kubernetes-client__java_CVE-2020-8570_client-java-parent-9.0.1.txt:
+    sha256: 90f994aae296e536f290d148d20d34b2cbe99a746630cf0f6d75ce2305c38638
+    size_bytes: 1524
+  package-names/nahsra__antisamy_CVE-2016-10006_1.5.3.txt:
+    sha256: babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368
+    size_bytes: 176
+  package-names/nahsra__antisamy_CVE-2017-14735_1.5.6.txt:
+    sha256: babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368
+    size_bytes: 176
+  package-names/nahsra__antisamy_CVE-2022-28367_1.6.5.txt:
+    sha256: babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368
+    size_bytes: 176
+  package-names/nahsra__antisamy_CVE-2022-29577_1.6.6.1.txt:
+    sha256: babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368
+    size_bytes: 176
+  package-names/payara__Payara_CVE-2022-37422_5.2022.2.txt:
+    sha256: 004fab7b59b2af182d313b8b2e337354d76424d6dd63b7a139d0d43d9315fc5d
+    size_bytes: 48486
+  package-names/perwendel__spark_CVE-2016-9177_2.5.1.txt:
+    sha256: 93e231cad8fa35c534f4d16eb81c341729f218ee6316a63de767631b0dcbc951
+    size_bytes: 619
+  package-names/perwendel__spark_CVE-2018-9159_2.7.1.txt:
+    sha256: 8e54e523c1a3493b7b876e1887ecd78286ec7114f5699aa499519b03828e4fcc
+    size_bytes: 668
+  package-names/rhuss__jolokia_CVE-2018-1000129_1.4.0.txt:
+    sha256: 5216483b48c5d81d6da3bfec0fae95fdd62e0f8b51eecbd37c27f2e0b666a05a
+    size_bytes: 1123
+  package-names/spring-cloud__spring-cloud-config_CVE-2020-5405_2.1.6.RELEASE.txt:
+    sha256: ef155ab4a3683cca47021002f4614d3a6904392dece95dc648c35f3610af846b
+    size_bytes: 776
+  package-names/spring-cloud__spring-cloud-config_CVE-2020-5410_2.1.8.RELEASE.txt:
+    sha256: ef155ab4a3683cca47021002f4614d3a6904392dece95dc648c35f3610af846b
+    size_bytes: 776
+  package-names/spring-cloud__spring-cloud-gateway_CVE-2022-22947_3.0.6.txt:
+    sha256: 6b7e454cde9903e730a7b3a1b5c50c4f8f0ffe27938fae3d618eda9cb96a2735
+    size_bytes: 1346
+  package-names/spring-projects__spring-framework_CVE-2022-22965_5.2.19.RELEASE.txt:
+    sha256: 8cb454e456f62a2563e5e9ced7f64a6285d26e1523fd98148013e025577c2d21
+    size_bytes: 24373
+  package-names/spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE.txt:
+    sha256: 27fe2a704073d7f235ee2a2eb254dcc4968d1cc59e78b09bc030dbe8f391c0d1
+    size_bytes: 4495
+  package-names/square__retrofit_CVE-2018-1000850_2.4.0.txt:
+    sha256: 8ae46d6fb740a6d3edc2b62558e0ab61b3270abf4e3ba78a498cc72d96d0cc1c
+    size_bytes: 488
+  package-names/srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2.txt:
+    sha256: 32285414b4d41c48171fc18b2f5031ba37dc77c39714813b3b8f884d33bff619
+    size_bytes: 398
+  package-names/testng-team__testng_CVE-2022-4065_7.5.txt:
+    sha256: 5ea153532db530c52022ee7164b290ebbb86912539213dd3b022eb477c9c003f
+    size_bytes: 8824
+  package-names/undertow-io__undertow_CVE-2014-7816_1.0.16.Final.txt:
+    sha256: f694b36faf3ea5c6adf900b462a7e413219859140207eb2cb0dfd8120cc7fee3
+    size_bytes: 3809
+  package-names/vert-x3__vertx-web_CVE-2018-12542_3.5.3.CR1.txt:
+    sha256: a639a577d2a58866336dfec226caee827c1ef3f564059591679c296b9455dd58
+    size_bytes: 2147
+  package-names/vert-x3__vertx-web_CVE-2019-17640_3.9.3.txt:
+    sha256: 526f5e95708894901a07d05012f214ff06c9e95bf0557fd958b118137edaab5a
+    size_bytes: 1800
+  package-names/whitesource__curekit_CVE-2022-23082_1.1.3.txt:
+    sha256: dceb116c0c6f76cc989139637505b1ee222c701384b5accec89e83124f9cc42a
+    size_bytes: 48
+  package-names/wildfly__wildfly_CVE-2018-1047_11.0.0.Final.txt:
+    sha256: e0013cea3bcd959a8c4e9a5e7f152e630c4b419fc1013b13e0d39f9cba4031c6
+    size_bytes: 58286
+  package-names/x-stream__xstream_CVE-2013-7285_1.4.6.txt:
+    sha256: b31ce5c9b1603bd2bd9a7d39f67cfdccd7ed841a9b4b373de85473a2a45c335f
+    size_bytes: 2172
+  package-names/x-stream__xstream_CVE-2020-26217_1.4.14-java7.txt:
+    sha256: 707803cce94bbc8cce3325862f2d72773808af042c5a362ec87847eab61a849e
+    size_bytes: 1408
+  package-names/x-stream__xstream_CVE-2021-21345_1.4.15.txt:
+    sha256: f6a9f90b20ed1c2b9aa4c908f6f531ddb4c3ee197fcaefc9229e6168f5c5cfe9
+    size_bytes: 2289
+  package-names/xerial__sqlite-jdbc_CVE-2023-32697_3.41.2.1.txt:
+    sha256: 2613d772e46a781779081c11e3ace92d71167abdcaaee50cd16878a50c92a20b
+    size_bytes: 142
+  package-names/xuxueli__xxl-job_CVE-2020-29204_2.2.0.txt:
+    sha256: 89e700ee71b9d81d56bac66c41b3c705ecfb44dcaca26531a15b53a2cee6deb5
+    size_bytes: 2007
+  package-names/xwiki__xwiki-commons_CVE-2022-24897_12.6.6.txt:
+    sha256: ca928f8ad80a4a27cb1ece60d31f54a547cc0daa5666efe9548f4715ef58d82c
+    size_bytes: 8399
+  package-names/xwiki__xwiki-commons_CVE-2023-29201_14.6.txt:
+    sha256: e0f493e33d66c2e2b708d894d083b988058fb99295d8a892edacdf64aa5dfc9a
+    size_bytes: 8454
+  package-names/xwiki__xwiki-commons_CVE-2023-29528_14.9-rc-1.txt:
+    sha256: e0f493e33d66c2e2b708d894d083b988058fb99295d8a892edacdf64aa5dfc9a
+    size_bytes: 8454
+  package-names/xwiki__xwiki-commons_CVE-2023-31126_14.10.3.txt:
+    sha256: e0f493e33d66c2e2b708d894d083b988058fb99295d8a892edacdf64aa5dfc9a
+    size_bytes: 8454
+  package-names/xwiki__xwiki-commons_CVE-2023-36471_14.10.5.txt:
+    sha256: 085d737be8a5313d87f93911c6b416fe64cc4878d852ee5bc9a0afe1a094ea70
+    size_bytes: 8481
+  package-names/xwiki__xwiki-rendering_CVE-2023-32070_14.6.txt:
+    sha256: 166e965937d818648b3b3b158f51dcc7c4bb294c48b962a15a0370080e36469b
+    size_bytes: 6464
+  package-names/xwiki__xwiki-rendering_CVE-2023-37908_14.10.3.txt:
+    sha256: 166e965937d818648b3b3b158f51dcc7c4bb294c48b962a15a0370080e36469b
+    size_bytes: 6464
+  package-names/yamcs__yamcs_CVE-2023-45277_5.8.6.txt:
+    sha256: 2883ad29c74a79d9a65461e4d0110c472f17f1e4c7c43c42c6dfbf4d13ef85fd
+    size_bytes: 2183
+  package-names/yamcs__yamcs_CVE-2023-45278_5.8.6.txt:
+    sha256: 2883ad29c74a79d9a65461e4d0110c472f17f1e4c7c43c42c6dfbf4d13ef85fd
+    size_bytes: 2183
+  package-names/zeroturnaround__zt-zip_CVE-2018-1002201_1.12.txt:
+    sha256: c8f89ec3a01595f0ff0db53eef446839885b29860b8a8119ecea33d7b7435eb6
+    size_bytes: 164
+  patches/apache__camel_CVE-2018-8041_2.20.3.patch:
+    sha256: 512420667abfa1a0103d4b5fc634b1040a94741b1f0220964f74f112c9d957cf
+    size_bytes: 12470
+  patches/apache__camel_CVE-2019-0194_2.21.4.patch:
+    sha256: ffff6a10e58590981d4471aa77b735fddb9afa6f78d356e3091cd52828aae5f3
+    size_bytes: 2887
+  patches/jstachio__jstachio_CVE-2023-33962_1.0.0.patch:
+    sha256: fa2bca37e1462c895dec9f7c4f24ec5a811fdb3548dc0fb19f0bfe5fa0b9fe16
+    size_bytes: 31041
+  patches/keycloak__keycloak_CVE-2022-1274_20.0.4.patch:
+    sha256: 3b9f79de94b65a623fff8f0dc602f7cff61b2cc76484f8bef2b871bae0686034
+    size_bytes: 7156
+  patches/keycloak__keycloak_CVE-2022-4137_20.0.4.patch:
+    sha256: 3b9f79de94b65a623fff8f0dc602f7cff61b2cc76484f8bef2b871bae0686034
+    size_bytes: 7156
+  patches/keycloak__keycloak_CVE-2022-4361_21.1.1.patch:
+    sha256: 3b9f79de94b65a623fff8f0dc602f7cff61b2cc76484f8bef2b871bae0686034
+    size_bytes: 7156
+  patches/testng-team__testng_CVE-2022-4065_7.5.patch:
+    sha256: de92788627c773d226adac85219a9b159fd4f14bd7cae04d48819d852fd26018
+    size_bytes: 461
+  patches/xwiki__xwiki-commons_CVE-2022-24897_12.6.6.patch:
+    sha256: 1cbd574faf1ae72c8e2b30fc56681085f16cb895c490e82a784a1a6cf092c59a
+    size_bytes: 668
+  resources/dataset-collection.png:
+    sha256: b2bba0d5abdced2dddc089826940aff9075fc6398425cdc51108054cf6d688d1
+    size_bytes: 272994
+  scripts/.gitignore:
+    sha256: 316aaf6604680eb5f47cf951f3eebc44881d705f5ef4da4e6e05beb128ede276
+    size_bytes: 9
+  scripts/build_one.py:
+    sha256: 7c2ce659cee2d5f0ce9d5deacf3b679bf83d428e07ab0145c9527bf21777954a
+    size_bytes: 8447
+  scripts/fetch_one.py:
+    sha256: 2e3e2724caebf2ba60b3dfe7d7c4910b02d20fd3e7898dd182c44b2916768bfb
+    size_bytes: 2062
+  scripts/gradle_version.json:
+    sha256: d933cab6126d3971a32384017900f604f7a85fe51d535f1af903862981117966
+    size_bytes: 495
+  scripts/jdk_version.json:
+    sha256: 644be9d74d16512674f1234d8e5acf664cb6e8d8896328b80acc2eaa2b6cf7d0
+    size_bytes: 281
+  scripts/mvn_version.json:
+    sha256: 6d26a35b8d23a0649221bd20699312263f09f423dfa9cca6d9c9d34ea3aa511e
+    size_bytes: 631
+  scripts/setup.py:
+    sha256: 3e0895191e99bc04a50a386648239d163bbac09b9326bff4433d22954ca3b5bf
+    size_bytes: 3507
+  scripts/setup_gradle.py:
+    sha256: c772fdc9277d05e8b668372535306c975771df155ecfd4c2ba4a066025da42cf
+    size_bytes: 1606
+  scripts/setup_jdk.py:
+    sha256: 01f6f65012d17085aff1588fff1efe26a8772231887775790a359f0f18c05526
+    size_bytes: 1106
+  scripts/setup_mvn.py:
+    sha256: 83c79a5ca2e773bf9180cf26f52f4ed44a4598c3039f7dab73258b4850e737ad
+    size_bytes: 1563
+git_commit: 698fb7248ae30cb7f7782d59c841f05ad70ea9cc
+hash_contract: sha256(canonical-json(manifest-without-sha256_manifest))
+num_curated_source_sink_instances_matched: 0
+num_cwes: 4
+num_fix_location_rows: 1002
+num_instances: 120
+num_orphan_curated_source_sink_rows: 0
+num_raw_curated_source_sink_rows: 0
+num_raw_cwe_labels: 4
+num_unique_repositories: 77
+num_upstream_build_status_missing: 0
+num_upstream_declared_build_failure: 0
+num_upstream_declared_build_success: 120
+schema_version: '1.0'
+sha256_files: 372f63692daf7d6c7417dea84d46c33c8e4c0394646b0919a587311d81bd38d5
+sha256_manifest: c392f775399e4e4b8f4e52d68a08a866ed531060ca95f4cddb88dc29a3dc2fb3
+snapshot_id: cwe_bench_java_legacy_698fb724
+source_url: https://github.com/iris-sast/cwe-bench-java.git
+track: legacy

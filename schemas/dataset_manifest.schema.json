@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maxvera.local/schemas/dataset_manifest.schema.json",
+  "title": "Frozen CWE-Bench-Java snapshot manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "snapshot_id",
+    "dataset_name",
+    "track",
+    "source_url",
+    "git_commit",
+    "downloaded_at",
+    "num_instances",
+    "num_unique_repositories",
+    "num_raw_cwe_labels",
+    "num_cwes",
+    "cwe_normalization",
+    "num_upstream_declared_build_success",
+    "num_upstream_declared_build_failure",
+    "num_upstream_build_status_missing",
+    "num_fix_location_rows",
+    "num_raw_curated_source_sink_rows",
+    "num_curated_source_sink_instances_matched",
+    "num_orphan_curated_source_sink_rows",
+    "file_hashes",
+    "sha256_files",
+    "hash_contract",
+    "sha256_manifest"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "snapshot_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "dataset_name": {"const": "cwe_bench_java"},
+    "track": {"enum": ["legacy", "v2"]},
+    "source_url": {"type": "string", "format": "uri"},
+    "git_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "downloaded_at": {
+      "oneOf": [
+        {"type": "string", "format": "date-time"},
+        {"type": "null"}
+      ]
+    },
+    "num_instances": {"type": "integer", "minimum": 1},
+    "num_unique_repositories": {"type": "integer", "minimum": 1},
+    "num_raw_cwe_labels": {"type": "integer", "minimum": 1},
+    "num_cwes": {"type": "integer", "minimum": 1},
+    "cwe_normalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule", "alias_collisions"],
+      "properties": {
+        "rule": {"const": "strip zero-padding from numeric CWE identifier"},
+        "alias_collisions": {
+          "type": "object",
+          "propertyNames": {"pattern": "^CWE-(0|[1-9][0-9]*)$"},
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^CWE-[0-9]+$"}
+          }
+        }
+      }
+    },
+    "num_upstream_declared_build_success": {"$ref": "#/$defs/nonnegativeInteger"},
+    "num_upstream_declared_build_failure": {"$ref": "#/$defs/nonnegativeInteger"},
+    "num_upstream_build_status_missing": {"$ref": "#/$defs/nonnegativeInteger"},
+    "num_fix_location_rows": {"$ref": "#/$defs/nonnegativeInteger"},
+    "num_raw_curated_source_sink_rows": {"$ref": "#/$defs/nonnegativeInteger"},
+    "num_curated_source_sink_instances_matched": {
+      "$ref": "#/$defs/nonnegativeInteger"
+    },
+    "num_orphan_curated_source_sink_rows": {"$ref": "#/$defs/nonnegativeInteger"},
+    "file_hashes": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"type": "string", "minLength": 1},
+      "additionalProperties": {"$ref": "#/$defs/fileEntry"}
+    },
+    "sha256_files": {"$ref": "#/$defs/sha256"},
+    "hash_contract": {
+      "const": "sha256(canonical-json(manifest-without-sha256_manifest))"
+    },
+    "sha256_manifest": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "nonnegativeInteger": {"type": "integer", "minimum": 0},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fileEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "size_bytes"],
+      "properties": {
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

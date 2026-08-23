@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maxvera.local/schemas/published_reference_manifest.schema.json",
+  "title": "Imported IRIS paper-result collection manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "references"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "references": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/referenceSummary"}
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "referenceSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "source",
+        "source_sha256",
+        "source_commit",
+        "source_name",
+        "output",
+        "num_records",
+        "num_detected",
+        "cwe_distribution"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "source": {"type": "string", "minLength": 1},
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source_name": {"type": "string", "minLength": 1},
+        "output": {"type": "string", "minLength": 1},
+        "num_records": {"type": "integer", "minimum": 1},
+        "num_detected": {"type": "integer", "minimum": 0},
+        "cwe_distribution": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"pattern": "^CWE-[0-9]+$"},
+          "additionalProperties": {"type": "integer", "minimum": 1}
+        }
+      }
+    }
+  }
+}

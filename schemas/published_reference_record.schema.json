@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maxvera.local/schemas/published_reference_record.schema.json",
+  "title": "Imported IRIS paper-result JSONL record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_kind",
+    "source_name",
+    "source_commit",
+    "case_id",
+    "project_slug",
+    "cve_id",
+    "cwe_id",
+    "detected",
+    "num_alerts",
+    "num_paths",
+    "num_tp_alerts",
+    "num_tp_paths",
+    "precision",
+    "f1"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_kind": {"const": "published_reference"},
+    "source_name": {"type": "string", "minLength": 1},
+    "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "case_id": {"type": "string", "pattern": "^.+::CWE-[0-9]+$"},
+    "project_slug": {"type": "string", "minLength": 1},
+    "cve_id": {"type": "string", "pattern": "^CVE-[0-9]{4}-[0-9]+$"},
+    "cwe_id": {"type": "string", "pattern": "^CWE-[0-9]+$"},
+    "detected": {"type": "boolean"},
+    "num_alerts": {"$ref": "#/$defs/nullableCount"},
+    "num_paths": {"$ref": "#/$defs/nullableCount"},
+    "num_tp_alerts": {"$ref": "#/$defs/nullableCount"},
+    "num_tp_paths": {"$ref": "#/$defs/nullableCount"},
+    "precision": {"$ref": "#/$defs/nullableUnitInterval"},
+    "f1": {"$ref": "#/$defs/nullableUnitInterval"}
+  },
+  "$defs": {
+    "nullableCount": {
+      "oneOf": [
+        {"type": "integer", "minimum": 0},
+        {"type": "null"}
+      ]
+    },
+    "nullableUnitInterval": {
+      "oneOf": [
+        {"type": "number", "minimum": 0, "maximum": 1},
+        {"type": "null"}
+      ]
+    }
+  }
+}

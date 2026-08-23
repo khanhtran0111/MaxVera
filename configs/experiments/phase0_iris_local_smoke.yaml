@@ -1,0 +1,9 @@
+experiment_id: phase0_iris_local_smoke
+dataset_config: configs/datasets/legacy_paper.yaml
+toolchain_config: configs/toolchain/phase0.yaml
+model_config: configs/models/iris_legacy_qwen15b.yaml
+baseline: iris
+query: cwe-022wLLM
+projects:
+  - testng-team__testng_CVE-2022-4065_7.5
+timeout_seconds: 7200

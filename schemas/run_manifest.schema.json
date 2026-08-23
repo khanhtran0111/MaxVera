@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maxvera.local/schemas/run_manifest.schema.json",
+  "title": "Immutable experiment run manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "status",
+    "started_at",
+    "finished_at",
+    "git_commit",
+    "dirty_worktree",
+    "dataset",
+    "toolchain",
+    "model",
+    "prompt_versions",
+    "config_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "status": {
+      "enum": ["RUNNING", "COMPLETE", "FAILED", "TIMEOUT", "CANCELLED"]
+    },
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {
+      "oneOf": [
+        {"type": "string", "format": "date-time"},
+        {"type": "null"}
+      ]
+    },
+    "duration_seconds": {"type": "number", "minimum": 0},
+    "git_commit": {
+      "oneOf": [
+        {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        {"const": "unknown"}
+      ]
+    },
+    "dirty_worktree": {"type": "boolean"},
+    "dataset": {"type": "object"},
+    "toolchain": {"type": "object"},
+    "model": {
+      "oneOf": [
+        {"type": "object"},
+        {"type": "null"}
+      ]
+    },
+    "prompt_versions": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "metadata": {"type": "object"},
+    "summary": {"type": "object"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "RUNNING"}},
+        "required": ["status"]
+      },
+      "then": {"properties": {"finished_at": {"type": "null"}}},
+      "else": {
+        "required": ["duration_seconds"],
+        "properties": {"finished_at": {"type": "string", "format": "date-time"}}
+      }
+    }
+  ]
+}

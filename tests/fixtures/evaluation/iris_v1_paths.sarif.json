@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {"driver": {"name": "CodeQL"}},
+      "results": [
+        {
+          "ruleId": "fixture/path-query",
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src\\main\\java\\com\\acme\\Vulnerable.java"},
+                          "region": {"startLine": 12}
+                        },
+                        "message": {"text": "getParameter(...) : String"}
+                      }
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Other.java"},
+                          "region": {"startLine": 5}
+                        },
+                        "message": {"text": "execute(...)"}
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Vulnerable.java"},
+                          "region": {"startLine": 12}
+                        },
+                        "message": {"text": "toString(...) : String"}
+                      }
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Other.java"},
+                          "region": {"startLine": 5}
+                        },
+                        "message": {"text": "execute(...)"}
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Vulnerable.java"},
+                          "region": {"startLine": 12}
+                        },
+                        "message": {"text": "source(...)"}
+                      }
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Other.java"},
+                          "region": {"startLine": 5}
+                        },
+                        "message": {"text": "println(...)"}
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Vulnerable.java"},
+                          "region": {"startLine": 70}
+                        },
+                        "message": {"text": "source(...)"}
+                      }
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Other.java"},
+                          "region": {"startLine": 5}
+                        },
+                        "message": {"text": "execute(...)"}
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "fixture/path-query",
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "file:///C:/workspace/repo/src/main/java/com/acme/Vulnerable.java"},
+                          "region": {"startLine": 12}
+                        },
+                        "message": {"text": "source(...)"}
+                      }
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Other.java"},
+                          "region": {"startLine": 5}
+                        },
+                        "message": {"text": "execute(...)"}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "ignored/second/threadFlow.java"},
+                          "region": {"startLine": 1}
+                        },
+                        "message": {"text": "println(...)"}
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "fixture/non-path-result",
+          "message": {"text": "A result without codeFlows still counts as a result."}
+        },
+        {
+          "ruleId": "fixture/path-query",
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/test/java/com/acme/VulnerableTest.java"},
+                          "region": {"startLine": 12}
+                        },
+                        "message": {"text": "source(...)"}
+                      }
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Other.java"},
+                          "region": {"startLine": 5}
+                        },
+                        "message": {"text": "execute(...)"}
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool": {"driver": {"name": "Ignored second run"}},
+      "results": [
+        {
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {"uri": "src/main/java/com/acme/Vulnerable.java"},
+                          "region": {"startLine": 12}
+                        },
+                        "message": {"text": "source(...)"}
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

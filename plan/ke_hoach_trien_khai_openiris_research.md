@@ -4,6 +4,68 @@
 > **Mục tiêu của tài liệu:** chuyển đề xuất nghiên cứu hiện tại thành một roadmap triển khai có thể thực nghiệm, đo lường, viết bài và mở rộng thành hệ thống nghiên cứu hoàn chỉnh.  
 > **Phạm vi mặc định:** Java + CodeQL + CWE-Bench-Java, repository-level, zero-hint (không cung cấp CWE/CVE/vulnerability description cho hệ thống khi inference).
 
+## Quy ước thực thi notebook-first
+
+Từ phiên bản kế hoạch này, **mỗi phase có đúng một notebook điều phối chính**. Notebook là giao diện chạy end-to-end cho người làm thực nghiệm; implementation tái sử dụng vẫn nằm trong `src/`, còn entrypoint mỏng nằm trong `workflows/scripts/`.
+
+Notebook của một phase chỉ được xem là hoàn thành khi đáp ứng toàn bộ contract sau:
+
+| Thành phần | Yêu cầu bắt buộc |
+|---|---|
+| Tên file | `workflows/notebooks/phase_<NN>_<slug>.ipynb` |
+| Chạy lại | `Restart Kernel and Run All` chạy theo thứ tự, không cần copy biến thủ công giữa notebook khác |
+| Parameter cell | Có `profile`, seed, dataset snapshot, model config và các cờ chạy bước tốn thời gian |
+| Preflight cell | Hiện phiên bản Git/Python/Docker/CodeQL/Java/GPU/CUDA và trạng thái PASS/WARN/FAIL |
+| Execution cells | Mỗi cell gọi script/CLI version-controlled, fail-fast và ghi command log |
+| Visual cells | Hiện bảng metric, trạng thái gate, runtime/token/VRAM và biểu đồ nhỏ khi có dữ liệu phù hợp |
+| Artifact links | Sau mỗi bước phải hiện đường dẫn tương đối có thể bấm tới file hoặc thư mục kết quả |
+| Final cell | Tổng hợp `PASS`, `PASS-WITH-RISK` hoặc `FAIL` và link phase report |
+
+Notebook không được chứa business logic chỉ tồn tại trong `.ipynb`. Logic parse, evaluate, graph, retrieval và model adapter phải có API trong `src/openiris/`; notebook chỉ cấu hình, gọi và trình bày kết quả. File notebook được commit ở trạng thái **không chứa output thực nghiệm nặng hoặc dữ liệu nhạy cảm**; output chuẩn được ghi ra thư mục phase result.
+
+Hai execution profile chuẩn:
+
+- `smoke`: 1--3 project, dùng để kiểm tra máy mới và contract end-to-end;
+- `full`: toàn bộ split đã freeze, dùng để tạo số liệu nghiên cứu.
+
+Hiện tại chỉ `phase_00_reproducibility.ipynb` có implementation đủ để chạy end-to-end. Notebook Phase 1--9 được tạo khi bắt đầu phase tương ứng và chỉ được đánh dấu runnable sau khi các script của phase đạt DoD; không tạo notebook giả trả về thành công khi pipeline chưa tồn tại.
+
+## Chính sách local-first và máy thực nghiệm chuẩn
+
+Mô hình chính cho các contribution mới từ Phase 1 trở đi là `Qwen2.5-Coder-3B-Instruct-Q4_K_M` ở định dạng GGUF, chạy local bằng `llama.cpp` qua OpenAI-compatible HTTP endpoint. Model chính thức có file Q4_K_M khoảng 2.1 GB; model, revision và SHA-256 phải được pin trong config thay vì tải từ `main` dạng floating.[^qwen-gguf]
+
+```yaml
+provider: local_llama_cpp
+model_id: Qwen/Qwen2.5-Coder-3B-Instruct-GGUF
+revision: f74adce6aa16316c625447af059dbebe4983757c
+filename: qwen2.5-coder-3b-instruct-q4_k_m.gguf
+sha256: 724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7
+quantization: Q4_K_M
+backend: llama.cpp
+temperature: 0.0
+seed: 345
+```
+
+API LLM không còn là dependency mặc định. Chỉ dùng API trong một experiment được gắn nhãn rõ là upper-bound/robustness check; không tự động fallback từ local sang API khi local model lỗi.
+
+### Cấu hình Quadro P2000 4 GB
+
+Quadro P2000 thuộc Pascal, compute capability 6.1.[^nvidia-p2000] CUDA Toolkit 13 đã loại bỏ offline compilation và library support cho Pascal, vì vậy runtime chuẩn của nghiên cứu phải ở nhánh CUDA 12.x, ưu tiên **CUDA 12.4** và build `llama.cpp` cho `sm_61`; không dùng CUDA 13 cho máy này.[^cuda13-pascal] Release `llama.cpp` được pin trong config; bản Windows CUDA 12.4 được ưu tiên vì upstream phát hành riêng asset CUDA 12.4.[^llama-release]
+
+Thiết lập khởi đầu, sau đó tune một lần trên calibration machine và freeze:
+
+```yaml
+cuda_toolkit: "12.4"
+cuda_architecture: "61"
+context_size: 4096
+batch_size: 128
+flash_attention: false
+gpu_layers: auto_fit
+vram_safety_margin_mib: 768
+```
+
+Không khẳng định toàn bộ workload luôn nằm trong 4 GB VRAM chỉ dựa trên kích thước file GGUF: KV cache, compute buffer, context và phần VRAM dành cho display cũng tiêu tốn bộ nhớ. `llama.cpp` hỗ trợ CPU+GPU hybrid offload; nếu OOM, thứ tự xử lý là giảm batch, giảm context xuống 3072/2048, rồi giảm số GPU layers và ghi cấu hình thực tế vào run manifest.[^llama-cpp]
+
 ---
 
 ## 0. Nguồn dữ liệu, code tham chiếu và chính sách versioning
@@ -544,7 +606,8 @@ Không bắt đầu xây USEG trước khi reproduce được IRIS/CodeQL benchm
 - CodeQL CLI;
 - Python environment;
 - Docker nếu cần;
-- LLM API wrapper;
+- `llama.cpp` local runtime và script tải GGUF có kiểm tra revision/hash;
+- adapter OpenAI-compatible dùng chung cho local endpoint, không yêu cầu API cloud;
 - experiment config system.
 
 ### 0.2. Reproduce CodeQL baseline
@@ -567,10 +630,12 @@ runtime
 
 Không nhất thiết reproduce toàn bộ 7 LLM.
 
-Nên ưu tiên:
+Phase 0 giữ hai mục đích tách biệt:
 
-- một API model mạnh;
-- một local/open model.
+- **paper-compatibility run:** cấu hình IRIS v1 + Qwen2.5-Coder-1.5B hiện có được giữ nguyên để so khớp smoke đã freeze;
+- **primary local runtime smoke:** tải, verify hash và gọi thử `Qwen2.5-Coder-3B-Instruct-Q4_K_M` qua `llama.cpp` trên máy thực nghiệm.
+
+Từ Phase 1, Qwen 3B Q4_K_M là model mặc định. Cấu hình 1.5B chỉ là artifact compatibility của Phase 0, không được dùng để đại diện cho model chính của proposed method.
 
 ### 0.4. Tạo experiment registry
 
@@ -594,10 +659,16 @@ metrics:
 ## Deliverable
 
 ```text
-results/baselines/
-    codeql.jsonl
-    iris_api.jsonl
-    iris_local.jsonl
+workflows/notebooks/phase_00_reproducibility.ipynb
+workflows/scripts/phase_00/
+results/phases/phase_00/
+    baselines/codeql/
+    baselines/iris/
+    baselines/published_reference/
+    model_smoke/
+    audits/
+    report.md
+    status.json
 ```
 
 ## Gate để sang Phase 1
@@ -605,6 +676,9 @@ results/baselines/
 - CodeQL baseline chạy ổn;
 - dataset build được phần lớn project cần thiết;
 - evaluator khớp logic ground truth của CWE-Bench-Java.
+- notebook chạy được `Restart Kernel and Run All` với `profile=smoke` trên máy chuẩn;
+- Qwen 3B GGUF đúng SHA-256 và local endpoint trả về response hợp lệ;
+- mọi execution cell hiện trạng thái và link artifact tương ứng.
 
 ---
 
@@ -1508,15 +1582,21 @@ unseen-API
 
 ## E7 — Model scaling
 
-Tối thiểu:
+Model chính cho toàn bộ main table:
 
 ```text
-1 strong API LLM
-1 medium local/open model
-1 small model
+Qwen2.5-Coder-3B-Instruct-Q4_K_M + llama.cpp + CUDA 12.4
 ```
 
-Mục tiêu không phải chứng minh model X tốt nhất mà chứng minh pipeline robust theo model scale.
+Model scaling là experiment phụ, không phải dependency để chạy pipeline:
+
+```text
+primary: Qwen2.5-Coder-3B-Instruct-Q4_K_M local
+small ablation: Qwen2.5-Coder-1.5B local
+optional upper bound: 1 strong API LLM, tách bảng và khai báo chi phí
+```
+
+Mục tiêu không phải chứng minh model X tốt nhất mà chứng minh contribution vẫn có ý nghĩa trong ngân sách local cố định. Main claim không được dựa riêng vào API model.
 
 ---
 
@@ -1582,7 +1662,7 @@ peak context length
 
 # 23. Repository structure đề xuất
 
-Cấu trúc cũ đúng ở mức module, nhưng chưa tách rõ **source-controlled data**, **generated artifacts**, **experiment runs**, **ground truth** và **paper outputs**. Cấu trúc dưới đây an toàn hơn cho reproducibility và quality control.
+Cấu trúc mới tách rõ **workflow notebook**, **implementation reusable**, **raw run**, **phase result**, **ground truth** và **paper outputs**. `workflows/` chỉ chứa notebook và các script điều phối liên quan; `results/phases/` là nơi duy nhất chứa kết quả đã aggregate/freeze theo phase.
 
 ```text
 openiris/
@@ -1624,6 +1704,23 @@ openiris/
 │   │   └── v001.md
 │   └── triage/
 │       └── v001.md
+│
+├── workflows/                 # chỉ notebook và thin orchestration scripts
+│   ├── README.md
+│   ├── notebooks/
+│   │   ├── phase_00_reproducibility.ipynb
+│   │   ├── phase_01_zero_hint_baseline.ipynb
+│   │   ├── phase_02_program_graph.ipynb
+│   │   ├── phase_03_security_kg.ipynb
+│   │   ├── phase_04_evidence_graph.ipynb
+│   │   ├── phase_05_graph_retrieval.ipynb
+│   │   ├── phase_06_spec_synthesis.ipynb
+│   │   ├── phase_07_static_verification.ipynb
+│   │   ├── phase_08_calibration.ipynb
+│   │   └── phase_09_iterative_update.ipynb
+│   └── scripts/
+│       ├── common/
+│       └── phase_<NN>/
 │
 ├── data/
 │   ├── manifests/
@@ -1713,29 +1810,27 @@ openiris/
 │   ├── security_kg/
 │   └── useg/
 │
-├── results/                   # aggregated/frozen results
-│   ├── baselines/
-│   ├── rq1/
-│   ├── rq2/
-│   ├── rq3/
-│   ├── rq4/
-│   ├── rq5/
-│   └── rq6/
+├── results/                   # aggregated/frozen, source-controlled khi publish
+│   └── phases/
+│       ├── phase_00/
+│       │   ├── baselines/
+│       │   ├── audits/
+│       │   ├── model_smoke/
+│       │   ├── tables/
+│       │   ├── figures/
+│       │   ├── report.md
+│       │   └── status.json
+│       └── phase_<NN>/        # cùng contract cho Phase 1--9
 │
-├── reports/
+├── reports/                   # report dùng chung, không thuộc riêng một phase
 │   ├── datasets/
-│   ├── phases/
-│   ├── ablations/
-│   ├── error_analysis/
+│   ├── cross_phase/
 │   └── final/
 │
 ├── paper/
 │   ├── tables/
 │   ├── figures/
 │   └── numbers/
-│
-├── notebooks/                 # exploration only; không phải pipeline canonical
-│   └── exploratory/
 │
 ├── tests/
 │   ├── unit/
@@ -1773,7 +1868,11 @@ Tất cả phải đi qua config.
 
 ### `scripts/`
 
-Chỉ là entrypoint/orchestration; business logic nằm trong `src/`.
+Entry point dùng chung/CLI cấp project; business logic nằm trong `src/`.
+
+### `workflows/`
+
+Chỉ chứa một notebook canonical cho mỗi phase và thin scripts phục vụ notebook. Notebook phải gọi API/CLI trong `src/` hoặc `scripts/`; không copy lại thuật toán vào cell. Phase chưa implement không được có notebook báo PASS giả.
 
 ### `data/ground_truth/`
 
@@ -1785,15 +1884,23 @@ Mỗi lần chạy là **immutable**. Không sửa file trong run cũ.
 
 ### `results/`
 
-Chỉ chứa kết quả đã aggregate/freeze từ một hoặc nhiều `run_id`.
+`results/phases/phase_<NN>/` là nơi duy nhất chứa kết quả đã aggregate/freeze của phase, gồm baseline, audit, table, figure, status và report. Mọi file phải truy ngược được về một hoặc nhiều `run_id`; model/cache/database/raw log lớn vẫn nằm ngoài Git.
 
 ### `paper/`
 
 Table/figure phải sinh từ script và có mapping ngược về `run_id`.
 
-### `notebooks/`
+### Quan hệ notebook--script--result
 
-Chỉ dùng exploratory analysis. Không để một kết quả paper phụ thuộc vào thao tác notebook thủ công.
+```text
+workflows/notebooks/phase_<NN>.ipynb
+    -> workflows/scripts/phase_<NN>/ hoặc scripts/
+    -> src/openiris/
+    -> runs/<run_id>/                     # raw, immutable, gitignored
+    -> results/phases/phase_<NN>/         # aggregate + report + links
+```
+
+Notebook là canonical user interface nhưng không phải canonical implementation. Vì vậy vẫn có thể chạy cùng pipeline headless trong CI bằng chính CLI mà notebook gọi.
 # 24. Logging schema bắt buộc
 
 ## `hypotheses.jsonl`
@@ -1919,6 +2026,17 @@ Gate/DoD
 Phase report
 ```
 
+Ngoài output chuyên môn bên dưới, mọi phase bắt buộc có:
+
+```text
+workflows/notebooks/phase_<NN>_<slug>.ipynb
+workflows/scripts/phase_<NN>/              # chỉ tạo khi cần thin wrapper riêng
+results/phases/phase_<NN>/status.json
+results/phases/phase_<NN>/report.md
+```
+
+Gate của phase phải được tính bằng code và hiển thị ở final notebook cell; không đánh dấu PASS bằng nhận xét thủ công.
+
 ## Phase 0 — Reproduction & benchmark freeze
 
 **Inputs**
@@ -1932,9 +2050,9 @@ Phase report
 ```text
 data/manifests/datasets/...
 data/manifests/splits/...
-results/baselines/codeql/
-results/baselines/iris/
-reports/phases/phase0.md
+results/phases/phase_00/baselines/codeql/
+results/phases/phase_00/baselines/iris/
+results/phases/phase_00/report.md
 ```
 
 **DoD**
@@ -1944,6 +2062,7 @@ reports/phases/phase0.md
 - evaluator reproduces ground-truth matching logic;
 - CodeQL baseline run is reproducible;
 - at least one IRIS reference configuration runs;
+- primary Qwen 3B Q4_K_M artifact and local endpoint smoke are verified;
 - leakage tests pass.
 
 ## Phase 1 — Zero-hint baseline
@@ -1953,8 +2072,8 @@ reports/phases/phase0.md
 ```text
 runs/<id>/candidates.jsonl
 runs/<id>/hypotheses.jsonl
-results/rq1/recall_at_k.csv
-reports/phases/phase1.md
+results/phases/phase_01/tables/recall_at_k.csv
+results/phases/phase_01/report.md
 ```
 
 **DoD**
@@ -1996,7 +2115,7 @@ artifacts/program_graphs/<snapshot>/<project_slug>/
 ```text
 data/manifests/knowledge/mitre_cwe_<version>.yaml
 artifacts/security_kg/<kg_version>/
-reports/phases/phase3.md
+results/phases/phase_03/report.md
 ```
 
 **DoD**
@@ -2107,7 +2226,8 @@ Không nên để Phase 9 làm chậm MVP/core paper.
 Mỗi phase kết thúc phải có:
 
 ```text
-reports/phases/phase<N>.md
+results/phases/phase_<NN>/report.md
+results/phases/phase_<NN>/status.json
 ```
 
 Template:
@@ -2932,6 +3052,10 @@ Nếu triển khai theo roadmap này, hướng nghiên cứu có thể hình th�
 - [ ] Resolved config được lưu.
 - [ ] Raw output được giữ.
 - [ ] Table/figure có thể regenerate bằng script.
+- [ ] Notebook của phase chạy được `Restart Kernel and Run All` với profile đã khai báo.
+- [ ] Mỗi execution cell hiện trạng thái và link artifact/result.
+- [ ] Phase report/status được ghi vào `results/phases/phase_<NN>/`.
+- [ ] Qwen GGUF, `llama.cpp`, CUDA và effective GPU offload được log chính xác.
 
 ## Experiment quality
 
@@ -2952,7 +3076,7 @@ Nếu triển khai theo roadmap này, hướng nghiên cứu có thể hình th�
 - [ ] Integration test trên 1–3 tiny repositories.
 - [ ] Regression tests cho known benchmark cases.
 - [ ] Static type/lint/format check trong CI.
-- [ ] Không có notebook-only logic trong pipeline paper.
+- [ ] Không có business logic chỉ tồn tại trong notebook.
 
 ---
 
@@ -2973,3 +3097,8 @@ Thứ tự nên làm ngay:
 
 **Nguyên tắc:** nếu một experiment không thể truy ngược từ số trong paper về `run_id -> config -> code commit -> dataset snapshot`, experiment đó chưa đạt chuẩn paper-ready.
 
+[^qwen-gguf]: Qwen, “Qwen2.5-Coder-3B-Instruct-GGUF,” model repository and Q4_K_M file metadata. https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/tree/f74adce6aa16316c625447af059dbebe4983757c
+[^nvidia-p2000]: NVIDIA Developer, “Legacy CUDA GPU Compute Capability,” listing Quadro P2000 under compute capability 6.1. https://developer.nvidia.com/cuda/gpus/legacy
+[^cuda13-pascal]: NVIDIA, “CUDA Toolkit 13.0 Release Notes,” deprecated architectures section. https://docs.nvidia.com/cuda/archive/13.0.0/cuda-toolkit-release-notes/index.html#deprecated-architectures
+[^llama-release]: ggml-org, “llama.cpp release b10590,” including the Windows CUDA 12 package and CUDA 12.4 runtime asset. https://github.com/ggml-org/llama.cpp/releases/tag/b10590
+[^llama-cpp]: ggml-org, “llama.cpp,” CUDA backend and CPU+GPU hybrid inference documentation. https://github.com/ggml-org/llama.cpp

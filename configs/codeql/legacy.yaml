@@ -1,0 +1,12 @@
+track: legacy
+oracle_cwe: true
+codeql_release_label: "2.15.3-patched"
+codeql_version: "2.15.5"
+paper_reported_codeql_version: "2.15.3"
+query_pack_version: "0.8.3"
+timeout_seconds: 3600
+query_by_cwe:
+  CWE-022: cwe-022wCodeQL
+  CWE-078: cwe-078wCodeQL
+  CWE-079: cwe-079wCodeQL
+  CWE-094: cwe-094wCodeQL

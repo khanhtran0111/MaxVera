@@ -1,0 +1,4 @@
+name,file,start_line,end_line
+outerWork,src/main/java/com/acme/Vulnerable.java,2,80
+dangerous,src/main/java/com/acme/Vulnerable.java,10,20
+testDangerous,src/test/java/com/acme/VulnerableTest.java,5,25

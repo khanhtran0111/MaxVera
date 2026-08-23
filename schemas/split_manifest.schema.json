@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://maxvera.local/schemas/split_manifest.schema.json",
+  "title": "Repository-holdout split manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "split_id",
+    "strategy",
+    "seed",
+    "dataset",
+    "ratios",
+    "counts",
+    "assignments",
+    "repository_assignments",
+    "sha256_manifest"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "split_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "strategy": {"const": "repository_holdout"},
+    "seed": {"type": "string"},
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_id", "manifest_sha256"],
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "manifest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "ratios": {"$ref": "#/$defs/splitRatios"},
+    "counts": {"$ref": "#/$defs/splitCounts"},
+    "assignments": {"$ref": "#/$defs/instanceAssignments"},
+    "repository_assignments": {"$ref": "#/$defs/repositoryAssignments"},
+    "sha256_manifest": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "splitRatios": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["train", "dev", "test"],
+      "properties": {
+        "train": {"type": "number", "minimum": 0, "maximum": 1},
+        "dev": {"type": "number", "minimum": 0, "maximum": 1},
+        "test": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "oneSplitCount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instances", "repositories"],
+      "properties": {
+        "instances": {"type": "integer", "minimum": 0},
+        "repositories": {"type": "integer", "minimum": 0}
+      }
+    },
+    "splitCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["train", "dev", "test"],
+      "properties": {
+        "train": {"$ref": "#/$defs/oneSplitCount"},
+        "dev": {"$ref": "#/$defs/oneSplitCount"},
+        "test": {"$ref": "#/$defs/oneSplitCount"}
+      }
+    },
+    "instanceIdArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^oi_[0-9a-f]{32}$"}
+    },
+    "instanceAssignments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["train", "dev", "test"],
+      "properties": {
+        "train": {"$ref": "#/$defs/instanceIdArray"},
+        "dev": {"$ref": "#/$defs/instanceIdArray"},
+        "test": {"$ref": "#/$defs/instanceIdArray"}
+      }
+    },
+    "repositoryArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[^/\\\\\\s]+/[^/\\\\\\s]+$"
+      }
+    },
+    "repositoryAssignments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["train", "dev", "test"],
+      "properties": {
+        "train": {"$ref": "#/$defs/repositoryArray"},
+        "dev": {"$ref": "#/$defs/repositoryArray"},
+        "test": {"$ref": "#/$defs/repositoryArray"}
+      }
+    }
+  }
+}

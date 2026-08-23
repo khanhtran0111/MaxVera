@@ -1,0 +1,3618 @@
+{
+  "checks": {
+    "evaluator_implementation_and_regressions_present": true,
+    "frozen_legacy_and_v2_snapshots": true,
+    "local_codeql_smoke_complete": true,
+    "local_codeql_smoke_matches_published_case": true,
+    "local_iris_configuration_complete": true,
+    "local_iris_token_usage_accounted": true,
+    "paper_scale_codeql_baseline_complete": false,
+    "paper_scale_local_build_coverage": false,
+    "published_reference_alignment_understood": true,
+    "runtime_ground_truth_boundary_materialized": true,
+    "toolchain_ready_for_smoke": true
+  },
+  "datasets": [
+    {
+      "cwe_normalization": {
+        "alias_collisions": {},
+        "rule": "strip zero-padding from numeric CWE identifier"
+      },
+      "dataset_name": "cwe_bench_java",
+      "downloaded_at": "2026-08-23T12:58:06Z",
+      "file_hashes": {
+        ".gitignore": {
+          "sha256": "361b4ac687351b495499a5d5f661244c6fb7885a00709196a25c03464343a93a",
+          "size_bytes": 55
+        },
+        "LICENSE": {
+          "sha256": "40adf5e8cb80a0b782e039f8cd93011db6645885eb9cb283b28be356f07b259a",
+          "size_bytes": 1087
+        },
+        "README.md": {
+          "sha256": "5f27f1cd529761a3ad8baa74c57fdff8d77320549e04c713ba6d87493b0259db",
+          "size_bytes": 10787
+        },
+        "advisory/DSpace__DSpace_CVE-2016-10726_4.4.json": {
+          "sha256": "21b31bb3bacdb6381e05029ecc31520c7ea45d21d6667e450acf6d8ed8a9a289",
+          "size_bytes": 2547
+        },
+        "advisory/DSpace__DSpace_CVE-2022-31192_5.10.json": {
+          "sha256": "b2763eb9b215bc308040fe02a23a6c57ccac74389d89f0c0a4e91700b041582a",
+          "size_bytes": 4401
+        },
+        "advisory/DSpace__DSpace_CVE-2022-31194_5.10.json": {
+          "sha256": "abdef315070ef979da0064950904c1cbb479b0fb30889261b3afacaecef866df",
+          "size_bytes": 4499
+        },
+        "advisory/DSpace__DSpace_CVE-2022-31195_5.10.json": {
+          "sha256": "efe2acf1e6facb775a21ed24c76d816de10319d40d7b9cc8bd96b862d3734326",
+          "size_bytes": 5060
+        },
+        "advisory/ESAPI__esapi-java-legacy_CVE-2022-23457_2.2.3.1.json": {
+          "sha256": "ca4779e4be9d29dfab6eafbf077607998c39c4fe6d41c7ddc7612a6d22202dc6",
+          "size_bytes": 3692
+        },
+        "advisory/ESAPI__esapi-java-legacy_CVE-2022-24891_2.2.3.1.json": {
+          "sha256": "15b26c83a709329eb6331ef0823956dd17ea4231346edad39945a260c2d215ff",
+          "size_bytes": 3282
+        },
+        "advisory/Graylog2__graylog2-server_CVE-2023-41044_5.1.2.json": {
+          "sha256": "3d7efa1418fe5874dbd17975a9936030c73d1ca71457ef99e657f4b659fe2c58",
+          "size_bytes": 3426
+        },
+        "advisory/OWASP__json-sanitizer_CVE-2020-13973_1.2.0.json": {
+          "sha256": "76555d0a6d3129fc5171791b06ef32b55d334dfe52576dd122967ec2ac36893a",
+          "size_bytes": 1588
+        },
+        "advisory/SpringSource__spring-security-oauth_CVE-2018-1260_2.3.2.RELEASE.json": {
+          "sha256": "2ff987a2ed25cf553867cb5148eb3112501e825d60bba5659c48418a54c40869",
+          "size_bytes": 3205
+        },
+        "advisory/alibaba__nacos_CVE-2021-44667_2.0.3.json": {
+          "sha256": "611bf7414a153a3a33327b74b7b4632d58e882d7a31cc561d6ed6c6500786092",
+          "size_bytes": 1581
+        },
+        "advisory/alibaba__one-java-agent_CVE-2022-25842_0.0.1.json": {
+          "sha256": "c5e1c4c29c014a11fdc98d4016d4274e8ae1d7bfb79b720ac95c79210b8bb4a3",
+          "size_bytes": 2456
+        },
+        "advisory/apache__activemq_CVE-2014-3576_5.10.2.json": {
+          "sha256": "6d2965ae3ac8e8cf0f49fb142ef0d44f1b041291174dc4ff5d3c27d67b2d9020",
+          "size_bytes": 2662
+        },
+        "advisory/apache__activemq_CVE-2019-0222_5.15.8.json": {
+          "sha256": "9cff32a6f1a02bfc9fb9e454a348e30db287be8b9748be9ad11ba635f756ec6f",
+          "size_bytes": 4544
+        },
+        "advisory/apache__activemq_CVE-2020-11998_5.15.12.json": {
+          "sha256": "8aeaa835e2849b0e59951acac0eeab40d933f54fa4ea08cab6ac5b5eb382f25f",
+          "size_bytes": 2999
+        },
+        "advisory/apache__camel_CVE-2018-8041_2.20.3.json": {
+          "sha256": "dff3365a31c8b1baa87a3cadc2b82d9c5ddeffd71b615235d79654d6643ad673",
+          "size_bytes": 3592
+        },
+        "advisory/apache__camel_CVE-2019-0194_2.21.4.json": {
+          "sha256": "c601fb16485231a0985acdbae5cc8b4d8c6bb35b8558b59f053c9aa1c4a5d1bb",
+          "size_bytes": 3312
+        },
+        "advisory/apache__dolphinscheduler_CVE-2022-26884_2.0.5.json": {
+          "sha256": "6c1deb65de0c887dcdee11670d81b456d39884f1e89d35b62dc01fa7ad1601de",
+          "size_bytes": 1724
+        },
+        "advisory/apache__dolphinscheduler_CVE-2022-34662_2.0.9.json": {
+          "sha256": "07b014eb0500b816b142d0c8228ad094a6a0d6de66dbbb27e6486efd9647c976",
+          "size_bytes": 1589
+        },
+        "advisory/apache__dolphinscheduler_CVE-2023-49109_3.2.0.json": {
+          "sha256": "134fe007546ec1611cac8d178b1f9713578a263bdcf2bc18a88a3b75ff26849d",
+          "size_bytes": 1775
+        },
+        "advisory/apache__dolphinscheduler_CVE-2023-51770_3.2.0.json": {
+          "sha256": "37479abc085fdb6c3a3fa36e1cc748ebb969758372857558a1d1c0e552cbee0b",
+          "size_bytes": 1846
+        },
+        "advisory/apache__dubbo_CVE-2021-30180_2.7.9.json": {
+          "sha256": "4d841be380293f9303eb4a5115695d49830d2ecabf4cd5418f49ea15b00d1630",
+          "size_bytes": 1631
+        },
+        "advisory/apache__flink_CVE-2020-17519_1.11.2.json": {
+          "sha256": "f51fafe4d4fcf934dde2000a677ab7f64c778a3f4dab1aa58c650d4ea0e39ac0",
+          "size_bytes": 4830
+        },
+        "advisory/apache__incubator-dubbo_CVE-2021-30181_2.6.8.json": {
+          "sha256": "4ba20561163180e89b64c61c1fdb401d000342fb235b1840b9779e65e1530176",
+          "size_bytes": 2052
+        },
+        "advisory/apache__jspwiki_CVE-2019-0225_2.11.0.M2.json": {
+          "sha256": "e288e028e090df2c2ae60a0b8ce9d999f5c4368996147cb34adf19def189f8f9",
+          "size_bytes": 2792
+        },
+        "advisory/apache__jspwiki_CVE-2019-10076_2.11.0.M3.json": {
+          "sha256": "232b4ec45909c2902e5661f9c7cfc5f99b5534c41a5593fe696417c21c965666",
+          "size_bytes": 2354
+        },
+        "advisory/apache__jspwiki_CVE-2019-10077_2.11.0.M3.json": {
+          "sha256": "06b18cdf442ecac9b80480ab861503742dd2a5ec3a9d9aae2f6a851cde56f167",
+          "size_bytes": 1984
+        },
+        "advisory/apache__jspwiki_CVE-2019-10078_2.11.0.M3.json": {
+          "sha256": "163c818fad27620770cca76f25572c87489be59927a047fd5947cd72a434e140",
+          "size_bytes": 2107
+        },
+        "advisory/apache__jspwiki_CVE-2019-10089_2.11.0.M4.json": {
+          "sha256": "4e85a4155039ea1468b23d34bc0d5e67cd8bfdc258b0264975f213696500250f",
+          "size_bytes": 1666
+        },
+        "advisory/apache__jspwiki_CVE-2022-46907_2.11.3.json": {
+          "sha256": "653af42a27eb1f3cca171cb41d8f97c2a23a3e8b3eb2fdba6601ec97552d7d36",
+          "size_bytes": 3377
+        },
+        "advisory/apache__mina-sshd_CVE-2023-35887_2.9.2.json": {
+          "sha256": "fc7e1d20fbdb24fff750b222a7c0db8b3118aceabdd25f9260640072608ae455",
+          "size_bytes": 3572
+        },
+        "advisory/apache__myfaces_CVE-2011-4367_2.0.11.json": {
+          "sha256": "f762ebdefc39bc37a24ba21fef877764bafe7989245d469d954c1250688dd6c2",
+          "size_bytes": 2275
+        },
+        "advisory/apache__nifi_CVE-2022-33140_1.16.2.json": {
+          "sha256": "5742b86d51bfbcc8a21765f7859dfd39f3a75792134d554cd2be927f94de8bb4",
+          "size_bytes": 2711
+        },
+        "advisory/apache__rocketmq_CVE-2019-17572_4.6.0.json": {
+          "sha256": "9b8ef5e05ada212e350e61d6fcab07398ab830136457ed0ccd55a10f54e5577e",
+          "size_bytes": 2080
+        },
+        "advisory/apache__rocketmq_CVE-2023-33246_5.1.0.json": {
+          "sha256": "567d97d692e3605cdbafa10ce9fcdd48ede0f10036b23b68ec73c96e26d87197",
+          "size_bytes": 3759
+        },
+        "advisory/apache__rocketmq_CVE-2023-37582_4.9.6.json": {
+          "sha256": "6e977bd55a64063179503b55f0a95f4022f6fd39111e8a604876525f5ce9cc63",
+          "size_bytes": 2460
+        },
+        "advisory/apache__shiro_CVE-2023-34478_1.11.0.json": {
+          "sha256": "2c48c7db64181a5c79de5b589810e4fe1d9c8c77b8f112f4a13aa416003ac363",
+          "size_bytes": 2381
+        },
+        "advisory/apache__shiro_CVE-2023-46749_1.12.0.json": {
+          "sha256": "c0cddb70ee8fa8a6fdcac50d9a421ae049a7af7eae05bb09c0ea300f3fa8fd9f",
+          "size_bytes": 2047
+        },
+        "advisory/apache__sling-org-apache-sling-servlets-resolver_CVE-2024-23673_2.10.0.json": {
+          "sha256": "e209bb01535c976e1be4a85d264f06689f0cf0dead21136b4a3960da5ed33e12",
+          "size_bytes": 2362
+        },
+        "advisory/apache__sling-org-apache-sling-xss_CVE-2016-5394_1.0.8.json": {
+          "sha256": "106d4c93e2c3f2b1bfe5a2d3a6d296b4afb14fbadc5392178a74e21b06f799b7",
+          "size_bytes": 2338
+        },
+        "advisory/apache__struts_CVE-2020-17530_2.5.25.json": {
+          "sha256": "68a8838e9cbb239eeacbfd08e0a9eddea16085790489a6d51dd5ca4d69419712",
+          "size_bytes": 2492
+        },
+        "advisory/apache__tika_CVE-2018-11762_1.18.json": {
+          "sha256": "d32a9aa68df1c44db89071120e24448c5396f8fa8289caa2a804b87bb08be0b9",
+          "size_bytes": 1784
+        },
+        "advisory/apache__uima-uimaj_CVE-2022-32287_3.3.0.json": {
+          "sha256": "ed93469fe5ed0d3dccd415192b3498dfda4a252f61e0d69a6fedccec4e6d34ba",
+          "size_bytes": 1909
+        },
+        "advisory/asf__commons-io_CVE-2021-29425_2.6.json": {
+          "sha256": "0fd3649a355c50faefc3838bb8e30308a90b627669050423d7c522cabed3d3e1",
+          "size_bytes": 12661
+        },
+        "advisory/asf__commons-text_CVE-2022-42889_1.9.json": {
+          "sha256": "73f1b45400bcb04a692d89924a7630f741ca64018b12f983b312c852c3a61ad2",
+          "size_bytes": 3951
+        },
+        "advisory/asf__cxf_CVE-2016-6812_3.0.11.json": {
+          "sha256": "101a4233a347809d5e6b81a35ca992979e90ad1be89d1ec4b38f5a29574821c2",
+          "size_bytes": 4306
+        },
+        "advisory/asf__cxf_CVE-2019-17573_3.2.11.json": {
+          "sha256": "604ebee9513fd94895a6e232400473fa6c070fd1f9ea52902a1d3a5e186bf7c6",
+          "size_bytes": 5082
+        },
+        "advisory/asf__james-project_CVE-2022-22931_3.6.0.json": {
+          "sha256": "be9f0a7d30b699703a12d7e94dd06d942331b6f2c7d69c85ce1717c100269fc7",
+          "size_bytes": 2005
+        },
+        "advisory/asf__karaf_CVE-2022-22932_4.3.5.json": {
+          "sha256": "649e7c68365b32343e6c9871256db9c595e44600f89a074e90f3643ba8405106",
+          "size_bytes": 2671
+        },
+        "advisory/asf__nifi_CVE-2023-34468_1.21.0.json": {
+          "sha256": "2fe37b7d3ddde1e74539288473abc474868c49d360023244355fccc7e10810ad",
+          "size_bytes": 2992
+        },
+        "advisory/asf__nifi_CVE-2023-36542_1.22.0.json": {
+          "sha256": "2ea07b2b15a9b24f0d73ebb41549a85168e58703feca8b63ca3259c0a6113303",
+          "size_bytes": 5191
+        },
+        "advisory/asf__tapestry-5_CVE-2019-0207_5.4.4.json": {
+          "sha256": "7ffc17b31b619fa3e67a54cab6ca545c81ccde1a63cfc1055b005493501f8bb7",
+          "size_bytes": 2115
+        },
+        "advisory/aws__aws-sdk-java_CVE-2022-31159_1.12.260.json": {
+          "sha256": "984ab24530f6beba146dc4fd456d79a330cec637c1bfc656f13be74a1e6815d6",
+          "size_bytes": 5158
+        },
+        "advisory/codecentric__spring-boot-admin_CVE-2022-46166_2.6.9.json": {
+          "sha256": "895bb8f4ab521b64f91d6764afe8c486b7d1bb21685185eba9a8ba64b641cc46",
+          "size_bytes": 2588
+        },
+        "advisory/codehaus-plexus__plexus-archiver_CVE-2018-1002200_3.5.json": {
+          "sha256": "f314256fc12c754523f5e94d8e44ba30d342714c1a0c58fbc5572e2fe4d8787b",
+          "size_bytes": 2418
+        },
+        "advisory/codehaus-plexus__plexus-archiver_CVE-2023-37460_4.7.1.json": {
+          "sha256": "9a49dc7c1d371ade6fc83cae22c3ebb8fa2f9ee2e40d99fddd58f0121a46fb76",
+          "size_bytes": 8784
+        },
+        "advisory/codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15.json": {
+          "sha256": "b7e38841df8455c0222063bb5287b8b504011e4172c13d9e59a77665f38e70db",
+          "size_bytes": 2898
+        },
+        "advisory/codehaus-plexus__plexus-utils_CVE-2022-4244_3.0.23.json": {
+          "sha256": "6ec38c046f4023234d5e1dbf9094f9f584eb67557ed354b350c25edac1ace326",
+          "size_bytes": 2291
+        },
+        "advisory/diffplug__goomph_CVE-2022-26049_3.37.1.json": {
+          "sha256": "1be74f0ecc81bb0851e70081af0d8e247200403ce2f56133996abbd5f85f48ba",
+          "size_bytes": 2274
+        },
+        "advisory/dromara__hutool_CVE-2018-17297_4.1.11.json": {
+          "sha256": "1b815091ec3564b1a6c5483b5c9cc651aab3a249cbc266daaca43a206b5d573a",
+          "size_bytes": 2390
+        },
+        "advisory/eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5.json": {
+          "sha256": "d7d87a48de37ccfc3afe5c098b82d874739546b9d12bd63c6b33e90ca2635caf",
+          "size_bytes": 1647
+        },
+        "advisory/eclipse__hawkbit_CVE-2020-27219_0.3.0M6.json": {
+          "sha256": "f37ccb8320e2cb775b856115d771704c5e783eca7ac07f8bc8cff870ca90fdc8",
+          "size_bytes": 1887
+        },
+        "advisory/fabric8io__kubernetes-client_CVE-2021-4178_5.0.2.json": {
+          "sha256": "134b868bc0cd0cf6c04fde194bb0dcdac0cc63d6ce230afc332416e28e16a9fb",
+          "size_bytes": 4271
+        },
+        "advisory/ff4j__ff4j_CVE-2022-44262_1.8.13.json": {
+          "sha256": "43f304bad9b7ad2c678e862803524c1c0d12aee4391aa654ac7961f1b7c1cdf2",
+          "size_bytes": 1552
+        },
+        "advisory/hapifhir__org.hl7.fhir.core_CVE-2023-24057_5.6.91.json": {
+          "sha256": "6ae20b9d8fd60c91d6db68a3b14edc9a76e28b72d2fa9da053392597da0fe3f7",
+          "size_bytes": 6681
+        },
+        "advisory/hapifhir__org.hl7.fhir.core_CVE-2023-28465_5.6.105.json": {
+          "sha256": "d569401fb3f22c106550549c2040fa12f9698865aa7913cae13fc32e61468dd1",
+          "size_bytes": 6393
+        },
+        "advisory/hibernate__hibernate-validator_CVE-2019-10219_6.0.17.Final.json": {
+          "sha256": "b248113b264b90a4970671ae61dcefe8938b9f7679f2270a923256b6253e1572",
+          "size_bytes": 3804
+        },
+        "advisory/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17.json": {
+          "sha256": "cd0499386aa304ed265e6aeb25765c65a8e0ca6da9ee026a7be9c1737fabe065",
+          "size_bytes": 2040
+        },
+        "advisory/jenkinsci__git-client-plugin_CVE-2019-10392_2.8.4.json": {
+          "sha256": "cabd002b4446b5e7a029de78e22e8e3f6bdc2bb5843830a93014310e02ff860f",
+          "size_bytes": 1838
+        },
+        "advisory/jenkinsci__perfecto-plugin_CVE-2020-2261_1.17.json": {
+          "sha256": "5b32990dd0407b637a63ff1526de3b16152874f5413673088330b26b3acf14a5",
+          "size_bytes": 1970
+        },
+        "advisory/jenkinsci__script-security-plugin_CVE-2023-24422_1228.vd93135a_2fb_25.json": {
+          "sha256": "7d7471fffb25188aa91f0465a47cbaeade0eb7e797e44f86a38bf28e74513ea4",
+          "size_bytes": 1865
+        },
+        "advisory/jenkinsci__workflow-cps-global-lib-plugin_CVE-2022-25174_544.vff04fa68714d.json": {
+          "sha256": "af99db02c29a20a610c61b3ee13243b5aa010cc6f6dd41ffb67ca08dd0ce4f75",
+          "size_bytes": 2806
+        },
+        "advisory/jenkinsci__workflow-cps-plugin_CVE-2022-25173_2646.v6ed3b5b01ff1.json": {
+          "sha256": "cc4cef04dda347fa5cbe1f5620841dd5b9391cc2d9b8cc5af3639ada48297d6d",
+          "size_bytes": 2888
+        },
+        "advisory/jenkinsci__workflow-multibranch-plugin_CVE-2022-25175_706.vd43c65dec013.json": {
+          "sha256": "5e18ad3becfca2ca96a80596d0de3b01a8a88633a077f089438f3325b46d2ef2",
+          "size_bytes": 1858
+        },
+        "advisory/jeremylong__DependencyCheck_CVE-2018-12036_3.1.2.json": {
+          "sha256": "d9761d9de91d8d3b302011f4fb35492466b3980d202cb3587c420127d678f4d5",
+          "size_bytes": 1640
+        },
+        "advisory/jlangch__venice_CVE-2022-36007_1.10.16.json": {
+          "sha256": "26642cbd38c9073e1e5394cca379fbef74f3b9de766aff7f40ae85e19905fcc9",
+          "size_bytes": 3984
+        },
+        "advisory/jmrozanec__cron-utils_CVE-2021-41269_9.1.5.json": {
+          "sha256": "ad82b8cd1ed511f8fa4b9b37f08a7e0768f96c6a9eb29f64019899df48178ebc",
+          "size_bytes": 2601
+        },
+        "advisory/joniles__mpxj_CVE-2020-35460_8.3.4.json": {
+          "sha256": "c12a0b25b27e027cedeb61bbfc85ad81619a7c88f8c53fdd438825db63a2886a",
+          "size_bytes": 1638
+        },
+        "advisory/jstachio__jstachio_CVE-2023-33962_1.0.0.json": {
+          "sha256": "dd662490fbad4f64cd83870d6464679429e58d17b80275261bb73f7a56696b64",
+          "size_bytes": 3931
+        },
+        "advisory/keycloak__keycloak_CVE-2014-3656_1.0.5.Final.json": {
+          "sha256": "c29f65b8506b1b0244c7d84f66c388a0c7a7d90a48741a447cea6ecc753a3cc0",
+          "size_bytes": 2054
+        },
+        "advisory/keycloak__keycloak_CVE-2022-1274_20.0.4.json": {
+          "sha256": "e4595601af923d4053d30e5a4a6b8fef95bc631100dcfa8c222c29ef207620f6",
+          "size_bytes": 1993
+        },
+        "advisory/keycloak__keycloak_CVE-2022-3782_20.0.1.json": {
+          "sha256": "a2eddc74ccffa9f7fadede1377f240a2c72d0c174b2b16f5c299f9cf29c31daf",
+          "size_bytes": 2008
+        },
+        "advisory/keycloak__keycloak_CVE-2022-4137_20.0.4.json": {
+          "sha256": "6bc50cca5abedd633ddb4a45aa1b8eea039e1a61158f9daed675fc896077def4",
+          "size_bytes": 2471
+        },
+        "advisory/keycloak__keycloak_CVE-2022-4361_21.1.1.json": {
+          "sha256": "1a9d22ac8361190d76469f7fd82197f9c0bebef50388d782827af3cc1bb71e20",
+          "size_bytes": 1947
+        },
+        "advisory/kubernetes-client__java_CVE-2020-8570_client-java-parent-9.0.1.json": {
+          "sha256": "56340925477e4e9bba3aaf41b41caa30b684aba84a6f65771f49d20d5ac6a528",
+          "size_bytes": 3170
+        },
+        "advisory/nahsra__antisamy_CVE-2016-10006_1.5.3.json": {
+          "sha256": "f38878b0e1b039a651823a750e0644bd641b5c8f3b2f2fcbcffea1115f73bdd2",
+          "size_bytes": 1847
+        },
+        "advisory/nahsra__antisamy_CVE-2017-14735_1.5.6.json": {
+          "sha256": "c115b492dde9fae541dfd07e6d232747c7692afbdc3275aec7923801ccfbd8fd",
+          "size_bytes": 2378
+        },
+        "advisory/nahsra__antisamy_CVE-2022-28367_1.6.5.json": {
+          "sha256": "7700c4b987e6d3aee23fef252e232d504650ff936a9bbb615c61e62aa9550dc4",
+          "size_bytes": 1776
+        },
+        "advisory/nahsra__antisamy_CVE-2022-29577_1.6.6.1.json": {
+          "sha256": "940766a8fe62add3a99e3c616163d54ded1db36548a506d4d5d2a206141661bf",
+          "size_bytes": 1957
+        },
+        "advisory/payara__Payara_CVE-2022-37422_5.2022.2.json": {
+          "sha256": "e62ba4143654cf46bd6840ae0da8d0a64d1582cd64dc2e36c5eb1ba94046d56c",
+          "size_bytes": 1372
+        },
+        "advisory/perwendel__spark_CVE-2016-9177_2.5.1.json": {
+          "sha256": "350d63ef3ecf7ff563d2ac2a6c760fec7b5d5c497cb2d638e841288b74af1436",
+          "size_bytes": 1874
+        },
+        "advisory/perwendel__spark_CVE-2018-9159_2.7.1.json": {
+          "sha256": "b5aee1cacd4624a1927550f2b9586ba66d3b09843f9477bacd0a7991caa955ae",
+          "size_bytes": 2413
+        },
+        "advisory/rhuss__jolokia_CVE-2018-1000129_1.4.0.json": {
+          "sha256": "c2c12eaf1f8c3658502a92fda7fa4aec769042eaddeb8f0a989b79cdaefb423f",
+          "size_bytes": 1976
+        },
+        "advisory/spring-cloud__spring-cloud-config_CVE-2020-5405_2.1.6.RELEASE.json": {
+          "sha256": "36d60897a5f676ef1b99f47ec8c6ec01b691da5c3c4d850b765d71f430141ae1",
+          "size_bytes": 2163
+        },
+        "advisory/spring-cloud__spring-cloud-config_CVE-2020-5410_2.1.8.RELEASE.json": {
+          "sha256": "b940ca36b2daca9458578714b54d38c1c726979a4e5506acdf03331720626b12",
+          "size_bytes": 2141
+        },
+        "advisory/spring-cloud__spring-cloud-gateway_CVE-2022-22947_3.0.6.json": {
+          "sha256": "aeeab889141b3e0e63457218e04e31b66fe3003e13840a253b94c077904370a9",
+          "size_bytes": 2562
+        },
+        "advisory/spring-projects__spring-framework_CVE-2022-22965_5.2.19.RELEASE.json": {
+          "sha256": "120f4e5d5b775c7e3ff3d28f0040ce0c89f1cd3bcf49b286abd0905a967a493b",
+          "size_bytes": 8399
+        },
+        "advisory/spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE.json": {
+          "sha256": "d9af485de50dca91f5ab7df9c018be299171653071aebd9f46f731735a349292",
+          "size_bytes": 2071
+        },
+        "advisory/square__retrofit_CVE-2018-1000850_2.4.0.json": {
+          "sha256": "82adcecc05e5e00b689dcd1741e09350a7cad634063e5bb1c3fdad2167d324d6",
+          "size_bytes": 2787
+        },
+        "advisory/srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2.json": {
+          "sha256": "66a2180acd5a12d698b5b72a12f187898040f735d5906a793e36d094a2f9eca0",
+          "size_bytes": 1862
+        },
+        "advisory/testng-team__testng_CVE-2022-4065_7.5.json": {
+          "sha256": "54db84df3678b9dcef1fc56536d606362fb8e501bbe8b1dcaee16861b2ab92ea",
+          "size_bytes": 3650
+        },
+        "advisory/undertow-io__undertow_CVE-2014-7816_1.0.16.Final.json": {
+          "sha256": "05e23fc2437f63f1ce1bac0e0b94743ff66c217c63105bd06b38818a3dbd2a19",
+          "size_bytes": 2762
+        },
+        "advisory/vert-x3__vertx-web_CVE-2018-12542_3.5.3.CR1.json": {
+          "sha256": "399caacdcfe64eff444b622f47e3febf350b789b7d434953948801cde7b9c1b4",
+          "size_bytes": 2255
+        },
+        "advisory/vert-x3__vertx-web_CVE-2019-17640_3.9.3.json": {
+          "sha256": "1d6f7721320be0aa937c8ab2ba77344318dfa5946063a20a42b4c66fb7dfb4b4",
+          "size_bytes": 2723
+        },
+        "advisory/whitesource__curekit_CVE-2022-23082_1.1.3.json": {
+          "sha256": "e30e70657ad0de155e95c645d0fc21eb9c0cc4b12c8ff34e664af958af0ec3ae",
+          "size_bytes": 1641
+        },
+        "advisory/wildfly__wildfly_CVE-2018-1047_11.0.0.Final.json": {
+          "sha256": "e671bf635534c817244a4fa811709ed5484757379dec7968a7e29c8b4c1a25bd",
+          "size_bytes": 2316
+        },
+        "advisory/x-stream__xstream_CVE-2013-7285_1.4.6.json": {
+          "sha256": "dccc2b0ff2682b8ca7dfba92d5de5f1062c09d5c7f0ceb6345e304d9cc3a740f",
+          "size_bytes": 3183
+        },
+        "advisory/x-stream__xstream_CVE-2020-26217_1.4.14-java7.json": {
+          "sha256": "8c25171aac227f95491a61671ffff1037da910046dd4179665d515685ff34ea3",
+          "size_bytes": 6426
+        },
+        "advisory/x-stream__xstream_CVE-2021-21345_1.4.15.json": {
+          "sha256": "0fc9c6d9aa2d97e1d4ce18768e71807c4488b9e12002c04cfcec794ec562f693",
+          "size_bytes": 4588
+        },
+        "advisory/xerial__sqlite-jdbc_CVE-2023-32697_3.41.2.1.json": {
+          "sha256": "8f8f8c2388b1a236fdddb7fd0cc91c30afb08b2191f61f82b6b58ecc3b7c8c5f",
+          "size_bytes": 1742
+        },
+        "advisory/xuxueli__xxl-job_CVE-2020-29204_2.2.0.json": {
+          "sha256": "0eb0962b518ee394c8aa815798f27570c6ea7d8e360807b4eee246b779952924",
+          "size_bytes": 1617
+        },
+        "advisory/xwiki__xwiki-commons_CVE-2022-24897_12.6.6.json": {
+          "sha256": "d38fab70a9b29077389c0aa3e714296e3c2a06b96a9e1e576c7aab79452cf154",
+          "size_bytes": 2960
+        },
+        "advisory/xwiki__xwiki-commons_CVE-2023-29201_14.6.json": {
+          "sha256": "b07ae5d894775e79e82c7ec5d9901a82ea38f9bd98672bb592b97088f55ec421",
+          "size_bytes": 3952
+        },
+        "advisory/xwiki__xwiki-commons_CVE-2023-29528_14.9-rc-1.json": {
+          "sha256": "f3287bd34bcade6d9961827252bf827f1cd51bc7375d4d66fa577e380be25f62",
+          "size_bytes": 3788
+        },
+        "advisory/xwiki__xwiki-commons_CVE-2023-31126_14.10.3.json": {
+          "sha256": "a34d088255a186878de7b9103670585496d86ebdbbca2d10f0c8991ba216ff12",
+          "size_bytes": 3226
+        },
+        "advisory/xwiki__xwiki-commons_CVE-2023-36471_14.10.5.json": {
+          "sha256": "7aae5e4dc036043c2ec542223c8e21306f7bc57a34f9f1717858142cbca805ef",
+          "size_bytes": 3347
+        },
+        "advisory/xwiki__xwiki-rendering_CVE-2023-32070_14.6.json": {
+          "sha256": "330270b75de6c7990fb3b4b1d994c28c8865391acb5729506be3a227f02077bf",
+          "size_bytes": 4788
+        },
+        "advisory/xwiki__xwiki-rendering_CVE-2023-37908_14.10.3.json": {
+          "sha256": "aa40b7d209fdfb0e565025512e7f28a9ea5f59e3fafcb76f53ca095a21005607",
+          "size_bytes": 3745
+        },
+        "advisory/yamcs__yamcs_CVE-2023-45277_5.8.6.json": {
+          "sha256": "652387bc15e4b7ac93c768556931d2a5edcdb7d51684aee0aba822942b2bd1fa",
+          "size_bytes": 1712
+        },
+        "advisory/yamcs__yamcs_CVE-2023-45278_5.8.6.json": {
+          "sha256": "ad54cb89ae45a0db6e977b8aea9184f20155781aab7d99c095e1871e962006f0",
+          "size_bytes": 1642
+        },
+        "advisory/zeroturnaround__zt-zip_CVE-2018-1002201_1.12.json": {
+          "sha256": "53b1ed8cd9d4f03eded63e4d4d6ce28b1a8e14c0caccb30c40a6a818ae87a957",
+          "size_bytes": 1985
+        },
+        "baselines/output_infer_result.py": {
+          "sha256": "5e372e4cb67ec3cdf2ff52e416e1978cc93e5c09af2f68b964cbdaffc3df2761",
+          "size_bytes": 1502
+        },
+        "baselines/output_snyk_result.py": {
+          "sha256": "b8f6d6989058788d1b8b54b91b84fb8fe80bc48413a8ea1fcbecc9e090714570",
+          "size_bytes": 2031
+        },
+        "baselines/output_spotbugs_result.py": {
+          "sha256": "5e7f103265839915af9592f2aad3597a3f73b4e6d572ab5d4310397006577949",
+          "size_bytes": 1390
+        },
+        "baselines/readme.md": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        },
+        "baselines/results/.gitignore": {
+          "sha256": "318f34325d8af3061c3bffed92ef1d57bb7433ff2381ce92e64bffb06c4e82cd",
+          "size_bytes": 7
+        },
+        "baselines/results/.keep": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        },
+        "baselines/run_codeql.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        },
+        "baselines/run_infer.py": {
+          "sha256": "0f24fe5a01563f19dc04431f6cf8bb8aeace4a96b1560fa05177199eb6504fd5",
+          "size_bytes": 3399
+        },
+        "baselines/run_snyk.py": {
+          "sha256": "61a385580ba47669c21bcbcaff3336f76ad786770a1febe27cfaacfee4d79aff",
+          "size_bytes": 2899
+        },
+        "baselines/run_spotbugs.py": {
+          "sha256": "937f71a7698d2d98aa960b66c4f4a0bf25776c335c31ccb68c743c948dce787a",
+          "size_bytes": 3404
+        },
+        "data/build_info.csv": {
+          "sha256": "9f19f701079f43396a89d9546169fb648f37fb79ac3ea0082ff1d2f440870c9e",
+          "size_bytes": 8683
+        },
+        "data/fix_info.csv": {
+          "sha256": "86550477222ee95d46c1867b622b1e6759005d7d4ac9ff4f83f1253595421892",
+          "size_bytes": 343943
+        },
+        "data/project_info.csv": {
+          "sha256": "c4576f273f8cfc52bc530940ba5e52f5a7c56952b5f740f83ff62987db3f8710",
+          "size_bytes": 39501
+        },
+        "java-env/.gitignore": {
+          "sha256": "9ef39e318c34fb369a2f0dff605700abf083ee0a2ad57ae3e0e552816ce1ec86",
+          "size_bytes": 49
+        },
+        "java-env/.keep": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        },
+        "package-names/DSpace__DSpace_CVE-2016-10726_4.4.txt": {
+          "sha256": "45081aeda207d45049bd87ee775fee37a8133122315ed7ccbe176ddc74e537c4",
+          "size_bytes": 5290
+        },
+        "package-names/DSpace__DSpace_CVE-2022-31192_5.10.txt": {
+          "sha256": "39447edccc9f30db233e577c565e646e39a6c41d2a4c59ae950ffa21adfc9783",
+          "size_bytes": 6958
+        },
+        "package-names/DSpace__DSpace_CVE-2022-31194_5.10.txt": {
+          "sha256": "39447edccc9f30db233e577c565e646e39a6c41d2a4c59ae950ffa21adfc9783",
+          "size_bytes": 6958
+        },
+        "package-names/DSpace__DSpace_CVE-2022-31195_5.10.txt": {
+          "sha256": "39447edccc9f30db233e577c565e646e39a6c41d2a4c59ae950ffa21adfc9783",
+          "size_bytes": 6958
+        },
+        "package-names/ESAPI__esapi-java-legacy_CVE-2022-23457_2.2.3.1.txt": {
+          "sha256": "4b17f366e6ab17520779316773446f55fc451aa4ff07dc869ea7846efd0eb5d5",
+          "size_bytes": 874
+        },
+        "package-names/ESAPI__esapi-java-legacy_CVE-2022-24891_2.2.3.1.txt": {
+          "sha256": "4b17f366e6ab17520779316773446f55fc451aa4ff07dc869ea7846efd0eb5d5",
+          "size_bytes": 874
+        },
+        "package-names/Graylog2__graylog2-server_CVE-2023-41044_5.1.2.txt": {
+          "sha256": "c3311d4f9ae3b180a8f3196232dfaeac142c06f2c1039a061ac40b8035411bd4",
+          "size_bytes": 24550
+        },
+        "package-names/OWASP__json-sanitizer_CVE-2020-13973_1.2.0.txt": {
+          "sha256": "e6be8f044c14657c1b89838590a93939d22a7e440c702e345db358e90d957545",
+          "size_bytes": 17
+        },
+        "package-names/SpringSource__spring-security-oauth_CVE-2018-1260_2.3.2.RELEASE.txt": {
+          "sha256": "0ce30d25993584cfb567e3f4b8aa8805c4bf03ec3a1a082ed2f8bca969677afc",
+          "size_bytes": 4244
+        },
+        "package-names/alibaba__nacos_CVE-2021-44667_2.0.3.txt": {
+          "sha256": "2111155bcebd2527b3699a1d3a8de041061d03d6640c857b63d0e8b2ba97a65c",
+          "size_bytes": 11087
+        },
+        "package-names/alibaba__one-java-agent_CVE-2022-25842_0.0.1.txt": {
+          "sha256": "6ff9dd3302afacdc52f33e800d1521d2523577d955934a600139c5874b30531a",
+          "size_bytes": 394
+        },
+        "package-names/apache__activemq_CVE-2014-3576_5.10.2.txt": {
+          "sha256": "6cb6e26cd5ac1e4751d1fca7233796cfa30d779e9777826911f502fb48214f12",
+          "size_bytes": 6516
+        },
+        "package-names/apache__activemq_CVE-2019-0222_5.15.8.txt": {
+          "sha256": "3f17ac98dd6026ccfd627b914b10330533c38e50d51c4cda0505f15bd9bff78b",
+          "size_bytes": 7645
+        },
+        "package-names/apache__activemq_CVE-2020-11998_5.15.12.txt": {
+          "sha256": "3f17ac98dd6026ccfd627b914b10330533c38e50d51c4cda0505f15bd9bff78b",
+          "size_bytes": 7645
+        },
+        "package-names/apache__camel_CVE-2018-8041_2.20.3.txt": {
+          "sha256": "4d5c69f9a1d456a5f9cebb152206012782b6988992f5a72e31f523ddb7818697",
+          "size_bytes": 71231
+        },
+        "package-names/apache__camel_CVE-2019-0194_2.21.4.txt": {
+          "sha256": "39dab1fe01ae9ed16d8b488a531f7d26baac58367525017153ebba76be0f1f63",
+          "size_bytes": 73850
+        },
+        "package-names/apache__dolphinscheduler_CVE-2022-26884_2.0.5.txt": {
+          "sha256": "d8b73aae15b176df85a7af78049ae3e04f771f30215edc02a76117c6bff1f341",
+          "size_bytes": 10220
+        },
+        "package-names/apache__dolphinscheduler_CVE-2022-34662_2.0.9.txt": {
+          "sha256": "d8b73aae15b176df85a7af78049ae3e04f771f30215edc02a76117c6bff1f341",
+          "size_bytes": 10220
+        },
+        "package-names/apache__dolphinscheduler_CVE-2023-49109_3.2.0.txt": {
+          "sha256": "f8d701991fbb47b0aa47be4f7e62665f7edd2b042f46be4141d7864b43acc226",
+          "size_bytes": 19978
+        },
+        "package-names/apache__dolphinscheduler_CVE-2023-51770_3.2.0.txt": {
+          "sha256": "f8d701991fbb47b0aa47be4f7e62665f7edd2b042f46be4141d7864b43acc226",
+          "size_bytes": 19978
+        },
+        "package-names/apache__dubbo_CVE-2021-30180_2.7.9.txt": {
+          "sha256": "482abbeeebd7837e1818b81754cce3cc916a5c93ee8020e96812ba8f993b9eaa",
+          "size_bytes": 16597
+        },
+        "package-names/apache__flink_CVE-2020-17519_1.11.2.txt": {
+          "sha256": "6ade78a38688ea3d3fa3e1c76e6e688ce0d79e56006b71a2ddf3cd10d6c29ea6",
+          "size_bytes": 42426
+        },
+        "package-names/apache__incubator-dubbo_CVE-2021-30181_2.6.8.txt": {
+          "sha256": "caf02dd6121dab2cabfece144a8ea6afbbc51bb9c65d8df8756aa216e38759ae",
+          "size_bytes": 11492
+        },
+        "package-names/apache__jspwiki_CVE-2019-0225_2.11.0.M2.txt": {
+          "sha256": "0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65",
+          "size_bytes": 2092
+        },
+        "package-names/apache__jspwiki_CVE-2019-10076_2.11.0.M3.txt": {
+          "sha256": "0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65",
+          "size_bytes": 2092
+        },
+        "package-names/apache__jspwiki_CVE-2019-10077_2.11.0.M3.txt": {
+          "sha256": "0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65",
+          "size_bytes": 2092
+        },
+        "package-names/apache__jspwiki_CVE-2019-10078_2.11.0.M3.txt": {
+          "sha256": "0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65",
+          "size_bytes": 2092
+        },
+        "package-names/apache__jspwiki_CVE-2019-10089_2.11.0.M4.txt": {
+          "sha256": "5830253b52f2a84e7b25399a6991c1f542ceb4d3bee6614ef917848e1f30200f",
+          "size_bytes": 2121
+        },
+        "package-names/apache__jspwiki_CVE-2022-46907_2.11.3.txt": {
+          "sha256": "b0a085a3c83b081eca51e43475dd92ca97ef7fdb0e1ad4b158b67a59c9d9e9b8",
+          "size_bytes": 2796
+        },
+        "package-names/apache__mina-sshd_CVE-2023-35887_2.9.2.txt": {
+          "sha256": "a9466cab06e990d045e54933edfb39342cb92edeb5c2453bf8fec1615199567f",
+          "size_bytes": 5430
+        },
+        "package-names/apache__myfaces_CVE-2011-4367_2.0.11.txt": {
+          "sha256": "1dcf6eee09af8d43cd64e452a5c1918185a8a507994489e4fca827859fc3000a",
+          "size_bytes": 3755
+        },
+        "package-names/apache__nifi_CVE-2022-33140_1.16.2.txt": {
+          "sha256": "bd6453ed4618e3bd552cc1c02091423512b8d4339012f8ea1351383aa02ee117",
+          "size_bytes": 40451
+        },
+        "package-names/apache__rocketmq_CVE-2019-17572_4.6.0.txt": {
+          "sha256": "58be8bb4129b3219f95711e72c418a85db5d3eb35685bd469262be01fae8bf94",
+          "size_bytes": 6642
+        },
+        "package-names/apache__rocketmq_CVE-2023-33246_5.1.0.txt": {
+          "sha256": "f2ed07092fe94556336b4a521568bf6a6da792a38fe4afa309bbae5bc9e25a02",
+          "size_bytes": 10938
+        },
+        "package-names/apache__rocketmq_CVE-2023-37582_4.9.6.txt": {
+          "sha256": "5b1a2c2fdb502c12de04b64c3b7ebe119104c1a852074b21ea9d47b8ba7db776",
+          "size_bytes": 6850
+        },
+        "package-names/apache__shiro_CVE-2023-34478_1.11.0.txt": {
+          "sha256": "b0e5491684ff30738dd5b67a30546821747658b3f9f43ed8b572ba55c6dca8d1",
+          "size_bytes": 3077
+        },
+        "package-names/apache__shiro_CVE-2023-46749_1.12.0.txt": {
+          "sha256": "0a3abe0c2a2f0b6c5cd4a306da33053399dfff407182cc9216bff726163a5920",
+          "size_bytes": 3108
+        },
+        "package-names/apache__sling-org-apache-sling-servlets-resolver_CVE-2024-23673_2.10.0.txt": {
+          "sha256": "be49be64997c1a055f4e2e94ced689e6b0a24c6323d382950d602d77de83d96d",
+          "size_bytes": 445
+        },
+        "package-names/apache__sling-org-apache-sling-xss_CVE-2016-5394_1.0.8.txt": {
+          "sha256": "d206b9a27de1b8898ced0c9dd241e475f2660ba3d4364715769407c314bc5997",
+          "size_bytes": 49
+        },
+        "package-names/apache__struts_CVE-2020-17530_2.5.25.txt": {
+          "sha256": "233e4bcecb238fda8e66f4cb8cbb25b12f02fac65e21f6ce4ee56c89dd1eaeda",
+          "size_bytes": 7334
+        },
+        "package-names/apache__tika_CVE-2018-11762_1.18.txt": {
+          "sha256": "8d32a6ed07a493c585d8b26175a0474ab053caf4396cb82fcdb06e2e295b1b29",
+          "size_bytes": 3858
+        },
+        "package-names/apache__uima-uimaj_CVE-2022-32287_3.3.0.txt": {
+          "sha256": "2e664ba2e03efda70c2b8baa2eaa051fbbde1bebbc45b74f2d1a33610232d2a7",
+          "size_bytes": 5798
+        },
+        "package-names/asf__commons-io_CVE-2021-29425_2.6.txt": {
+          "sha256": "dd5bb65380b47487e62394962817db079848ec028b2f0da0884e0de36d600c9e",
+          "size_bytes": 294
+        },
+        "package-names/asf__commons-text_CVE-2022-42889_1.9.txt": {
+          "sha256": "85385e0ff8144731e25e7b23ca14cc24a8ddb437b6d758f40c5b4fed92e4197b",
+          "size_bytes": 219
+        },
+        "package-names/asf__cxf_CVE-2016-6812_3.0.11.txt": {
+          "sha256": "35fb55fdc59a79eb2a60d2755a249f26dd00331a4fa8f5a3a4a5681e41649758",
+          "size_bytes": 41439
+        },
+        "package-names/asf__cxf_CVE-2019-17573_3.2.11.txt": {
+          "sha256": "4cd80d3d9f3ce76e0ad7d6aae2854819dc3a8e3722ef239cc781c877aa7db143",
+          "size_bytes": 44992
+        },
+        "package-names/asf__james-project_CVE-2022-22931_3.6.0.txt": {
+          "sha256": "7f3973cfdae3d656778fc1a35835e1cc1b3bf393f4e48be26d2529724c1b850d",
+          "size_bytes": 21073
+        },
+        "package-names/asf__karaf_CVE-2022-22932_4.3.5.txt": {
+          "sha256": "b0bee81ca7fc8a517740c4e38253413207799f30aba069f20af92cc37187ec7a",
+          "size_bytes": 13945
+        },
+        "package-names/asf__nifi_CVE-2023-34468_1.21.0.txt": {
+          "sha256": "42872e032102b507a7e9b383120f80c8518ae89b8e52d2fb9a9ee439a6b6ed6a",
+          "size_bytes": 45914
+        },
+        "package-names/asf__nifi_CVE-2023-36542_1.22.0.txt": {
+          "sha256": "91f8ab2263d5abc13bff8fc970de7524bf8e77f5eacec9aa7d9a457ffc51ba30",
+          "size_bytes": 46509
+        },
+        "package-names/asf__tapestry-5_CVE-2019-0207_5.4.4.txt": {
+          "sha256": "6f43c5250914773e85c66c1579badf55fa99ca9241a1142c320dcf8dd3e8848f",
+          "size_bytes": 9821
+        },
+        "package-names/aws__aws-sdk-java_CVE-2022-31159_1.12.260.txt": {
+          "sha256": "dfca2e281b0d2682be98849e8bbc4162282678b837253aa618102926f09d59c1",
+          "size_bytes": 52899
+        },
+        "package-names/codecentric__spring-boot-admin_CVE-2022-46166_2.6.9.txt": {
+          "sha256": "169b51becaa748cb20d613ca7782289ea1da3ccaa6c99f9264293bd24d72496e",
+          "size_bytes": 1486
+        },
+        "package-names/codehaus-plexus__plexus-archiver_CVE-2018-1002200_3.5.txt": {
+          "sha256": "7487f33f047c065b8e32fd2ffa9552ae4d10ad5321db50ac35756e1e29be7a0e",
+          "size_bytes": 716
+        },
+        "package-names/codehaus-plexus__plexus-archiver_CVE-2023-37460_4.7.1.txt": {
+          "sha256": "abf688e2eb5830f6bcac1ff0aca0a07c6b341ef92e4f3c6a23f667042fbac94d",
+          "size_bytes": 938
+        },
+        "package-names/codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15.txt": {
+          "sha256": "e2606aedf404c37e8364fab05f0bbfe22c024b2a676ddb02dca6bb06e41278fe",
+          "size_bytes": 293
+        },
+        "package-names/codehaus-plexus__plexus-utils_CVE-2022-4244_3.0.23.txt": {
+          "sha256": "e2606aedf404c37e8364fab05f0bbfe22c024b2a676ddb02dca6bb06e41278fe",
+          "size_bytes": 293
+        },
+        "package-names/diffplug__goomph_CVE-2022-26049_3.37.1.txt": {
+          "sha256": "fe0eb2709598ad9e442823cbc2208a89c8475a95df64d116c0896092bf423532",
+          "size_bytes": 349
+        },
+        "package-names/dromara__hutool_CVE-2018-17297_4.1.11.txt": {
+          "sha256": "87ed090ba598f4e4d1aa836ca8449c4acc38d0299a7778da1e7e57f0f0115e3c",
+          "size_bytes": 6106
+        },
+        "package-names/eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5.txt": {
+          "sha256": "540464a7c6ca029bdf51d11a57e1f85b1072fa9d14026e52cb50e4821089c644",
+          "size_bytes": 67667
+        },
+        "package-names/eclipse__hawkbit_CVE-2020-27219_0.3.0M6.txt": {
+          "sha256": "df2fcef7a2d3b28d059e4e5a1e48a5208b4c5c0fc31621e6cf712c7f39dac549",
+          "size_bytes": 7293
+        },
+        "package-names/fabric8io__kubernetes-client_CVE-2021-4178_5.0.2.txt": {
+          "sha256": "4c65dff662eef9cd4cfb43dab59d267db05ac132a6082071b3f2b65af923a087",
+          "size_bytes": 10936
+        },
+        "package-names/ff4j__ff4j_CVE-2022-44262_1.8.13.txt": {
+          "sha256": "d5fc1a8ccc17634a1c4c3a4f2f18a9b850db3206cb8312a115fa4be0a87a4af8",
+          "size_bytes": 3241
+        },
+        "package-names/hapifhir__hapi-fhir_CVE-2023-24057_5.6.91.txt": {
+          "sha256": "e2af6f40e2f32101c6aae2562afe03015ea57b8f6f3dd1aa6076f3889f07f9ca",
+          "size_bytes": 15767
+        },
+        "package-names/hapifhir__hapi-fhir_CVE-2023-28465_5.6.105.txt": {
+          "sha256": "e2af6f40e2f32101c6aae2562afe03015ea57b8f6f3dd1aa6076f3889f07f9ca",
+          "size_bytes": 15767
+        },
+        "package-names/hibernate__hibernate-validator_CVE-2019-10219_6.0.17.Final.txt": {
+          "sha256": "893a3900d5c1b3a8bea991c8ef31a25cd2fccb346dd3902c090a2bf7d560e3dd",
+          "size_bytes": 15408
+        },
+        "package-names/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17.txt": {
+          "sha256": "843708b8cf8ff09289b0dabfd78d13dd72ca94c2a0ec6ba45fd652ceb674e34c",
+          "size_bytes": 268
+        },
+        "package-names/jenkinsci__git-client-plugin_CVE-2019-10392_2.8.4.txt": {
+          "sha256": "80e25d88df7c362224d3eff26213fcdb7911f23a0435a8f18f1c148eb8426b2d",
+          "size_bytes": 175
+        },
+        "package-names/jenkinsci__perfecto-plugin_CVE-2020-2261_1.17.txt": {
+          "sha256": "869d19d8e47cf56bc02648172a0d64f1983c929c905bf7915979ca5eac0c3434",
+          "size_bytes": 83
+        },
+        "package-names/jenkinsci__script-security-plugin_CVE-2023-24422_1228.vd93135a_2fb_25.txt": {
+          "sha256": "39c653a03de39fb3183368b7722fe2c1ce6aa3c2ee72aaabea2c53f070875e0d",
+          "size_bytes": 258
+        },
+        "package-names/jenkinsci__workflow-cps-global-lib-plugin_CVE-2022-25174_544.vff04fa68714d.txt": {
+          "sha256": "0f30ef787dd6bb3f49ffc69d3052b902a0def38b9390cb7ae730be6324ba58bf",
+          "size_bytes": 166
+        },
+        "package-names/jenkinsci__workflow-cps-plugin_CVE-2022-25173_2646.v6ed3b5b01ff1.txt": {
+          "sha256": "6a222da73611b0e1b402aa49960e5dc5d59aecaa3dbf59bfea3f27a477278553",
+          "size_bytes": 427
+        },
+        "package-names/jenkinsci__workflow-multibranch-plugin_CVE-2022-25175_706.vd43c65dec013.txt": {
+          "sha256": "17314645742b9aa2e0fa3d52d2377f5dbd46decec7f140ef74a8cf14fa8905a3",
+          "size_bytes": 44
+        },
+        "package-names/jeremylong__DependencyCheck_CVE-2018-12036_3.1.2.txt": {
+          "sha256": "7be735606f8f851248b3b9b8ff17017f446eaac5969d83b1039abb1a6c444b51",
+          "size_bytes": 1074
+        },
+        "package-names/jlangch__venice_CVE-2022-36007_1.10.16.txt": {
+          "sha256": "3e57702219414066994f75c7e7b5d9919d5ac24d5ac85c1cbf60d64aa6476eb5",
+          "size_bytes": 2716
+        },
+        "package-names/jmrozanec__cron-utils_CVE-2021-41269_9.1.5.txt": {
+          "sha256": "f48e364fb168fd13a9cb4f614cb4d140b871292ef8abd1a35814ce00cc486e02",
+          "size_bytes": 646
+        },
+        "package-names/joniles__mpxj_CVE-2020-35460_8.3.4.txt": {
+          "sha256": "d412016fc0ce668ca3dcb47c1738c44dcdbed1c519a0dbde6a6cd4a872857c8c",
+          "size_bytes": 1117
+        },
+        "package-names/jstachio__jstachio_CVE-2023-33962_1.0.0.txt": {
+          "sha256": "908dfc8f64390dee274195f9d1b4e3d9f8850dd1452a9c3235b4f60dbb23d239",
+          "size_bytes": 1846
+        },
+        "package-names/keycloak__keycloak_CVE-2014-3656_1.0.5.Final.txt": {
+          "sha256": "c6e0f33fbd27ddadd4d94ab6040a48162941e73c62d5fa9c59669b02c3e014d1",
+          "size_bytes": 3677
+        },
+        "package-names/keycloak__keycloak_CVE-2022-1274_20.0.4.txt": {
+          "sha256": "7c5e2533705a4a5c6cdea21506c5656aabbab1b042a7e7c6f4dfd76da81ed5cd",
+          "size_bytes": 34426
+        },
+        "package-names/keycloak__keycloak_CVE-2022-3782_20.0.1.txt": {
+          "sha256": "7c5e2533705a4a5c6cdea21506c5656aabbab1b042a7e7c6f4dfd76da81ed5cd",
+          "size_bytes": 34426
+        },
+        "package-names/keycloak__keycloak_CVE-2022-4137_20.0.4.txt": {
+          "sha256": "7c5e2533705a4a5c6cdea21506c5656aabbab1b042a7e7c6f4dfd76da81ed5cd",
+          "size_bytes": 34426
+        },
+        "package-names/keycloak__keycloak_CVE-2022-4361_21.1.1.txt": {
+          "sha256": "637a4f69a86b8d5a5bcc916c34e59ec6105404545b63129e4c665fe7305e7404",
+          "size_bytes": 33263
+        },
+        "package-names/kubernetes-client__java_CVE-2020-8570_client-java-parent-9.0.1.txt": {
+          "sha256": "90f994aae296e536f290d148d20d34b2cbe99a746630cf0f6d75ce2305c38638",
+          "size_bytes": 1524
+        },
+        "package-names/nahsra__antisamy_CVE-2016-10006_1.5.3.txt": {
+          "sha256": "babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368",
+          "size_bytes": 176
+        },
+        "package-names/nahsra__antisamy_CVE-2017-14735_1.5.6.txt": {
+          "sha256": "babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368",
+          "size_bytes": 176
+        },
+        "package-names/nahsra__antisamy_CVE-2022-28367_1.6.5.txt": {
+          "sha256": "babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368",
+          "size_bytes": 176
+        },
+        "package-names/nahsra__antisamy_CVE-2022-29577_1.6.6.1.txt": {
+          "sha256": "babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368",
+          "size_bytes": 176
+        },
+        "package-names/payara__Payara_CVE-2022-37422_5.2022.2.txt": {
+          "sha256": "004fab7b59b2af182d313b8b2e337354d76424d6dd63b7a139d0d43d9315fc5d",
+          "size_bytes": 48486
+        },
+        "package-names/perwendel__spark_CVE-2016-9177_2.5.1.txt": {
+          "sha256": "93e231cad8fa35c534f4d16eb81c341729f218ee6316a63de767631b0dcbc951",
+          "size_bytes": 619
+        },
+        "package-names/perwendel__spark_CVE-2018-9159_2.7.1.txt": {
+          "sha256": "8e54e523c1a3493b7b876e1887ecd78286ec7114f5699aa499519b03828e4fcc",
+          "size_bytes": 668
+        },
+        "package-names/rhuss__jolokia_CVE-2018-1000129_1.4.0.txt": {
+          "sha256": "5216483b48c5d81d6da3bfec0fae95fdd62e0f8b51eecbd37c27f2e0b666a05a",
+          "size_bytes": 1123
+        },
+        "package-names/spring-cloud__spring-cloud-config_CVE-2020-5405_2.1.6.RELEASE.txt": {
+          "sha256": "ef155ab4a3683cca47021002f4614d3a6904392dece95dc648c35f3610af846b",
+          "size_bytes": 776
+        },
+        "package-names/spring-cloud__spring-cloud-config_CVE-2020-5410_2.1.8.RELEASE.txt": {
+          "sha256": "ef155ab4a3683cca47021002f4614d3a6904392dece95dc648c35f3610af846b",
+          "size_bytes": 776
+        },
+        "package-names/spring-cloud__spring-cloud-gateway_CVE-2022-22947_3.0.6.txt": {
+          "sha256": "6b7e454cde9903e730a7b3a1b5c50c4f8f0ffe27938fae3d618eda9cb96a2735",
+          "size_bytes": 1346
+        },
+        "package-names/spring-projects__spring-framework_CVE-2022-22965_5.2.19.RELEASE.txt": {
+          "sha256": "8cb454e456f62a2563e5e9ced7f64a6285d26e1523fd98148013e025577c2d21",
+          "size_bytes": 24373
+        },
+        "package-names/spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE.txt": {
+          "sha256": "27fe2a704073d7f235ee2a2eb254dcc4968d1cc59e78b09bc030dbe8f391c0d1",
+          "size_bytes": 4495
+        },
+        "package-names/square__retrofit_CVE-2018-1000850_2.4.0.txt": {
+          "sha256": "8ae46d6fb740a6d3edc2b62558e0ab61b3270abf4e3ba78a498cc72d96d0cc1c",
+          "size_bytes": 488
+        },
+        "package-names/srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2.txt": {
+          "sha256": "32285414b4d41c48171fc18b2f5031ba37dc77c39714813b3b8f884d33bff619",
+          "size_bytes": 398
+        },
+        "package-names/testng-team__testng_CVE-2022-4065_7.5.txt": {
+          "sha256": "5ea153532db530c52022ee7164b290ebbb86912539213dd3b022eb477c9c003f",
+          "size_bytes": 8824
+        },
+        "package-names/undertow-io__undertow_CVE-2014-7816_1.0.16.Final.txt": {
+          "sha256": "f694b36faf3ea5c6adf900b462a7e413219859140207eb2cb0dfd8120cc7fee3",
+          "size_bytes": 3809
+        },
+        "package-names/vert-x3__vertx-web_CVE-2018-12542_3.5.3.CR1.txt": {
+          "sha256": "a639a577d2a58866336dfec226caee827c1ef3f564059591679c296b9455dd58",
+          "size_bytes": 2147
+        },
+        "package-names/vert-x3__vertx-web_CVE-2019-17640_3.9.3.txt": {
+          "sha256": "526f5e95708894901a07d05012f214ff06c9e95bf0557fd958b118137edaab5a",
+          "size_bytes": 1800
+        },
+        "package-names/whitesource__curekit_CVE-2022-23082_1.1.3.txt": {
+          "sha256": "dceb116c0c6f76cc989139637505b1ee222c701384b5accec89e83124f9cc42a",
+          "size_bytes": 48
+        },
+        "package-names/wildfly__wildfly_CVE-2018-1047_11.0.0.Final.txt": {
+          "sha256": "e0013cea3bcd959a8c4e9a5e7f152e630c4b419fc1013b13e0d39f9cba4031c6",
+          "size_bytes": 58286
+        },
+        "package-names/x-stream__xstream_CVE-2013-7285_1.4.6.txt": {
+          "sha256": "b31ce5c9b1603bd2bd9a7d39f67cfdccd7ed841a9b4b373de85473a2a45c335f",
+          "size_bytes": 2172
+        },
+        "package-names/x-stream__xstream_CVE-2020-26217_1.4.14-java7.txt": {
+          "sha256": "707803cce94bbc8cce3325862f2d72773808af042c5a362ec87847eab61a849e",
+          "size_bytes": 1408
+        },
+        "package-names/x-stream__xstream_CVE-2021-21345_1.4.15.txt": {
+          "sha256": "f6a9f90b20ed1c2b9aa4c908f6f531ddb4c3ee197fcaefc9229e6168f5c5cfe9",
+          "size_bytes": 2289
+        },
+        "package-names/xerial__sqlite-jdbc_CVE-2023-32697_3.41.2.1.txt": {
+          "sha256": "2613d772e46a781779081c11e3ace92d71167abdcaaee50cd16878a50c92a20b",
+          "size_bytes": 142
+        },
+        "package-names/xuxueli__xxl-job_CVE-2020-29204_2.2.0.txt": {
+          "sha256": "89e700ee71b9d81d56bac66c41b3c705ecfb44dcaca26531a15b53a2cee6deb5",
+          "size_bytes": 2007
+        },
+        "package-names/xwiki__xwiki-commons_CVE-2022-24897_12.6.6.txt": {
+          "sha256": "ca928f8ad80a4a27cb1ece60d31f54a547cc0daa5666efe9548f4715ef58d82c",
+          "size_bytes": 8399
+        },
+        "package-names/xwiki__xwiki-commons_CVE-2023-29201_14.6.txt": {
+          "sha256": "e0f493e33d66c2e2b708d894d083b988058fb99295d8a892edacdf64aa5dfc9a",
+          "size_bytes": 8454
+        },
+        "package-names/xwiki__xwiki-commons_CVE-2023-29528_14.9-rc-1.txt": {
+          "sha256": "e0f493e33d66c2e2b708d894d083b988058fb99295d8a892edacdf64aa5dfc9a",
+          "size_bytes": 8454
+        },
+        "package-names/xwiki__xwiki-commons_CVE-2023-31126_14.10.3.txt": {
+          "sha256": "e0f493e33d66c2e2b708d894d083b988058fb99295d8a892edacdf64aa5dfc9a",
+          "size_bytes": 8454
+        },
+        "package-names/xwiki__xwiki-commons_CVE-2023-36471_14.10.5.txt": {
+          "sha256": "085d737be8a5313d87f93911c6b416fe64cc4878d852ee5bc9a0afe1a094ea70",
+          "size_bytes": 8481
+        },
+        "package-names/xwiki__xwiki-rendering_CVE-2023-32070_14.6.txt": {
+          "sha256": "166e965937d818648b3b3b158f51dcc7c4bb294c48b962a15a0370080e36469b",
+          "size_bytes": 6464
+        },
+        "package-names/xwiki__xwiki-rendering_CVE-2023-37908_14.10.3.txt": {
+          "sha256": "166e965937d818648b3b3b158f51dcc7c4bb294c48b962a15a0370080e36469b",
+          "size_bytes": 6464
+        },
+        "package-names/yamcs__yamcs_CVE-2023-45277_5.8.6.txt": {
+          "sha256": "2883ad29c74a79d9a65461e4d0110c472f17f1e4c7c43c42c6dfbf4d13ef85fd",
+          "size_bytes": 2183
+        },
+        "package-names/yamcs__yamcs_CVE-2023-45278_5.8.6.txt": {
+          "sha256": "2883ad29c74a79d9a65461e4d0110c472f17f1e4c7c43c42c6dfbf4d13ef85fd",
+          "size_bytes": 2183
+        },
+        "package-names/zeroturnaround__zt-zip_CVE-2018-1002201_1.12.txt": {
+          "sha256": "c8f89ec3a01595f0ff0db53eef446839885b29860b8a8119ecea33d7b7435eb6",
+          "size_bytes": 164
+        },
+        "patches/apache__camel_CVE-2018-8041_2.20.3.patch": {
+          "sha256": "512420667abfa1a0103d4b5fc634b1040a94741b1f0220964f74f112c9d957cf",
+          "size_bytes": 12470
+        },
+        "patches/apache__camel_CVE-2019-0194_2.21.4.patch": {
+          "sha256": "ffff6a10e58590981d4471aa77b735fddb9afa6f78d356e3091cd52828aae5f3",
+          "size_bytes": 2887
+        },
+        "patches/jstachio__jstachio_CVE-2023-33962_1.0.0.patch": {
+          "sha256": "fa2bca37e1462c895dec9f7c4f24ec5a811fdb3548dc0fb19f0bfe5fa0b9fe16",
+          "size_bytes": 31041
+        },
+        "patches/keycloak__keycloak_CVE-2022-1274_20.0.4.patch": {
+          "sha256": "3b9f79de94b65a623fff8f0dc602f7cff61b2cc76484f8bef2b871bae0686034",
+          "size_bytes": 7156
+        },
+        "patches/keycloak__keycloak_CVE-2022-4137_20.0.4.patch": {
+          "sha256": "3b9f79de94b65a623fff8f0dc602f7cff61b2cc76484f8bef2b871bae0686034",
+          "size_bytes": 7156
+        },
+        "patches/keycloak__keycloak_CVE-2022-4361_21.1.1.patch": {
+          "sha256": "3b9f79de94b65a623fff8f0dc602f7cff61b2cc76484f8bef2b871bae0686034",
+          "size_bytes": 7156
+        },
+        "patches/testng-team__testng_CVE-2022-4065_7.5.patch": {
+          "sha256": "de92788627c773d226adac85219a9b159fd4f14bd7cae04d48819d852fd26018",
+          "size_bytes": 461
+        },
+        "patches/xwiki__xwiki-commons_CVE-2022-24897_12.6.6.patch": {
+          "sha256": "1cbd574faf1ae72c8e2b30fc56681085f16cb895c490e82a784a1a6cf092c59a",
+          "size_bytes": 668
+        },
+        "resources/dataset-collection.png": {
+          "sha256": "b2bba0d5abdced2dddc089826940aff9075fc6398425cdc51108054cf6d688d1",
+          "size_bytes": 272994
+        },
+        "scripts/.gitignore": {
+          "sha256": "316aaf6604680eb5f47cf951f3eebc44881d705f5ef4da4e6e05beb128ede276",
+          "size_bytes": 9
+        },
+        "scripts/build_one.py": {
+          "sha256": "7c2ce659cee2d5f0ce9d5deacf3b679bf83d428e07ab0145c9527bf21777954a",
+          "size_bytes": 8447
+        },
+        "scripts/fetch_one.py": {
+          "sha256": "2e3e2724caebf2ba60b3dfe7d7c4910b02d20fd3e7898dd182c44b2916768bfb",
+          "size_bytes": 2062
+        },
+        "scripts/gradle_version.json": {
+          "sha256": "d933cab6126d3971a32384017900f604f7a85fe51d535f1af903862981117966",
+          "size_bytes": 495
+        },
+        "scripts/jdk_version.json": {
+          "sha256": "644be9d74d16512674f1234d8e5acf664cb6e8d8896328b80acc2eaa2b6cf7d0",
+          "size_bytes": 281
+        },
+        "scripts/mvn_version.json": {
+          "sha256": "6d26a35b8d23a0649221bd20699312263f09f423dfa9cca6d9c9d34ea3aa511e",
+          "size_bytes": 631
+        },
+        "scripts/setup.py": {
+          "sha256": "3e0895191e99bc04a50a386648239d163bbac09b9326bff4433d22954ca3b5bf",
+          "size_bytes": 3507
+        },
+        "scripts/setup_gradle.py": {
+          "sha256": "c772fdc9277d05e8b668372535306c975771df155ecfd4c2ba4a066025da42cf",
+          "size_bytes": 1606
+        },
+        "scripts/setup_jdk.py": {
+          "sha256": "01f6f65012d17085aff1588fff1efe26a8772231887775790a359f0f18c05526",
+          "size_bytes": 1106
+        },
+        "scripts/setup_mvn.py": {
+          "sha256": "83c79a5ca2e773bf9180cf26f52f4ed44a4598c3039f7dab73258b4850e737ad",
+          "size_bytes": 1563
+        }
+      },
+      "git_commit": "698fb7248ae30cb7f7782d59c841f05ad70ea9cc",
+      "hash_contract": "sha256(canonical-json(manifest-without-sha256_manifest))",
+      "num_curated_source_sink_instances_matched": 0,
+      "num_cwes": 4,
+      "num_fix_location_rows": 1002,
+      "num_instances": 120,
+      "num_orphan_curated_source_sink_rows": 0,
+      "num_raw_curated_source_sink_rows": 0,
+      "num_raw_cwe_labels": 4,
+      "num_unique_repositories": 77,
+      "num_upstream_build_status_missing": 0,
+      "num_upstream_declared_build_failure": 0,
+      "num_upstream_declared_build_success": 120,
+      "schema_version": "1.0",
+      "sha256_files": "372f63692daf7d6c7417dea84d46c33c8e4c0394646b0919a587311d81bd38d5",
+      "sha256_manifest": "c392f775399e4e4b8f4e52d68a08a866ed531060ca95f4cddb88dc29a3dc2fb3",
+      "snapshot_id": "cwe_bench_java_legacy_698fb724",
+      "source_url": "https://github.com/iris-sast/cwe-bench-java.git",
+      "track": "legacy"
+    },
+    {
+      "cwe_normalization": {
+        "alias_collisions": {
+          "CWE-22": [
+            "CWE-022",
+            "CWE-22"
+          ],
+          "CWE-78": [
+            "CWE-078",
+            "CWE-78"
+          ],
+          "CWE-79": [
+            "CWE-079",
+            "CWE-79"
+          ],
+          "CWE-94": [
+            "CWE-094",
+            "CWE-94"
+          ]
+        },
+        "rule": "strip zero-padding from numeric CWE identifier"
+      },
+      "dataset_name": "cwe_bench_java",
+      "downloaded_at": "2026-08-23T12:58:06Z",
+      "file_hashes": {
+        ".dockerignore": {
+          "sha256": "66a9bcf39d9d396b6a53490154979a2cc0f35db6992446fc652b4d9c7af9abc6",
+          "size_bytes": 40
+        },
+        ".github/cached_output/OWASP__json-sanitizer_CVE-2020-13973_1.2.0/llm_labelled_sink_apis.json": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "size_bytes": 2
+        },
+        ".github/cached_output/OWASP__json-sanitizer_CVE-2020-13973_1.2.0/llm_labelled_source_apis.json": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "size_bytes": 2
+        },
+        ".github/cached_output/OWASP__json-sanitizer_CVE-2020-13973_1.2.0/llm_labelled_source_func_params.json": {
+          "sha256": "45157cf96e23e794ec3313aa4fa4775ba2a2017b9eb305b18d87de69fe641faa",
+          "size_bytes": 408
+        },
+        ".github/cached_output/OWASP__json-sanitizer_CVE-2020-13973_1.2.0/llm_labelled_taint_prop_apis.json": {
+          "sha256": "fd9201ef65a4e88234104ac0191d665b9ca74dfdec280aca6f90e261988bff46",
+          "size_bytes": 3272
+        },
+        ".github/cached_output/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17/llm_labelled_sink_apis.json": {
+          "sha256": "9336ac2c17a33d8b325bbc76d9c5d413dc685efac2191513a8cbc6e0e2691c1f",
+          "size_bytes": 4613
+        },
+        ".github/cached_output/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17/llm_labelled_source_apis.json": {
+          "sha256": "65880534a6e97974dc4e4270eed1e0f0ece3860da5492b94fb834ea18b7a66fa",
+          "size_bytes": 3575
+        },
+        ".github/cached_output/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17/llm_labelled_source_func_params.json": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "size_bytes": 2
+        },
+        ".github/cached_output/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17/llm_labelled_taint_prop_apis.json": {
+          "sha256": "da2df49362922cc64e0d0e6b62a48ea60eb16f1024edff3faa477f873eb18893",
+          "size_bytes": 4582
+        },
+        ".github/cached_output/jmrozanec__cron-utils_CVE-2021-41269_9.1.5/llm_labelled_sink_apis.json": {
+          "sha256": "501a1f17eb3c0c28b08b310b514a324a63c3114cfad54134494e5dff8f8a4b5c",
+          "size_bytes": 5773
+        },
+        ".github/cached_output/jmrozanec__cron-utils_CVE-2021-41269_9.1.5/llm_labelled_source_apis.json": {
+          "sha256": "eaf012d985fed8da346bd7926ae191cf61609f45e78558a9d15db7cf6535b1cd",
+          "size_bytes": 1104
+        },
+        ".github/cached_output/jmrozanec__cron-utils_CVE-2021-41269_9.1.5/llm_labelled_source_func_params.json": {
+          "sha256": "b773b221bb50f65d053e3db8d9d5bc8d3ea9ff76a846f25d79423aa311e96975",
+          "size_bytes": 2140
+        },
+        ".github/cached_output/jmrozanec__cron-utils_CVE-2021-41269_9.1.5/llm_labelled_taint_prop_apis.json": {
+          "sha256": "04aaf1a63bc6743e4bf89fa231455eaa1ac91714424a403bac7558817e1db483",
+          "size_bytes": 10924
+        },
+        ".github/cached_output/perwendel__spark_CVE-2018-9159_2.7.1/llm_labelled_sink_apis.json": {
+          "sha256": "986016bb461fd65c46e59198e2074d631c6f647e0677e6cc9cc6a5693bea88d1",
+          "size_bytes": 8284
+        },
+        ".github/cached_output/perwendel__spark_CVE-2018-9159_2.7.1/llm_labelled_source_apis.json": {
+          "sha256": "5b01df401987a5ea5bf679163236c8ae3c8f2901d3b2dab6b512fe5cd216c6a5",
+          "size_bytes": 5672
+        },
+        ".github/cached_output/perwendel__spark_CVE-2018-9159_2.7.1/llm_labelled_source_func_params.json": {
+          "sha256": "dccd10064a778d34a74fd7bb9e1c43c412dc0043478ea0807a92cb7f76cd323a",
+          "size_bytes": 3955
+        },
+        ".github/cached_output/perwendel__spark_CVE-2018-9159_2.7.1/llm_labelled_taint_prop_apis.json": {
+          "sha256": "87bd56869bba0ec4452ea65df8916a0c043d4cb72fd502b04ec9cbb14e263d5d",
+          "size_bytes": 5605
+        },
+        ".github/guide.md": {
+          "sha256": "3f5e4ab331c2ff95e4b386f1e8fd5c79395b719f53568634452208939fc2c28f",
+          "size_bytes": 4238
+        },
+        ".github/workflows/CI_pipeline.yml": {
+          "sha256": "cf58c15fee4e70ea99c81610c61673b6a84a5052fc746ba1874766f82b496d91",
+          "size_bytes": 8019
+        },
+        ".github/workflows/mdbook.yml": {
+          "sha256": "f38be6ce970a1e38a97b2232936d3377df35decb61c7fe1372d6038477b4ecd0",
+          "size_bytes": 1710
+        },
+        ".github/workflows/to_build.json": {
+          "sha256": "bd67a498c7cef30fa1fd687545f3dc5b1fa6871fb9052f7b198747a75905906d",
+          "size_bytes": 762
+        },
+        ".gitignore": {
+          "sha256": "6e51100f277df383f5528f1cbac9dcc97acdd6e1cee0845de10392cd14c8a5e4",
+          "size_bytes": 152
+        },
+        ".gitmodules": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        },
+        "Dockerfile": {
+          "sha256": "8ff953f5b1732ba44939ce0ba0a55892c1fe68b30eb8e267f0d303d502a4bea0",
+          "size_bytes": 3620
+        },
+        "LICENSE": {
+          "sha256": "b636ac67b9baaa2e1cb31794410cec9dcaef8c36b9a7f59149adbcf1b08b519a",
+          "size_bytes": 1118
+        },
+        "README.md": {
+          "sha256": "846e9a1e205bad8d6d7d9809b98f5227b6152b2beaf184b86a1c8d138e63ed7f",
+          "size_bytes": 11627
+        },
+        "book.toml": {
+          "sha256": "a929cfdea4c0cbd63d091919cdbb2cc4966a92f10207086643ec0266d843521f",
+          "size_bytes": 312
+        },
+        "data/Dockerfiles/DSpace_CVE-2025-53621_dspace-7.6.3/134/Dockerfile": {
+          "sha256": "5ffd08c42d38cf2319a8bdd26eb1cd955cf32c3461c16cc72a147e2803ce9aa8",
+          "size_bytes": 2278
+        },
+        "data/Dockerfiles/DSpace_CVE-2025-53622_dspace-7.6.3/133/Dockerfile": {
+          "sha256": "54870a4619dac937c058b5d9ea53051851d366a64bfb912721bf2851fc574799",
+          "size_bytes": 2301
+        },
+        "data/Dockerfiles/DSpace__DSpace_CVE-2022-31192_5.10/88/Dockerfile": {
+          "sha256": "199acde200c11c9707003d670888ed4aec40ad4cc88cf3cc4545da0774d9c674",
+          "size_bytes": 2077
+        },
+        "data/Dockerfiles/DSpace__DSpace_CVE-2022-31194_5.10/37/Dockerfile": {
+          "sha256": "25ce15391aead0d25b5845b26ac72e325b4759f97842b9d6657b40cc0488fead",
+          "size_bytes": 2071
+        },
+        "data/Dockerfiles/DSpace__DSpace_CVE-2022-31195_5.10/35/Dockerfile": {
+          "sha256": "44f7cc81d6de869d6caefd82340cd9a12400eaf099bec789b71bd9b974c4eaf9",
+          "size_bytes": 2071
+        },
+        "data/Dockerfiles/ESAPI__esapi-java-legacy_CVE-2022-23457_2.2.3.1/23/Dockerfile": {
+          "sha256": "bf2976a7cb6bcc6fef8ae18b3f177f7383cf06148b58dcdc943acba2eb7c1150",
+          "size_bytes": 2133
+        },
+        "data/Dockerfiles/ESAPI__esapi-java-legacy_CVE-2022-24891_2.2.3.1/82/Dockerfile": {
+          "sha256": "5619c05b27952c4bb9ddc0af0a80449ab8a58306ec29b92a8299d79466043edf",
+          "size_bytes": 2139
+        },
+        "data/Dockerfiles/Graylog2__graylog2-server_CVE-2023-41044_5.1.2/47/Dockerfile": {
+          "sha256": "e00e7c6550eab59cc0666aee51412c7f517d6e3872b87f20447602abfac242e1",
+          "size_bytes": 2131
+        },
+        "data/Dockerfiles/OWASP__json-sanitizer_CVE-2020-13973_1.2.0/78/Dockerfile": {
+          "sha256": "cee68d26b6a7b56ca166fe905b373fa671fdec9cb2a9884c9e101e144e0d5e20",
+          "size_bytes": 2116
+        },
+        "data/Dockerfiles/OpenDJ_CVE-2025-27497_4.9.2/199/Dockerfile": {
+          "sha256": "d65e2dd75d3ed9174d9c5337cb6fc8273e6c14da4a2a82f29fec2630c22d4fb2",
+          "size_bytes": 2278
+        },
+        "data/Dockerfiles/SpringSource__spring-security-oauth_CVE-2018-1260_2.3.2.RELEASE/100/Dockerfile": {
+          "sha256": "f84b5ab2a5dd42b92c0fa25adef554b095330165f2bf36f30eb98dfb648de808",
+          "size_bytes": 2189
+        },
+        "data/Dockerfiles/activemq-artemis_CVE-2025-27427_2.39.0/185/Dockerfile": {
+          "sha256": "470eb23cb8b4a2b43b1fc8edaef8c18eeb5c71b96819c774ce53b71df60a68e3",
+          "size_bytes": 2274
+        },
+        "data/Dockerfiles/alibaba__nacos_CVE-2021-44667_2.0.3/80/Dockerfile": {
+          "sha256": "9937b4add3a8739d0adabd7155ad5f8115e7a41f18359405ef02c6334e1fc272",
+          "size_bytes": 2081
+        },
+        "data/Dockerfiles/alibaba__one-java-agent_CVE-2022-25842_0.0.1/26/Dockerfile": {
+          "sha256": "b213dc80a207f725899d653a2319172fa01d1ec66120e00723e08a9aa18867da",
+          "size_bytes": 2120
+        },
+        "data/Dockerfiles/allure2_CVE-2025-52888_2.34.0/144/Dockerfile": {
+          "sha256": "6e227b9630ad5d9e89a2e8b3af5c41e28c5aac150e871cc6c307017e19464cdd",
+          "size_bytes": 1511
+        },
+        "data/Dockerfiles/apache__activemq_CVE-2014-3576_5.10.2/63/Dockerfile": {
+          "sha256": "18dfb3e10e3f8cbc443a257d326d28f3ec403b82581131b44a7140448f6e8bef",
+          "size_bytes": 2097
+        },
+        "data/Dockerfiles/apache__activemq_CVE-2019-0222_5.15.8/101/Dockerfile": {
+          "sha256": "bbea29b3c82b56eb2465dc205dd8fdbf92afd8e7d2ea895f83bf5d62aa8ca0c0",
+          "size_bytes": 2066
+        },
+        "data/Dockerfiles/apache__activemq_CVE-2020-11998_5.15.12/104/Dockerfile": {
+          "sha256": "d33da65aa4dd485ea960f7ec0c7264956cd9c18175ab310be38208eb3a2550c1",
+          "size_bytes": 2074
+        },
+        "data/Dockerfiles/apache__axis-axis1-java_CVE-2023-51441_1.3.0/124/Dockerfile": {
+          "sha256": "19fe11e060516892a491a3529106ff9418d0c21e0c3d5ed4300c2e49db8a69b2",
+          "size_bytes": 2297
+        },
+        "data/Dockerfiles/apache__dolphinscheduler_CVE-2022-26884_2.0.5/39/Dockerfile": {
+          "sha256": "48fb066a4c181f0623e1b320b7f64907e8971890cd9c37f72bb480d2af85e5e6",
+          "size_bytes": 2125
+        },
+        "data/Dockerfiles/apache__dolphinscheduler_CVE-2022-34662_2.0.9/40/Dockerfile": {
+          "sha256": "f795f81574b098392e243c4ec025d84cc1cb8ffb51a2f83ffdd8502c261b1764",
+          "size_bytes": 2125
+        },
+        "data/Dockerfiles/apache__dolphinscheduler_CVE-2023-49109_3.2.0/120/Dockerfile": {
+          "sha256": "713934b76ab9f5aa9cbd99d2a78283b9052deff2bacfecd5305dba926f691162",
+          "size_bytes": 2195
+        },
+        "data/Dockerfiles/apache__dolphinscheduler_CVE-2023-51770_3.2.0/119/Dockerfile": {
+          "sha256": "26b4185c6d884f2d6b79f55b631989801594385a2918236c32ae56d8fd84f252",
+          "size_bytes": 2195
+        },
+        "data/Dockerfiles/apache__dubbo_CVE-2021-30180_2.7.9/107/Dockerfile": {
+          "sha256": "c614273f1b9616562abbadc40000de88c330fb7729741fbe5aa777a4939f75bd",
+          "size_bytes": 2051
+        },
+        "data/Dockerfiles/apache__flink_CVE-2020-17519_1.11.2/17/Dockerfile": {
+          "sha256": "7ea7f8eae859e4d769648a666fdafa547eff17cdd4382315b74b6dddfd314ab2",
+          "size_bytes": 2074
+        },
+        "data/Dockerfiles/apache__incubator-dubbo_CVE-2021-30181_2.6.8/108/Dockerfile": {
+          "sha256": "7b7c56e578b772cce4fa5e018aee7bfc7ce28f26a239b1bcab7714de8a67030d",
+          "size_bytes": 2081
+        },
+        "data/Dockerfiles/apache__jspwiki_CVE-2019-0225_2.11.0.M2/10/Dockerfile": {
+          "sha256": "3922ce0c381d535710b106f64dc0967656fa507e27ce0a8968c2315f34a6923a",
+          "size_bytes": 2092
+        },
+        "data/Dockerfiles/apache__jspwiki_CVE-2019-10076_2.11.0.M3/72/Dockerfile": {
+          "sha256": "c61922ebe03448c49ca7af2346f317324a078733e6add2e756f3dfc6a048ca6f",
+          "size_bytes": 2102
+        },
+        "data/Dockerfiles/apache__jspwiki_CVE-2019-10077_2.11.0.M3/71/Dockerfile": {
+          "sha256": "30f17f3a2af4167009a1eec6d050ca7f6f60842e7d474ebca8d8eee0f47b5fb8",
+          "size_bytes": 2102
+        },
+        "data/Dockerfiles/apache__jspwiki_CVE-2019-10078_2.11.0.M3/73/Dockerfile": {
+          "sha256": "911837b46f5e4f84dffcabe94c98e98a53174b3206a6456bbfaad2f42c4742c3",
+          "size_bytes": 2102
+        },
+        "data/Dockerfiles/apache__jspwiki_CVE-2019-10089_2.11.0.M4/74/Dockerfile": {
+          "sha256": "8cfd69497dc56f28ad9b7262f3ca2ac6cdce0e63140a9e849daf95749ebc8896",
+          "size_bytes": 2102
+        },
+        "data/Dockerfiles/apache__jspwiki_CVE-2022-46907_2.11.3/95/Dockerfile": {
+          "sha256": "bcbbf08235474dc820e2e28e0235ce765a86e6925e9d127cf2451d42520ce0ac",
+          "size_bytes": 2090
+        },
+        "data/Dockerfiles/apache__kafka_CVE-2025-27818_3.9.0/125/Dockerfile": {
+          "sha256": "07796fa076ef8822d600dafed33cab10818df9bf5cbb85cfc986e35c2450487f",
+          "size_bytes": 1514
+        },
+        "data/Dockerfiles/apache__kylin_CVE-2024-48944_5.0.0/123/Dockerfile": {
+          "sha256": "5bb432ee005f98588eacb6a7c831e5b7ffbdd5c7e1a628ea94b7fa1064bad0fe",
+          "size_bytes": 2249
+        },
+        "data/Dockerfiles/apache__mina-sshd_CVE-2023-35887_2.9.2/48/Dockerfile": {
+          "sha256": "4d9a94343bc2296c87a25e5e9a8757644f546efa7782865bf45a03a2f4401140",
+          "size_bytes": 2090
+        },
+        "data/Dockerfiles/apache__myfaces_CVE-2011-4367_2.0.11/27/Dockerfile": {
+          "sha256": "061ca31586d95667bc3faedb2b729d826e77757de4441af8978e1a757931841e",
+          "size_bytes": 2080
+        },
+        "data/Dockerfiles/apache__nifi_CVE-2022-33140_1.16.2/67/Dockerfile": {
+          "sha256": "eadf65440fd9a24b827bfde9d021080aca6f822df0f05f9d291f096c3cf4b7f3",
+          "size_bytes": 2082
+        },
+        "data/Dockerfiles/apache__rocketmq_CVE-2019-17572_4.6.0/15/Dockerfile": {
+          "sha256": "0ff48fb6261171a3efdd2e3e1b154c9f6d3dc7b70e0adc52e3947c6bc8b8d3c5",
+          "size_bytes": 2085
+        },
+        "data/Dockerfiles/apache__rocketmq_CVE-2023-33246_5.1.0/118/Dockerfile": {
+          "sha256": "07a0730236e16833021dbebcd4fa8a59d643a96ffdbcd0910f081cc6dc56ed04",
+          "size_bytes": 2066
+        },
+        "data/Dockerfiles/apache__rocketmq_CVE-2023-37582_4.9.6/116/Dockerfile": {
+          "sha256": "9b2c748bc9f27ffe9f869636ca9323a39746f4f13f5edd6dfba9455652aa3c7c",
+          "size_bytes": 2066
+        },
+        "data/Dockerfiles/apache__shiro_CVE-2023-34478_1.11.0/49/Dockerfile": {
+          "sha256": "54108511f66ec3f852632fac70cb0c98974b1afff90325a9c1338e3c1995729c",
+          "size_bytes": 2074
+        },
+        "data/Dockerfiles/apache__shiro_CVE-2023-46749_1.12.0/54/Dockerfile": {
+          "sha256": "82fd93bf298ab7b001c9510a32500de851b03ae6abd63bc9510781512bdfb857",
+          "size_bytes": 2075
+        },
+        "data/Dockerfiles/apache__sling-org-apache-sling-servlets-resolver_CVE-2024-23673_2.10.0/55/Dockerfile": {
+          "sha256": "395cbc207f22a6f1bf35f70dac897a13973aa509fa9328adc32bbd8ca721ce59",
+          "size_bytes": 2249
+        },
+        "data/Dockerfiles/apache__sling-org-apache-sling-xss_CVE-2016-5394_1.0.8/87/Dockerfile": {
+          "sha256": "aee2259f4f914e14cdafcf53b80e4805e20066cd0f477434c4886c7db5835f63",
+          "size_bytes": 2177
+        },
+        "data/Dockerfiles/apache__struts_CVE-2020-17530_2.5.25/103/Dockerfile": {
+          "sha256": "bc3c0f8d5a4c065c9d96a7fbdb5f9703b4b51ce8d7860dc09bd99ac870e73f6e",
+          "size_bytes": 2027
+        },
+        "data/Dockerfiles/apache__tika_CVE-2018-11762_1.18/8/Dockerfile": {
+          "sha256": "903208e46abc0a4b97cd45b6b3b31908cb78a731ed535af1a3081b182b4397d4",
+          "size_bytes": 2059
+        },
+        "data/Dockerfiles/apache__uima-uimaj_CVE-2022-32287_3.3.0/42/Dockerfile": {
+          "sha256": "f8b9be9e09b1eb6b79da78311aea0ed923ef92d1f8516522b221aa625e09a3a1",
+          "size_bytes": 2095
+        },
+        "data/Dockerfiles/asf__commons-io_CVE-2021-29425_2.6/19/Dockerfile": {
+          "sha256": "44ff4cf6f86637f56b3faa454ee4c89f088019d0a9c1bdb542d2d7f7242e1494",
+          "size_bytes": 2078
+        },
+        "data/Dockerfiles/asf__commons-text_CVE-2022-42889_1.9/111/Dockerfile": {
+          "sha256": "78a483b4db7fb375354a3ca5b40af008ee9095679168159bd915543c4f8bed2e",
+          "size_bytes": 2069
+        },
+        "data/Dockerfiles/asf__cxf_CVE-2016-6812_3.0.11/86/Dockerfile": {
+          "sha256": "7627023d6363161e8dcc4194063b1fc5d641fd9e5b22c3ffe46f6ac748c0904e",
+          "size_bytes": 2057
+        },
+        "data/Dockerfiles/asf__cxf_CVE-2019-17573_3.2.11/76/Dockerfile": {
+          "sha256": "15bd9876f8ed71fb15bbd176974004c637e9cad720d5b0b3edb920d9b10c2ea4",
+          "size_bytes": 2061
+        },
+        "data/Dockerfiles/asf__james-project_CVE-2022-22931_3.6.0/21/Dockerfile": {
+          "sha256": "f6c00735802fd482dea777d25e895fffd4963c5ec4958bf5ba704c42d4272a45",
+          "size_bytes": 1486
+        },
+        "data/Dockerfiles/asf__karaf_CVE-2022-22932_4.3.5/20/Dockerfile": {
+          "sha256": "48918f4bbae150d7a89765c937e400f2eac3a256df5158349bc2a184c273d50e",
+          "size_bytes": 2061
+        },
+        "data/Dockerfiles/asf__nifi_CVE-2023-34468_1.21.0/115/Dockerfile": {
+          "sha256": "bafdc2a4b1cabd1a7d8a2bc290946d87b4876c8e99cc7a3c9181aea815c5a5f3",
+          "size_bytes": 2042
+        },
+        "data/Dockerfiles/asf__nifi_CVE-2023-36542_1.22.0/117/Dockerfile": {
+          "sha256": "bb8509f3fabeb490042c63826a89953c8289aebd46b8b5018e3daa2deb999a03",
+          "size_bytes": 2042
+        },
+        "data/Dockerfiles/asf__tapestry-5_CVE-2019-0207_5.4.4/12/Dockerfile": {
+          "sha256": "24cd6232d5b3a7842d52ad7c2d496e120cc7884ff9e70d7f0a06acbae59f6894",
+          "size_bytes": 1526
+        },
+        "data/Dockerfiles/aws__aws-sdk-java_CVE-2022-31159_1.12.260/33/Dockerfile": {
+          "sha256": "a30672a949cbd33f15397fc9aee62e9e0e887e5703d3adf9fd3d70148d709e56",
+          "size_bytes": 2102
+        },
+        "data/Dockerfiles/camel_CVE-2025-30177_camel-4.10.2/184/Dockerfile": {
+          "sha256": "6d8d2cec10769948ac2128396104ed5392e31ff232f228f1eb5db433e3b8e409",
+          "size_bytes": 3987
+        },
+        "data/Dockerfiles/cassandra-lucene-index_CVE-2025-26511_cassandra-4.0.16-1.0.0/201/Dockerfile": {
+          "sha256": "e905f98afcc1f72e8b40a7bc3f6d84ddfc70718cd4c4e98512c47b91b6778f02",
+          "size_bytes": 2590
+        },
+        "data/Dockerfiles/codecentric__spring-boot-admin_CVE-2022-46166_2.6.9/113/Dockerfile": {
+          "sha256": "74ede2c9b100f196c7cbf47cc73e3a5b86f4b912165c753284e963c9b25d6726",
+          "size_bytes": 2137
+        },
+        "data/Dockerfiles/codehaus-plexus__plexus-archiver_CVE-2018-1002200_3.5/30/Dockerfile": {
+          "sha256": "86b6564d54a05cdd163c36910b4bd2ab7a2a7c974a84a4361d4c304b75a2d4b1",
+          "size_bytes": 2165
+        },
+        "data/Dockerfiles/codehaus-plexus__plexus-archiver_CVE-2023-37460_4.7.1/50/Dockerfile": {
+          "sha256": "b7cbe325e2c6561f0ab8e90dffd35b8299fc111b88811330a1da465daa09a72a",
+          "size_bytes": 2165
+        },
+        "data/Dockerfiles/codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15/64/Dockerfile": {
+          "sha256": "458524429bb7bdf85dc84912d5b7361085768a3ae5db32dfa668b7f02e7afd02",
+          "size_bytes": 2174
+        },
+        "data/Dockerfiles/codehaus-plexus__plexus-utils_CVE-2022-4244_3.0.23/51/Dockerfile": {
+          "sha256": "1abe292d5195518d215362ff1f6fc20b488e1695bca7cb31e9d927768c772b7c",
+          "size_bytes": 2150
+        },
+        "data/Dockerfiles/commons-beanutils_CVE-2025-48734_commons-beanutils-1.10.1-RC1/162/Dockerfile": {
+          "sha256": "4a44116ac5916ee3d2d239cd77fc7df04cfbe19b0782b359e0108ef4034a351c",
+          "size_bytes": 2366
+        },
+        "data/Dockerfiles/commons-fileupload_CVE-2025-48976_commons-fileupload-1.5-RC1/153/Dockerfile": {
+          "sha256": "9de407aaf1246046b1aeacb4a1ffcb1e0b43e1636bee34bec093126ea0af18d3",
+          "size_bytes": 2393
+        },
+        "data/Dockerfiles/conductor_CVE-2025-26074_v3.21.12/141/Dockerfile": {
+          "sha256": "b6f2adf86745c31f80a3258d215d644ae46c08b1e96a98994a082c8fdacfc2eb",
+          "size_bytes": 1558
+        },
+        "data/Dockerfiles/console_CVE-2025-2901_v3.7.10/173/Dockerfile": {
+          "sha256": "b84bd658d5371cca058aa076fa280f5d67b1597564d5e0712aeff28278bd35d8",
+          "size_bytes": 2282
+        },
+        "data/Dockerfiles/crate__crate_5.5.1_CVE-2023-51982_5.5.1/126/Dockerfile": {
+          "sha256": "52ab558e3d86ddb309cdf3bd92ff1a16a5b136b1aac8b048b822e1fce1b275d1",
+          "size_bytes": 2243
+        },
+        "data/Dockerfiles/cuba_CVE-2025-32959_7.2.22/179/Dockerfile": {
+          "sha256": "efd2aaa874f9e0687bcd5781ca7fe2fa18eeecf2d0075891ba7d5607d72eb8fb",
+          "size_bytes": 1524
+        },
+        "data/Dockerfiles/cxf_CVE-2025-23184_cxf-3.5.9/212/Dockerfile": {
+          "sha256": "dba640a6b11f43063bb46bb504c7589c205a25ae32d6ae54a87008d78ec0cc29",
+          "size_bytes": 2191
+        },
+        "data/Dockerfiles/cxf_CVE-2025-48795_cxf-3.5.10/135/Dockerfile": {
+          "sha256": "106557db66eb44d271f5268ce69ce38af260696e911d1e6b7fe38bb847f46b3a",
+          "size_bytes": 2235
+        },
+        "data/Dockerfiles/diffplug__goomph_CVE-2022-26049_3.37.1/38/Dockerfile": {
+          "sha256": "f78faccb2930ce8a0c6580c387ebfd0d3bbbe2f76a7ca143db4d5f6ccc780722",
+          "size_bytes": 1533
+        },
+        "data/Dockerfiles/djl_CVE-2025-0851_v0.30.0/208/Dockerfile": {
+          "sha256": "f2ef95d535b1d2dfeef098bccf26c29843cf9070213fc03a5545fcc2ff58af51",
+          "size_bytes": 1512
+        },
+        "data/Dockerfiles/dromara__hutool_CVE-2018-17297_4.1.11/7/Dockerfile": {
+          "sha256": "9c63c83d4a721ea8e4a64e03520cffefe7c04fc7e2eec51276507fdd15de49ce",
+          "size_bytes": 2082
+        },
+        "data/Dockerfiles/eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5/44/Dockerfile": {
+          "sha256": "18dbaa359245f7a3994beae15b88651192032dc08bc48974ee5539ca987a534d",
+          "size_bytes": 2117
+        },
+        "data/Dockerfiles/eclipse__hawkbit_CVE-2020-27219_0.3.0M6/79/Dockerfile": {
+          "sha256": "2457f3fa89c7e9e265eb116ba220a8c3d65202b97603d74cd7cf246c06f6bf0c",
+          "size_bytes": 2099
+        },
+        "data/Dockerfiles/emissary_CVE-2025-27508_8.23.0/198/Dockerfile": {
+          "sha256": "8759b7811c8207295a2a88f562d96bf996a053b630059b7d0fe8b65e927fa064",
+          "size_bytes": 2291
+        },
+        "data/Dockerfiles/fabric8io__kubernetes-client_CVE-2021-4178_5.0.2/110/Dockerfile": {
+          "sha256": "21f0dac4cdb9f4bdf22267597ae3cdad5d72bed2ee9c0c44401ca74de435f0e9",
+          "size_bytes": 2122
+        },
+        "data/Dockerfiles/ff4j__ff4j_CVE-2022-44262_1.8.13/112/Dockerfile": {
+          "sha256": "29d7a1ca245f656eed17e7b8a3039461632c4bf4c5c04fd1506a15951abe2b4a",
+          "size_bytes": 2040
+        },
+        "data/Dockerfiles/folio-org__spring-module-core_CVE-2022-4963_2.0.0/122/Dockerfile": {
+          "sha256": "6c91667573dc8863a577631dcebbe4fce27daabe31567cc7111a05786ce6edde",
+          "size_bytes": 2367
+        },
+        "data/Dockerfiles/geoserver_CVE-2025-27505_2.26.2/157/Dockerfile": {
+          "sha256": "1aabb6f3cc2b608fdcf7357fd44e35d0941f1d93d71aa9e0e197020726f14f35",
+          "size_bytes": 2242
+        },
+        "data/Dockerfiles/geoserver_CVE-2025-30145_2.26.2/156/Dockerfile": {
+          "sha256": "6b61cff10d0e11bd83ab68e4dfab71e66ca426124cb4fbe125b543d54986515b",
+          "size_bytes": 2275
+        },
+        "data/Dockerfiles/graylog2-server_CVE-2025-53106_6.2.3/140/Dockerfile": {
+          "sha256": "75176b8106444c46df85afad72b58a211e6a423a6e3be4fe6d64b4bf9579c155",
+          "size_bytes": 2271
+        },
+        "data/Dockerfiles/hapifhir__org.hl7.fhir.core_CVE-2023-24057_5.6.91/45/Dockerfile": {
+          "sha256": "e3e9715b5bcf2a55e540714f0594f59bb72eab68d6337aee31bb148c72301d97",
+          "size_bytes": 2145
+        },
+        "data/Dockerfiles/hapifhir__org.hl7.fhir.core_CVE-2023-28465_5.6.105/46/Dockerfile": {
+          "sha256": "fcc852e41caa273ece9587647e1370a5d65b5b9767a0324af352e59c616f88f1",
+          "size_bytes": 2149
+        },
+        "data/Dockerfiles/hibernate__hibernate-validator_CVE-2019-10219_6.0.17.Final/75/Dockerfile": {
+          "sha256": "d086b3975861a897e17867d5be2298b4b9df86dc60011a9df8b0b7338cf0ba01",
+          "size_bytes": 2190
+        },
+        "data/Dockerfiles/incubator-seata_CVE-2025-32897_v2.2.0/143/Dockerfile": {
+          "sha256": "f9aa1ccf2be12ad8eebc067875b4bbb78fc1ad9850174a8a040a390d5a2f9108",
+          "size_bytes": 2281
+        },
+        "data/Dockerfiles/inlong_CVE-2025-27522_2.1.0-RC0/166/Dockerfile": {
+          "sha256": "a5be5e006761c7538a76de9f76bd4b83ce161c24ef28f9f7fb86df7a46e415ee",
+          "size_bytes": 2245
+        },
+        "data/Dockerfiles/inlong_CVE-2025-27526_2.1.0-RC0/164/Dockerfile": {
+          "sha256": "8973da07f80f0bf60f0b966245320ed1588d47f8cd22793c334e10c986fe2809",
+          "size_bytes": 2245
+        },
+        "data/Dockerfiles/inlong_CVE-2025-27528_2.1.0-RC0/165/Dockerfile": {
+          "sha256": "a7605a138f413847a18cdf9be4a8f533afa081a9639275e202a06ce728142bff",
+          "size_bytes": 2245
+        },
+        "data/Dockerfiles/inlong_CVE-2025-27531_2.0.0-RC0/159/Dockerfile": {
+          "sha256": "98bed8a034abd313f287c3553d9c338ad682b1bf1e3d94f1d0d5e94041a5201f",
+          "size_bytes": 2245
+        },
+        "data/Dockerfiles/iotdb_CVE-2025-26795_v1.3.3/170/Dockerfile": {
+          "sha256": "3e1dd5bbd89ebc24d3b88fe6118daf2ba19c616445d9bda2a39dcb19f87bb9bf",
+          "size_bytes": 2256
+        },
+        "data/Dockerfiles/iotdb_CVE-2025-26864_v1.3.3/171/Dockerfile": {
+          "sha256": "f72c30b715cf084098a06f3e05e1847f928921f39961e8189f681b829e57cbb8",
+          "size_bytes": 2256
+        },
+        "data/Dockerfiles/jackrabbit_CVE-2025-53689_jackrabbit-2.23.1-beta/136/Dockerfile": {
+          "sha256": "8eeb67722e04036f308a95697800e72bc519c6fc86e6ad7580eaf61a0c7e6545",
+          "size_bytes": 2338
+        },
+        "data/Dockerfiles/jeecgboot__jeecgboot_CVE-2022-45206_3.4.3/121/Dockerfile": {
+          "sha256": "799ff5a609a87a416653302a97058bf57b30d0e4f1e747006939b81ce03db0b2",
+          "size_bytes": 2325
+        },
+        "data/Dockerfiles/jena_CVE-2025-49656_jena-5.4.0/131/Dockerfile": {
+          "sha256": "3df22d2dcad17e03af730ddd65817e5b1a954f312afcb76982cc88308c2c25fa",
+          "size_bytes": 2283
+        },
+        "data/Dockerfiles/jenkins_CVE-2025-31720_prototype-1.7/Dockerfile": {
+          "sha256": "358f8f1cad5effe8729079f4f4ac8390066527d2b5320f2f29cb78cde7524989",
+          "size_bytes": 2261
+        },
+        "data/Dockerfiles/jenkins_CVE-2025-31721_prototype-1.7/Dockerfile": {
+          "sha256": "a4c8a59148c7013ee63af9b0120664647a8b2a0730be72e98251f177a12fff5e",
+          "size_bytes": 2261
+        },
+        "data/Dockerfiles/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17/59/Dockerfile": {
+          "sha256": "76e242a12f43532ab39db8d22904ea83817dc1041521e4b3ffe70285855b739e",
+          "size_bytes": 2173
+        },
+        "data/Dockerfiles/jenkinsci__git-client-plugin_CVE-2019-10392_2.8.4/65/Dockerfile": {
+          "sha256": "614ec8d62d25d44f289f45083c41ee731c281ab42ada0691e179eb345b08ba6d",
+          "size_bytes": 2157
+        },
+        "data/Dockerfiles/jenkinsci__perfecto-plugin_CVE-2020-2261_1.17/66/Dockerfile": {
+          "sha256": "d8a91b13d00e7b96055d5004b41e47d13a3208fadd48a68e6e56fd506b8d0a8a",
+          "size_bytes": 2139
+        },
+        "data/Dockerfiles/jenkinsci__script-security-plugin_CVE-2023-24422_1228.vd93135a_2fb_25/68/Dockerfile": {
+          "sha256": "9f4413623de6a7cef40e61d8ad6f41710bf3009ee582c0fd69b9b388e512b7bc",
+          "size_bytes": 2271
+        },
+        "data/Dockerfiles/jenkinsci__workflow-cps-global-lib-plugin_CVE-2022-25174_544.vff04fa68714d/61/Dockerfile": {
+          "sha256": "9f3f8de45830d6049dfa048f3ed0ef929baf072fe4491ebfb871e2157aa66e91",
+          "size_bytes": 2270
+        },
+        "data/Dockerfiles/jenkinsci__workflow-cps-plugin_CVE-2022-25173_2646.v6ed3b5b01ff1/60/Dockerfile": {
+          "sha256": "6a2ece6c6dbeb77a1f5330de85825f983caa74bbbbbe54b550d1740750fd7b9e",
+          "size_bytes": 2220
+        },
+        "data/Dockerfiles/jenkinsci__workflow-multibranch-plugin_CVE-2022-25175_706.vd43c65dec013/62/Dockerfile": {
+          "sha256": "4fa9b9abf0caf19cd10f88dfa8377f2dd2a0198fddbf3e15e01542d6ec2c88e5",
+          "size_bytes": 2255
+        },
+        "data/Dockerfiles/jeremylong__DependencyCheck_CVE-2018-12036_3.1.2/29/Dockerfile": {
+          "sha256": "ad5d6f4ddf441b8f478f8aac7768066910557c4a55bbe241be90390b122014bb",
+          "size_bytes": 2140
+        },
+        "data/Dockerfiles/jetty.project_CVE-2025-1948_jetty-12.0.16/172/Dockerfile": {
+          "sha256": "29845e8afbd2c8cfb84013b29da247bc9de0a31447fad25c47210e24541b8890",
+          "size_bytes": 2294
+        },
+        "data/Dockerfiles/jlangch__venice_CVE-2022-36007_1.10.16/34/Dockerfile": {
+          "sha256": "4b7ff83745b84f1d1888e70c49ff3fff7b3059faffd3a973cc08c60d762e6470",
+          "size_bytes": 1487
+        },
+        "data/Dockerfiles/jmrozanec__cron-utils_CVE-2021-41269_9.1.5/102/Dockerfile": {
+          "sha256": "04687501c0f4fd093d26518f1089656a0ff99d5153324de9750853d0ff8a2bf8",
+          "size_bytes": 2091
+        },
+        "data/Dockerfiles/joniles__mpxj_CVE-2020-35460_8.3.4/16/Dockerfile": {
+          "sha256": "dbf43c9b188be8e2f6ffff2ef0f9784f09432e92c4a4a967bd2db014642fb16d",
+          "size_bytes": 2070
+        },
+        "data/Dockerfiles/jpawebapi_CVE-2025-32961_v1.1.0/177/Dockerfile": {
+          "sha256": "ade986662d08eb010f1ffb29925ccbae83f4d477788b5b442c8f71cbbaf476a6",
+          "size_bytes": 1579
+        },
+        "data/Dockerfiles/jstachio__jstachio_CVE-2023-33962_1.0.0/98/Dockerfile": {
+          "sha256": "20201aba0d78acbb6a6ea2b6be825b4bf2b592a376e105086c81bdaa3a052655",
+          "size_bytes": 2102
+        },
+        "data/Dockerfiles/jte_CVE-2025-23026_3.1.15/213/Dockerfile": {
+          "sha256": "0545da562b4c075fda9286e7caa95f65d2ef042f9d3ec01cf3ce1bd036ffb4ef",
+          "size_bytes": 2266
+        },
+        "data/Dockerfiles/junit-framework_CVE-2025-53103_r5.13.1/139/Dockerfile": {
+          "sha256": "7bfd4d56672788b3d0b75d51fee8a1f739e62670e02e815d2fe590465cda548a",
+          "size_bytes": 1694
+        },
+        "data/Dockerfiles/keycloak_CVE-2025-0604_26.1.2/195/Dockerfile": {
+          "sha256": "aa59f4936a9b84caaaa8d222da61e5c175ad92ae517636ac68b6401f3e9a14e6",
+          "size_bytes": 2234
+        },
+        "data/Dockerfiles/keycloak_CVE-2025-1391_26.1.2/194/Dockerfile": {
+          "sha256": "f3492eca31fd422e4890283531f2801eb1355cdb6854d2d470c3452aeaf98837",
+          "size_bytes": 2180
+        },
+        "data/Dockerfiles/keycloak_CVE-2025-3501_26.2.1/175/Dockerfile": {
+          "sha256": "4f97ad8ff1e652cf04ca59a4daa63fed917eabf8f6f334794ffff2670cbec358",
+          "size_bytes": 2264
+        },
+        "data/Dockerfiles/keycloak_CVE-2025-3910_26.2.1/174/Dockerfile": {
+          "sha256": "e2e3a3deaff75ebb6bc029e4ccb56f3ae8b04be604a337103bdba1380ab55a34",
+          "size_bytes": 2234
+        },
+        "data/Dockerfiles/keycloak_CVE-2025-7365_26.0.12/129/Dockerfile": {
+          "sha256": "3c7b86e7cd70363e7675a685e4aedd526521022f640546ba97d05100480d0361",
+          "size_bytes": 2238
+        },
+        "data/Dockerfiles/keycloak_CVE-2025-7784_26.2.5/128/Dockerfile": {
+          "sha256": "4677691918ca34cad0dffeffbcde0b8ccc190608dbeb61fb96b431d847701df3",
+          "size_bytes": 2200
+        },
+        "data/Dockerfiles/keycloak__keycloak_CVE-2014-3656_1.0.5.Final/85/Dockerfile": {
+          "sha256": "e5c6b85eadc13ae1358ac250b18a2844daeae2522ca0ce977afe2c53bf299007",
+          "size_bytes": 2121
+        },
+        "data/Dockerfiles/keycloak__keycloak_CVE-2022-1274_20.0.4/90/Dockerfile": {
+          "sha256": "c70bdfcc159bc7647e7ceea750efa64aeac93e3ff103a202ec43be9a1264d766",
+          "size_bytes": 2102
+        },
+        "data/Dockerfiles/keycloak__keycloak_CVE-2022-3782_20.0.1/43/Dockerfile": {
+          "sha256": "a6f254b0b5064830ae0192e61e31973df295cdab529bc02c1310bcbf6a2e9d84",
+          "size_bytes": 2096
+        },
+        "data/Dockerfiles/keycloak__keycloak_CVE-2022-4137_20.0.4/89/Dockerfile": {
+          "sha256": "40d8582426e2536729e6eac581323f9910f594e84dedd5a552f0bc09aeb126c2",
+          "size_bytes": 2102
+        },
+        "data/Dockerfiles/keycloak__keycloak_CVE-2022-4361_21.1.1/96/Dockerfile": {
+          "sha256": "b1ffed7f9d63e956051209b8fc8bd4c42455ecaa3cb48c2ed8bcfdce7fb741eb",
+          "size_bytes": 2102
+        },
+        "data/Dockerfiles/kubernetes-client__java_CVE-2020-8570_client-java-parent-9.0.1/18/Dockerfile": {
+          "sha256": "126228259d77d16e621d89bccda16d2c222c47532ba0eb9df92477d68bff3962",
+          "size_bytes": 2192
+        },
+        "data/Dockerfiles/kylin_CVE-2025-30067_kylin-5.0.1/187/Dockerfile": {
+          "sha256": "c30b91570f0e9e00f1b10169647f9c50ca48a8cbc7575e2dc098c402f406cd68",
+          "size_bytes": 2273
+        },
+        "data/Dockerfiles/local-s3_CVE-2025-27136_1.20/197/Dockerfile": {
+          "sha256": "0f4a1bcb25e0d1c279a5ca01b95fdadba3ae53fdaca917f2f17e2f1bcaf6da7c",
+          "size_bytes": 1489
+        },
+        "data/Dockerfiles/nahsra__antisamy_CVE-2016-10006_1.5.3/69/Dockerfile": {
+          "sha256": "e835866ba5243bd420cb5b4c32b71e5c82c776a62d749f19817035f1b81f13a6",
+          "size_bytes": 2092
+        },
+        "data/Dockerfiles/nahsra__antisamy_CVE-2017-14735_1.5.6/70/Dockerfile": {
+          "sha256": "a1deb2f45a744a19a7243946f13aa775ad06a8fd6d269154e9ae084f0c2e2192",
+          "size_bytes": 2092
+        },
+        "data/Dockerfiles/nahsra__antisamy_CVE-2022-28367_1.6.5/81/Dockerfile": {
+          "sha256": "90403a9282e20651dae2be7af541c1c3621aa5bbc887033212001821abb98150",
+          "size_bytes": 2091
+        },
+        "data/Dockerfiles/nahsra__antisamy_CVE-2022-29577_1.6.6.1/83/Dockerfile": {
+          "sha256": "4f60b3adde4fa4d8f3cab6584ab3e242496f24afac87379465eebec8ddf897fa",
+          "size_bytes": 2099
+        },
+        "data/Dockerfiles/oic-auth-plugin_CVE-2025-24399_4.452.v2849b_d3945fa_/211/Dockerfile": {
+          "sha256": "8e34a8e39a5b6c1d37ffd129e9dfa723af8656df32bece3d937e7e393fced847",
+          "size_bytes": 2352
+        },
+        "data/Dockerfiles/opencast_CVE-2025-54380_17.5/130/Dockerfile": {
+          "sha256": "2e447eb9dc5f58658f2b34883491abab7482d835a249e758420417bac5a29aef",
+          "size_bytes": 2265
+        },
+        "data/Dockerfiles/para_CVE-2025-48955_v1.50.7/161/Dockerfile": {
+          "sha256": "ad1cc480e44ee496e58ebb7d59a316432a3c8812665ba1db3e45d4b9603bb816",
+          "size_bytes": 2248
+        },
+        "data/Dockerfiles/para_CVE-2025-49009_v1.50.7/158/Dockerfile": {
+          "sha256": "c8b3037cd8b673850f7208e264bd35b9c814e5e4e30158fac415c571e90bd4d4",
+          "size_bytes": 2248
+        },
+        "data/Dockerfiles/payara__Payara_CVE-2022-37422_5.2022.2/36/Dockerfile": {
+          "sha256": "f1ecb59d32060f29d6a07d498ee4841dd25a00fca69a9bdf3ba5fe654d06bb03",
+          "size_bytes": 2087
+        },
+        "data/Dockerfiles/perwendel__spark_CVE-2016-9177_2.5.1/3/Dockerfile": {
+          "sha256": "87fc6178e56dcddfed66916dc5c9f03cb3596910dbfd594e7ea12cb1659d3b71",
+          "size_bytes": 2079
+        },
+        "data/Dockerfiles/perwendel__spark_CVE-2018-9159_2.7.1/2/Dockerfile": {
+          "sha256": "e400f2f9ebf05621dcff8b34b2f6eb358979c6c13ce6b8f8de9a3aa2a755f9a4",
+          "size_bytes": 2079
+        },
+        "data/Dockerfiles/powsybl-core_CVE-2025-47293_v6.7.1/150/Dockerfile": {
+          "sha256": "96ee6079ad60c35a5a3aba2d9225aaa90554b663dd816f26e5ba3481aa76be23",
+          "size_bytes": 2286
+        },
+        "data/Dockerfiles/powsybl-core_CVE-2025-47771_v6.7.1/149/Dockerfile": {
+          "sha256": "98fd762101204fcfa09f420f8904b7c38b6dc3b58093e3c5aafc91089c5d4995",
+          "size_bytes": 2266
+        },
+        "data/Dockerfiles/powsybl-core_CVE-2025-48058_v6.7.1/148/Dockerfile": {
+          "sha256": "ae0f3c1ddbf7215e79cc76e4164652dcf07d676056a0946a5aaba6c0f9a80375",
+          "size_bytes": 2276
+        },
+        "data/Dockerfiles/powsybl-core_CVE-2025-48059_v6.2.4/147/Dockerfile": {
+          "sha256": "0f86c09133b811a01a3761862bf68e0a916b8b49ac3c480aaff43dd7cb449456",
+          "size_bytes": 2276
+        },
+        "data/Dockerfiles/quarkus_CVE-2025-49574_3.23.4/145/Dockerfile": {
+          "sha256": "90e6116e762dcafa46de0c2b02bb461c168605cfc9ce088b0f2d883598d85460",
+          "size_bytes": 2519
+        },
+        "data/Dockerfiles/restapi_CVE-2025-32960_v7.2.6/178/Dockerfile": {
+          "sha256": "8ccadce9e93d84790ed2116465bf80ecdfc5dd9b5e58f2a12b995bcc4e6caf92",
+          "size_bytes": 1592
+        },
+        "data/Dockerfiles/rhuss__jolokia_CVE-2018-1000129_1.4.0/84/Dockerfile": {
+          "sha256": "35a81f415feb31033c29f9a684279205b0c874c4690f894a776da7fa45f7a86e",
+          "size_bytes": 2089
+        },
+        "data/Dockerfiles/simple-queue-plugin_CVE-2025-31723_simple-queue-1.4.6/183/Dockerfile": {
+          "sha256": "0d178d8035fb798b3bbe7502c716320156694bcc46165fbe2bac8e33ade1a00e",
+          "size_bytes": 2456
+        },
+        "data/Dockerfiles/smallrye-fault-tolerance_CVE-2025-2240_6.4.1/193/Dockerfile": {
+          "sha256": "7f1e0cc2a06c8aaed02f98a63104cfe7f6eab1a54da79bf2d066aa9055f49906",
+          "size_bytes": 2342
+        },
+        "data/Dockerfiles/snowflake-jdbc_CVE-2025-24789_v3.21.1/210/Dockerfile": {
+          "sha256": "f1d798003f0a3f9e36cdbc2f7ef4a787684f08d840613d5e60d59ed2e22b0e0f",
+          "size_bytes": 2278
+        },
+        "data/Dockerfiles/snowflake-jdbc_CVE-2025-24790_v3.21.1/209/Dockerfile": {
+          "sha256": "a28c09541cb0d26797a138437d932a09b4e2a6fb5677b1fd1856ccad06e8e17e",
+          "size_bytes": 2286
+        },
+        "data/Dockerfiles/snowflake-jdbc_CVE-2025-27496_v3.23.0/192/Dockerfile": {
+          "sha256": "47b158adc6e3c00f16f6be38a44ed8da71a979f2db845d6f6d3e9d917b9f1f7c",
+          "size_bytes": 2305
+        },
+        "data/Dockerfiles/solon_CVE-2025-1584_v3.0.8/200/Dockerfile": {
+          "sha256": "94e2c60a86fd823346764371fe2e2201f588e93239d0784dc9051be623bbf37e",
+          "size_bytes": 2222
+        },
+        "data/Dockerfiles/solon_CVE-2025-46096_v3.1.2/154/Dockerfile": {
+          "sha256": "cdcd38e090b349c00efb06824b818dcb1fb40310f06b8e56d8c85f7fbae2dd50",
+          "size_bytes": 2281
+        },
+        "data/Dockerfiles/spring-cloud__spring-cloud-config_CVE-2020-5405_2.1.6.RELEASE/14/Dockerfile": {
+          "sha256": "457681361d2ac52f848ef2472677cc19ee7478fe3600d0592a0c6ba793398898",
+          "size_bytes": 2198
+        },
+        "data/Dockerfiles/spring-cloud__spring-cloud-config_CVE-2020-5410_2.1.8.RELEASE/13/Dockerfile": {
+          "sha256": "5d1662d2c32941e6be12ce7f777a978d4ca02ae12744e2eef2473aaea25af565",
+          "size_bytes": 2198
+        },
+        "data/Dockerfiles/spring-cloud__spring-cloud-gateway_CVE-2022-22947_3.0.6/106/Dockerfile": {
+          "sha256": "8fd944381ec03466e5dda0c84ce1fe4f61d171caace1fd49eb0be2caf8b7ac1f",
+          "size_bytes": 2156
+        },
+        "data/Dockerfiles/spring-projects__spring-framework_CVE-2022-22965_5.2.19.RELEASE/105/Dockerfile": {
+          "sha256": "de1c2dab9a8a5cfd32d3d69ed5ea18ae9213d102d241edc2b07e8306864915f5",
+          "size_bytes": 1631
+        },
+        "data/Dockerfiles/spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE/109/Dockerfile": {
+          "sha256": "13e2606132a7a4897d960fb9cb39646760b4203d79d45925f6ec853b04df256d",
+          "size_bytes": 5205
+        },
+        "data/Dockerfiles/spring-security_CVE-2025-22223_6.4.3/188/Dockerfile": {
+          "sha256": "61b2af70f626793252ab54880c186d1236d4e90fb8495fc3e9dd40cb5eb02dbb",
+          "size_bytes": 1577
+        },
+        "data/Dockerfiles/spring-security_CVE-2025-22228_6.3.7/190/Dockerfile": {
+          "sha256": "d2142c9c47d80aabd03ad8c04607e906844e5b8b00c92e86b4f26441d000ed6c",
+          "size_bytes": 1567
+        },
+        "data/Dockerfiles/square__retrofit_CVE-2018-1000850_2.4.0/9/Dockerfile": {
+          "sha256": "0de729da34258b2bf25ca9ec637779a85afb4c7f3dd48e1a3339100727690557",
+          "size_bytes": 2091
+        },
+        "data/Dockerfiles/srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2/25/Dockerfile": {
+          "sha256": "3b77b0eb649c9f70cc8a895d7b67a7c6bc5c623b8728a9e831225041746ce37c",
+          "size_bytes": 2283
+        },
+        "data/Dockerfiles/syntax-markdown_CVE-2025-46558_syntax-markdown-8.8/176/Dockerfile": {
+          "sha256": "4c11d8a5c1e2f0e982558d37275819667234073147c6cf79177137dfca394ca1",
+          "size_bytes": 3044
+        },
+        "data/Dockerfiles/templating-engine-plugin_CVE-2025-31722_2.5.3/180/Dockerfile": {
+          "sha256": "d833452e2f27c5e6d5e1ca6f0f22b9f695b614e7e085898a67cce10ecf1468bd",
+          "size_bytes": 1580
+        },
+        "data/Dockerfiles/undertow-io__undertow_CVE-2014-7816_1.0.16.Final/28/Dockerfile": {
+          "sha256": "0ddb3b4a945673d285617f892d09ce613ed875b159aacd16ce47c7fbc05ec15a",
+          "size_bytes": 2134
+        },
+        "data/Dockerfiles/valtimo-backend-libraries_CVE-2025-48881_12.12.0.RELEASE/163/Dockerfile": {
+          "sha256": "92dedbdfcd97606045ad01ab523af24d105b8165de14ec599d11b0d594825038",
+          "size_bytes": 1607
+        },
+        "data/Dockerfiles/vert-x3__vertx-web_CVE-2018-12542_3.5.3.CR1/5/Dockerfile": {
+          "sha256": "1213ffbcc8e662b5e55a1c34a0b3e414406659e3ec22fe517966179f5561ce1a",
+          "size_bytes": 2109
+        },
+        "data/Dockerfiles/vert-x3__vertx-web_CVE-2019-17640_3.9.3/22/Dockerfile": {
+          "sha256": "32ff6a87d0916850b523877a34dccf0a73f8a1d362e2b01dc0f15c15e9ff4173",
+          "size_bytes": 2095
+        },
+        "data/Dockerfiles/webdrivermanager_CVE-2025-4641_webdrivermanager-6.0.1/169/Dockerfile": {
+          "sha256": "c4ffff644c0dc0d961d0d3ab6b99c9f1fab5b04047e3dc1a2f6d427c5e2793a8",
+          "size_bytes": 2375
+        },
+        "data/Dockerfiles/whitesource__curekit_CVE-2022-23082_1.1.3/32/Dockerfile": {
+          "sha256": "25175bfe292412c72ea2e21a30c4ecef38097f3019eab5720d4f53e1d3ca1ebf",
+          "size_bytes": 2105
+        },
+        "data/Dockerfiles/wildfly-core_CVE-2025-23367_27.0.0.Beta7/207/Dockerfile": {
+          "sha256": "0bf2c3067d8014c7b67543b63ff09d7f444fb88c2a847d8d2b9840c1da58eef1",
+          "size_bytes": 2356
+        },
+        "data/Dockerfiles/wildfly__wildfly_CVE-2018-1047_11.0.0.Final/4/Dockerfile": {
+          "sha256": "6aee2304b751cf3ceeb5f3c808e2dc51af5c2a506936265da79ace5d2aec6691",
+          "size_bytes": 2107
+        },
+        "data/Dockerfiles/x-stream__xstream_CVE-2013-7285_1.4.6/56/Dockerfile": {
+          "sha256": "50d7db250271146c85aeb3f15c83ef313a260df3baf53688706ad9c9ba0fd386",
+          "size_bytes": 2979
+        },
+        "data/Dockerfiles/x-stream__xstream_CVE-2020-26217_1.4.14-java7/57/Dockerfile": {
+          "sha256": "f66e9fc550f7512c173042356b73c05bd7a551fb6c93aeec5356fda4c25581fa",
+          "size_bytes": 2010
+        },
+        "data/Dockerfiles/x-stream__xstream_CVE-2021-21345_1.4.15/58/Dockerfile": {
+          "sha256": "3ce6eed6d85a8b4d9ff9a5b6166af0441969c7e9f34658b2a3c861b8030b8a3f",
+          "size_bytes": 2106
+        },
+        "data/Dockerfiles/xerial__sqlite-jdbc_CVE-2023-32697_3.41.2.1/114/Dockerfile": {
+          "sha256": "ad6d5a54ae4d9adcb0fba55cc39051634e9fb5570c4358dc3e4962c04c7049d6",
+          "size_bytes": 2094
+        },
+        "data/Dockerfiles/xuxueli__xxl-job_CVE-2020-29204_2.2.0/77/Dockerfile": {
+          "sha256": "d2e31592242b48c6c2abbb2a337f20e04d018345a90fa988aa515a919970274c",
+          "size_bytes": 2091
+        },
+        "data/Dockerfiles/xwiki__xwiki-commons_CVE-2022-24897_12.6.6/24/Dockerfile": {
+          "sha256": "7c4dc080f55583ea5753b19d0e48a1edb2bda3fa5857f65f652cdbb790f88259",
+          "size_bytes": 2109
+        },
+        "data/Dockerfiles/xwiki__xwiki-commons_CVE-2023-29201_14.6/91/Dockerfile": {
+          "sha256": "49844f878f5006631a62381af6411f0fc2377449fa4db8d4d1241a1cd1ed99b2",
+          "size_bytes": 2108
+        },
+        "data/Dockerfiles/xwiki__xwiki-commons_CVE-2023-29528_14.9-rc-1/92/Dockerfile": {
+          "sha256": "f773957dfc24a6da1bfab8ea8863c6f4c453af99d93b2d1304eecb2c0f627d75",
+          "size_bytes": 2128
+        },
+        "data/Dockerfiles/xwiki__xwiki-commons_CVE-2023-31126_14.10.3/94/Dockerfile": {
+          "sha256": "42702616cc65246d0a73581aa10c4b5c56e7876cb71166b519ff83f6e4f7d6bb",
+          "size_bytes": 2120
+        },
+        "data/Dockerfiles/xwiki__xwiki-commons_CVE-2023-36471_14.10.5/97/Dockerfile": {
+          "sha256": "00103940214d137147eed4660f6a3ebfa6f5d6ce6f9119a946ecd94d03a5b219",
+          "size_bytes": 2120
+        },
+        "data/Dockerfiles/xwiki__xwiki-rendering_CVE-2023-32070_14.6/93/Dockerfile": {
+          "sha256": "7b7d9cc1f9ed1729349cc25fcbb66dfa92db106c81be24251e3e9bcc1a9049f3",
+          "size_bytes": 2118
+        },
+        "data/Dockerfiles/xwiki__xwiki-rendering_CVE-2023-37908_14.10.3/99/Dockerfile": {
+          "sha256": "f0e48261ed524eb1b0c9077ac398b0209ef36d3d67412c70c12622679847081a",
+          "size_bytes": 2130
+        },
+        "data/Dockerfiles/yamcs__yamcs_CVE-2023-45277_5.8.6/53/Dockerfile": {
+          "sha256": "7751dddeb9b8392b4be3c5530cb1b0123e902a832d2863a13b5dde2ff73cde3a",
+          "size_bytes": 2066
+        },
+        "data/Dockerfiles/yamcs__yamcs_CVE-2023-45278_5.8.6/52/Dockerfile": {
+          "sha256": "7229212f0de041c2fdc4c5a307b60cb44a1febdd3a2af1d5c428121ab7645f72",
+          "size_bytes": 2066
+        },
+        "data/Dockerfiles/zeroturnaround__zt-zip_CVE-2018-1002201_1.12/31/Dockerfile": {
+          "sha256": "ceeb2bba1127556421171de242f668c1967e3db7f3a2d2e4c729c93995270215",
+          "size_bytes": 2119
+        },
+        "data/Dockerfiles/zohoqengine-plugin_CVE-2025-30197_1.0.29.vfa_cc23396502/191/Dockerfile": {
+          "sha256": "f59b74b2114936aa0d12c374e1fc495a4ea566544324296801693183b1777d3f",
+          "size_bytes": 2363
+        },
+        "data/Fixes_PR_78.md": {
+          "sha256": "554026986781e22f3b3d010589d75b011f286d630eccf5a597edb6c1b62b8db5",
+          "size_bytes": 1561
+        },
+        "data/IRIS_docker_build_durations.csv": {
+          "sha256": "d60fef01390e47de72c4fe628b117183d7c74ae0af9f03ef69cdb8575b8e28c4",
+          "size_bytes": 15625
+        },
+        "data/build_cmds.csv": {
+          "sha256": "9b91985706a3c975b204723a5fdc59fa94f9ccdca33d347eccd2e5256ea30f8b",
+          "size_bytes": 774
+        },
+        "data/build_info.csv": {
+          "sha256": "9ca9e85a2f97a8583151aea28c938cf20c790f29df0d38dcc72383f518b269ea",
+          "size_bytes": 14164
+        },
+        "data/contributing_cwe_bench_java.md": {
+          "sha256": "a90be7b4db128d5e34bf686f20755f37ca00789a3aaa9683578c7b655d431ec7",
+          "size_bytes": 1248
+        },
+        "data/fix_info.csv": {
+          "sha256": "2a8a15fe17188630da290aa4507a34922dedb2395cdd95ea787d4d1090ccc079",
+          "size_bytes": 436692
+        },
+        "data/fix_info_source_sink.csv": {
+          "sha256": "0bc6e9660490248ad9fa8e03e4c958e5efeb87e02eba99c69feccf5f1cd6942d",
+          "size_bytes": 50182
+        },
+        "data/package-names/DSpace__DSpace_CVE-2016-10726_4.4.txt": {
+          "sha256": "45081aeda207d45049bd87ee775fee37a8133122315ed7ccbe176ddc74e537c4",
+          "size_bytes": 5290
+        },
+        "data/package-names/DSpace__DSpace_CVE-2022-31192_5.10.txt": {
+          "sha256": "39447edccc9f30db233e577c565e646e39a6c41d2a4c59ae950ffa21adfc9783",
+          "size_bytes": 6958
+        },
+        "data/package-names/DSpace__DSpace_CVE-2022-31194_5.10.txt": {
+          "sha256": "39447edccc9f30db233e577c565e646e39a6c41d2a4c59ae950ffa21adfc9783",
+          "size_bytes": 6958
+        },
+        "data/package-names/DSpace__DSpace_CVE-2022-31195_5.10.txt": {
+          "sha256": "39447edccc9f30db233e577c565e646e39a6c41d2a4c59ae950ffa21adfc9783",
+          "size_bytes": 6958
+        },
+        "data/package-names/ESAPI__esapi-java-legacy_CVE-2022-23457_2.2.3.1.txt": {
+          "sha256": "4b17f366e6ab17520779316773446f55fc451aa4ff07dc869ea7846efd0eb5d5",
+          "size_bytes": 874
+        },
+        "data/package-names/ESAPI__esapi-java-legacy_CVE-2022-24891_2.2.3.1.txt": {
+          "sha256": "4b17f366e6ab17520779316773446f55fc451aa4ff07dc869ea7846efd0eb5d5",
+          "size_bytes": 874
+        },
+        "data/package-names/Graylog2__graylog2-server_CVE-2023-41044_5.1.2.txt": {
+          "sha256": "c3311d4f9ae3b180a8f3196232dfaeac142c06f2c1039a061ac40b8035411bd4",
+          "size_bytes": 24550
+        },
+        "data/package-names/OWASP__json-sanitizer_CVE-2020-13973_1.2.0.txt": {
+          "sha256": "e6be8f044c14657c1b89838590a93939d22a7e440c702e345db358e90d957545",
+          "size_bytes": 17
+        },
+        "data/package-names/SpringSource__spring-security-oauth_CVE-2018-1260_2.3.2.RELEASE.txt": {
+          "sha256": "0ce30d25993584cfb567e3f4b8aa8805c4bf03ec3a1a082ed2f8bca969677afc",
+          "size_bytes": 4244
+        },
+        "data/package-names/alibaba__nacos_CVE-2021-44667_2.0.3.txt": {
+          "sha256": "2111155bcebd2527b3699a1d3a8de041061d03d6640c857b63d0e8b2ba97a65c",
+          "size_bytes": 11087
+        },
+        "data/package-names/alibaba__one-java-agent_CVE-2022-25842_0.0.1.txt": {
+          "sha256": "6ff9dd3302afacdc52f33e800d1521d2523577d955934a600139c5874b30531a",
+          "size_bytes": 394
+        },
+        "data/package-names/apache__activemq_CVE-2014-3576_5.10.2.txt": {
+          "sha256": "6cb6e26cd5ac1e4751d1fca7233796cfa30d779e9777826911f502fb48214f12",
+          "size_bytes": 6516
+        },
+        "data/package-names/apache__activemq_CVE-2019-0222_5.15.8.txt": {
+          "sha256": "3f17ac98dd6026ccfd627b914b10330533c38e50d51c4cda0505f15bd9bff78b",
+          "size_bytes": 7645
+        },
+        "data/package-names/apache__activemq_CVE-2020-11998_5.15.12.txt": {
+          "sha256": "3f17ac98dd6026ccfd627b914b10330533c38e50d51c4cda0505f15bd9bff78b",
+          "size_bytes": 7645
+        },
+        "data/package-names/apache__axis-axis1-java_CVE-2023-51441_1.3.0.txt": {
+          "sha256": "a37148efd52191a60899f053a25d34d294d1ca67e9df2c0f01120fb0bb9adf44",
+          "size_bytes": 2460
+        },
+        "data/package-names/apache__camel_CVE-2018-8041_2.20.3.txt": {
+          "sha256": "4d5c69f9a1d456a5f9cebb152206012782b6988992f5a72e31f523ddb7818697",
+          "size_bytes": 71231
+        },
+        "data/package-names/apache__camel_CVE-2019-0194_2.21.4.txt": {
+          "sha256": "39dab1fe01ae9ed16d8b488a531f7d26baac58367525017153ebba76be0f1f63",
+          "size_bytes": 73850
+        },
+        "data/package-names/apache__dolphinscheduler_CVE-2022-26884_2.0.5.txt": {
+          "sha256": "d8b73aae15b176df85a7af78049ae3e04f771f30215edc02a76117c6bff1f341",
+          "size_bytes": 10220
+        },
+        "data/package-names/apache__dolphinscheduler_CVE-2022-34662_2.0.9.txt": {
+          "sha256": "d8b73aae15b176df85a7af78049ae3e04f771f30215edc02a76117c6bff1f341",
+          "size_bytes": 10220
+        },
+        "data/package-names/apache__dolphinscheduler_CVE-2023-49109_3.2.0.txt": {
+          "sha256": "f8d701991fbb47b0aa47be4f7e62665f7edd2b042f46be4141d7864b43acc226",
+          "size_bytes": 19978
+        },
+        "data/package-names/apache__dolphinscheduler_CVE-2023-51770_3.2.0.txt": {
+          "sha256": "f8d701991fbb47b0aa47be4f7e62665f7edd2b042f46be4141d7864b43acc226",
+          "size_bytes": 19978
+        },
+        "data/package-names/apache__dubbo_CVE-2021-30180_2.7.9.txt": {
+          "sha256": "482abbeeebd7837e1818b81754cce3cc916a5c93ee8020e96812ba8f993b9eaa",
+          "size_bytes": 16597
+        },
+        "data/package-names/apache__flink_CVE-2020-17519_1.11.2.txt": {
+          "sha256": "6ade78a38688ea3d3fa3e1c76e6e688ce0d79e56006b71a2ddf3cd10d6c29ea6",
+          "size_bytes": 42426
+        },
+        "data/package-names/apache__incubator-dubbo_CVE-2021-30181_2.6.8.txt": {
+          "sha256": "caf02dd6121dab2cabfece144a8ea6afbbc51bb9c65d8df8756aa216e38759ae",
+          "size_bytes": 11492
+        },
+        "data/package-names/apache__jspwiki_CVE-2019-0225_2.11.0.M2.txt": {
+          "sha256": "0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65",
+          "size_bytes": 2092
+        },
+        "data/package-names/apache__jspwiki_CVE-2019-10076_2.11.0.M3.txt": {
+          "sha256": "0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65",
+          "size_bytes": 2092
+        },
+        "data/package-names/apache__jspwiki_CVE-2019-10077_2.11.0.M3.txt": {
+          "sha256": "0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65",
+          "size_bytes": 2092
+        },
+        "data/package-names/apache__jspwiki_CVE-2019-10078_2.11.0.M3.txt": {
+          "sha256": "0e72050cd3b9a1d0fac0f6ae3045069eaabffbea0f5d0ed5ad146a3f7df20a65",
+          "size_bytes": 2092
+        },
+        "data/package-names/apache__jspwiki_CVE-2019-10089_2.11.0.M4.txt": {
+          "sha256": "5830253b52f2a84e7b25399a6991c1f542ceb4d3bee6614ef917848e1f30200f",
+          "size_bytes": 2121
+        },
+        "data/package-names/apache__jspwiki_CVE-2022-46907_2.11.3.txt": {
+          "sha256": "b0a085a3c83b081eca51e43475dd92ca97ef7fdb0e1ad4b158b67a59c9d9e9b8",
+          "size_bytes": 2796
+        },
+        "data/package-names/apache__kylin_CVE-2024-48944_5.0.0.txt": {
+          "sha256": "dea96d00159eae5fb30aa65828cb1b13158048e6c32dc2847915e19262e402b7",
+          "size_bytes": 10569
+        },
+        "data/package-names/apache__mina-sshd_CVE-2023-35887_2.9.2.txt": {
+          "sha256": "a9466cab06e990d045e54933edfb39342cb92edeb5c2453bf8fec1615199567f",
+          "size_bytes": 5430
+        },
+        "data/package-names/apache__myfaces_CVE-2011-4367_2.0.11.txt": {
+          "sha256": "1dcf6eee09af8d43cd64e452a5c1918185a8a507994489e4fca827859fc3000a",
+          "size_bytes": 3755
+        },
+        "data/package-names/apache__nifi_CVE-2022-33140_1.16.2.txt": {
+          "sha256": "bd6453ed4618e3bd552cc1c02091423512b8d4339012f8ea1351383aa02ee117",
+          "size_bytes": 40451
+        },
+        "data/package-names/apache__rocketmq_CVE-2019-17572_4.6.0.txt": {
+          "sha256": "58be8bb4129b3219f95711e72c418a85db5d3eb35685bd469262be01fae8bf94",
+          "size_bytes": 6642
+        },
+        "data/package-names/apache__rocketmq_CVE-2023-33246_5.1.0.txt": {
+          "sha256": "f2ed07092fe94556336b4a521568bf6a6da792a38fe4afa309bbae5bc9e25a02",
+          "size_bytes": 10938
+        },
+        "data/package-names/apache__rocketmq_CVE-2023-37582_4.9.6.txt": {
+          "sha256": "5b1a2c2fdb502c12de04b64c3b7ebe119104c1a852074b21ea9d47b8ba7db776",
+          "size_bytes": 6850
+        },
+        "data/package-names/apache__shiro_CVE-2023-34478_1.11.0.txt": {
+          "sha256": "b0e5491684ff30738dd5b67a30546821747658b3f9f43ed8b572ba55c6dca8d1",
+          "size_bytes": 3077
+        },
+        "data/package-names/apache__shiro_CVE-2023-46749_1.12.0.txt": {
+          "sha256": "0a3abe0c2a2f0b6c5cd4a306da33053399dfff407182cc9216bff726163a5920",
+          "size_bytes": 3108
+        },
+        "data/package-names/apache__sling-org-apache-sling-servlets-resolver_CVE-2024-23673_2.10.0.txt": {
+          "sha256": "be49be64997c1a055f4e2e94ced689e6b0a24c6323d382950d602d77de83d96d",
+          "size_bytes": 445
+        },
+        "data/package-names/apache__sling-org-apache-sling-xss_CVE-2016-5394_1.0.8.txt": {
+          "sha256": "d206b9a27de1b8898ced0c9dd241e475f2660ba3d4364715769407c314bc5997",
+          "size_bytes": 49
+        },
+        "data/package-names/apache__struts_CVE-2020-17530_2.5.25.txt": {
+          "sha256": "233e4bcecb238fda8e66f4cb8cbb25b12f02fac65e21f6ce4ee56c89dd1eaeda",
+          "size_bytes": 7334
+        },
+        "data/package-names/apache__tika_CVE-2018-11762_1.18.txt": {
+          "sha256": "8d32a6ed07a493c585d8b26175a0474ab053caf4396cb82fcdb06e2e295b1b29",
+          "size_bytes": 3858
+        },
+        "data/package-names/apache__uima-uimaj_CVE-2022-32287_3.3.0.txt": {
+          "sha256": "2e664ba2e03efda70c2b8baa2eaa051fbbde1bebbc45b74f2d1a33610232d2a7",
+          "size_bytes": 5798
+        },
+        "data/package-names/asf__commons-io_CVE-2021-29425_2.6.txt": {
+          "sha256": "dd5bb65380b47487e62394962817db079848ec028b2f0da0884e0de36d600c9e",
+          "size_bytes": 294
+        },
+        "data/package-names/asf__commons-text_CVE-2022-42889_1.9.txt": {
+          "sha256": "85385e0ff8144731e25e7b23ca14cc24a8ddb437b6d758f40c5b4fed92e4197b",
+          "size_bytes": 219
+        },
+        "data/package-names/asf__cxf_CVE-2016-6812_3.0.11.txt": {
+          "sha256": "35fb55fdc59a79eb2a60d2755a249f26dd00331a4fa8f5a3a4a5681e41649758",
+          "size_bytes": 41439
+        },
+        "data/package-names/asf__cxf_CVE-2019-17573_3.2.11.txt": {
+          "sha256": "4cd80d3d9f3ce76e0ad7d6aae2854819dc3a8e3722ef239cc781c877aa7db143",
+          "size_bytes": 44992
+        },
+        "data/package-names/asf__james-project_CVE-2022-22931_3.6.0.txt": {
+          "sha256": "7f3973cfdae3d656778fc1a35835e1cc1b3bf393f4e48be26d2529724c1b850d",
+          "size_bytes": 21073
+        },
+        "data/package-names/asf__karaf_CVE-2022-22932_4.3.5.txt": {
+          "sha256": "b0bee81ca7fc8a517740c4e38253413207799f30aba069f20af92cc37187ec7a",
+          "size_bytes": 13945
+        },
+        "data/package-names/asf__nifi_CVE-2023-34468_1.21.0.txt": {
+          "sha256": "42872e032102b507a7e9b383120f80c8518ae89b8e52d2fb9a9ee439a6b6ed6a",
+          "size_bytes": 45914
+        },
+        "data/package-names/asf__nifi_CVE-2023-36542_1.22.0.txt": {
+          "sha256": "91f8ab2263d5abc13bff8fc970de7524bf8e77f5eacec9aa7d9a457ffc51ba30",
+          "size_bytes": 46509
+        },
+        "data/package-names/asf__tapestry-5_CVE-2019-0207_5.4.4.txt": {
+          "sha256": "6f43c5250914773e85c66c1579badf55fa99ca9241a1142c320dcf8dd3e8848f",
+          "size_bytes": 9821
+        },
+        "data/package-names/aws__aws-sdk-java_CVE-2022-31159_1.12.260.txt": {
+          "sha256": "dfca2e281b0d2682be98849e8bbc4162282678b837253aa618102926f09d59c1",
+          "size_bytes": 52899
+        },
+        "data/package-names/codecentric__spring-boot-admin_CVE-2022-46166_2.6.9.txt": {
+          "sha256": "169b51becaa748cb20d613ca7782289ea1da3ccaa6c99f9264293bd24d72496e",
+          "size_bytes": 1486
+        },
+        "data/package-names/codehaus-plexus__plexus-archiver_CVE-2018-1002200_3.5.txt": {
+          "sha256": "7487f33f047c065b8e32fd2ffa9552ae4d10ad5321db50ac35756e1e29be7a0e",
+          "size_bytes": 716
+        },
+        "data/package-names/codehaus-plexus__plexus-archiver_CVE-2023-37460_4.7.1.txt": {
+          "sha256": "abf688e2eb5830f6bcac1ff0aca0a07c6b341ef92e4f3c6a23f667042fbac94d",
+          "size_bytes": 938
+        },
+        "data/package-names/codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15.txt": {
+          "sha256": "e2606aedf404c37e8364fab05f0bbfe22c024b2a676ddb02dca6bb06e41278fe",
+          "size_bytes": 293
+        },
+        "data/package-names/codehaus-plexus__plexus-utils_CVE-2022-4244_3.0.23.txt": {
+          "sha256": "e2606aedf404c37e8364fab05f0bbfe22c024b2a676ddb02dca6bb06e41278fe",
+          "size_bytes": 293
+        },
+        "data/package-names/crate__crate_5.5.1_CVE-2023-51982_5.5.1.txt": {
+          "sha256": "afff9a6454bfca548f4c61dc4c0dbca3375eac66110b14e6b454badc3d5a10a2",
+          "size_bytes": 6986
+        },
+        "data/package-names/diffplug__goomph_CVE-2022-26049_3.37.1.txt": {
+          "sha256": "fe0eb2709598ad9e442823cbc2208a89c8475a95df64d116c0896092bf423532",
+          "size_bytes": 349
+        },
+        "data/package-names/dromara__hutool_CVE-2018-17297_4.1.11.txt": {
+          "sha256": "87ed090ba598f4e4d1aa836ca8449c4acc38d0299a7778da1e7e57f0f0115e3c",
+          "size_bytes": 6106
+        },
+        "data/package-names/eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5.txt": {
+          "sha256": "540464a7c6ca029bdf51d11a57e1f85b1072fa9d14026e52cb50e4821089c644",
+          "size_bytes": 67667
+        },
+        "data/package-names/eclipse__hawkbit_CVE-2020-27219_0.3.0M6.txt": {
+          "sha256": "df2fcef7a2d3b28d059e4e5a1e48a5208b4c5c0fc31621e6cf712c7f39dac549",
+          "size_bytes": 7293
+        },
+        "data/package-names/fabric8io__kubernetes-client_CVE-2021-4178_5.0.2.txt": {
+          "sha256": "4c65dff662eef9cd4cfb43dab59d267db05ac132a6082071b3f2b65af923a087",
+          "size_bytes": 10936
+        },
+        "data/package-names/ff4j__ff4j_CVE-2022-44262_1.8.13.txt": {
+          "sha256": "d5fc1a8ccc17634a1c4c3a4f2f18a9b850db3206cb8312a115fa4be0a87a4af8",
+          "size_bytes": 3241
+        },
+        "data/package-names/folio-org__spring-module-core_CVE-2022-4963_2.0.0.txt": {
+          "sha256": "79a8c1ab47f1e7dea53bedbd4bf7e4eec5f0fc9fad32a208433f55985574bba9",
+          "size_bytes": 781
+        },
+        "data/package-names/hapifhir__hapi-fhir_CVE-2023-24057_5.6.91.txt": {
+          "sha256": "e2af6f40e2f32101c6aae2562afe03015ea57b8f6f3dd1aa6076f3889f07f9ca",
+          "size_bytes": 15767
+        },
+        "data/package-names/hapifhir__hapi-fhir_CVE-2023-28465_5.6.105.txt": {
+          "sha256": "e2af6f40e2f32101c6aae2562afe03015ea57b8f6f3dd1aa6076f3889f07f9ca",
+          "size_bytes": 15767
+        },
+        "data/package-names/hibernate__hibernate-validator_CVE-2019-10219_6.0.17.Final.txt": {
+          "sha256": "893a3900d5c1b3a8bea991c8ef31a25cd2fccb346dd3902c090a2bf7d560e3dd",
+          "size_bytes": 15408
+        },
+        "data/package-names/jeecgboot__jeecgboot_CVE-2022-45206_3.4.3.txt": {
+          "sha256": "8bfc9c7304a383ecb5727f4c14a8de7e294c52edbd2a6695fd4e74faf162fb09",
+          "size_bytes": 3747
+        },
+        "data/package-names/jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17.txt": {
+          "sha256": "843708b8cf8ff09289b0dabfd78d13dd72ca94c2a0ec6ba45fd652ceb674e34c",
+          "size_bytes": 268
+        },
+        "data/package-names/jenkinsci__git-client-plugin_CVE-2019-10392_2.8.4.txt": {
+          "sha256": "80e25d88df7c362224d3eff26213fcdb7911f23a0435a8f18f1c148eb8426b2d",
+          "size_bytes": 175
+        },
+        "data/package-names/jenkinsci__perfecto-plugin_CVE-2020-2261_1.17.txt": {
+          "sha256": "869d19d8e47cf56bc02648172a0d64f1983c929c905bf7915979ca5eac0c3434",
+          "size_bytes": 83
+        },
+        "data/package-names/jenkinsci__script-security-plugin_CVE-2023-24422_1228.vd93135a_2fb_25.txt": {
+          "sha256": "39c653a03de39fb3183368b7722fe2c1ce6aa3c2ee72aaabea2c53f070875e0d",
+          "size_bytes": 258
+        },
+        "data/package-names/jenkinsci__workflow-cps-global-lib-plugin_CVE-2022-25174_544.vff04fa68714d.txt": {
+          "sha256": "0f30ef787dd6bb3f49ffc69d3052b902a0def38b9390cb7ae730be6324ba58bf",
+          "size_bytes": 166
+        },
+        "data/package-names/jenkinsci__workflow-cps-plugin_CVE-2022-25173_2646.v6ed3b5b01ff1.txt": {
+          "sha256": "6a222da73611b0e1b402aa49960e5dc5d59aecaa3dbf59bfea3f27a477278553",
+          "size_bytes": 427
+        },
+        "data/package-names/jenkinsci__workflow-multibranch-plugin_CVE-2022-25175_706.vd43c65dec013.txt": {
+          "sha256": "17314645742b9aa2e0fa3d52d2377f5dbd46decec7f140ef74a8cf14fa8905a3",
+          "size_bytes": 44
+        },
+        "data/package-names/jeremylong__DependencyCheck_CVE-2018-12036_3.1.2.txt": {
+          "sha256": "7be735606f8f851248b3b9b8ff17017f446eaac5969d83b1039abb1a6c444b51",
+          "size_bytes": 1074
+        },
+        "data/package-names/jlangch__venice_CVE-2022-36007_1.10.16.txt": {
+          "sha256": "3e57702219414066994f75c7e7b5d9919d5ac24d5ac85c1cbf60d64aa6476eb5",
+          "size_bytes": 2716
+        },
+        "data/package-names/jmrozanec__cron-utils_CVE-2021-41269_9.1.5.txt": {
+          "sha256": "f48e364fb168fd13a9cb4f614cb4d140b871292ef8abd1a35814ce00cc486e02",
+          "size_bytes": 646
+        },
+        "data/package-names/joniles__mpxj_CVE-2020-35460_8.3.4.txt": {
+          "sha256": "d412016fc0ce668ca3dcb47c1738c44dcdbed1c519a0dbde6a6cd4a872857c8c",
+          "size_bytes": 1117
+        },
+        "data/package-names/jstachio__jstachio_CVE-2023-33962_1.0.0.txt": {
+          "sha256": "908dfc8f64390dee274195f9d1b4e3d9f8850dd1452a9c3235b4f60dbb23d239",
+          "size_bytes": 1846
+        },
+        "data/package-names/keycloak__keycloak_CVE-2014-3656_1.0.5.Final.txt": {
+          "sha256": "c6e0f33fbd27ddadd4d94ab6040a48162941e73c62d5fa9c59669b02c3e014d1",
+          "size_bytes": 3677
+        },
+        "data/package-names/keycloak__keycloak_CVE-2022-1274_20.0.4.txt": {
+          "sha256": "7c5e2533705a4a5c6cdea21506c5656aabbab1b042a7e7c6f4dfd76da81ed5cd",
+          "size_bytes": 34426
+        },
+        "data/package-names/keycloak__keycloak_CVE-2022-3782_20.0.1.txt": {
+          "sha256": "7c5e2533705a4a5c6cdea21506c5656aabbab1b042a7e7c6f4dfd76da81ed5cd",
+          "size_bytes": 34426
+        },
+        "data/package-names/keycloak__keycloak_CVE-2022-4137_20.0.4.txt": {
+          "sha256": "7c5e2533705a4a5c6cdea21506c5656aabbab1b042a7e7c6f4dfd76da81ed5cd",
+          "size_bytes": 34426
+        },
+        "data/package-names/keycloak__keycloak_CVE-2022-4361_21.1.1.txt": {
+          "sha256": "637a4f69a86b8d5a5bcc916c34e59ec6105404545b63129e4c665fe7305e7404",
+          "size_bytes": 33263
+        },
+        "data/package-names/kubernetes-client__java_CVE-2020-8570_client-java-parent-9.0.1.txt": {
+          "sha256": "90f994aae296e536f290d148d20d34b2cbe99a746630cf0f6d75ce2305c38638",
+          "size_bytes": 1524
+        },
+        "data/package-names/mapfish__mapfish-print_CVE-2020-15231_3.22.0.txt": {
+          "sha256": "6cb41466b7efc1cc5e8aac35f5e07101392cf5fbe687c7e25cbab44e65b66907",
+          "size_bytes": 1302
+        },
+        "data/package-names/nahsra__antisamy_CVE-2016-10006_1.5.3.txt": {
+          "sha256": "babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368",
+          "size_bytes": 176
+        },
+        "data/package-names/nahsra__antisamy_CVE-2017-14735_1.5.6.txt": {
+          "sha256": "babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368",
+          "size_bytes": 176
+        },
+        "data/package-names/nahsra__antisamy_CVE-2022-28367_1.6.5.txt": {
+          "sha256": "babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368",
+          "size_bytes": 176
+        },
+        "data/package-names/nahsra__antisamy_CVE-2022-29577_1.6.6.1.txt": {
+          "sha256": "babe3b80121b76c1188de0ac93d78db1cef23d36b8357bcbb626b9917d114368",
+          "size_bytes": 176
+        },
+        "data/package-names/payara__Payara_CVE-2022-37422_5.2022.2.txt": {
+          "sha256": "004fab7b59b2af182d313b8b2e337354d76424d6dd63b7a139d0d43d9315fc5d",
+          "size_bytes": 48486
+        },
+        "data/package-names/perwendel__spark_CVE-2016-9177_2.5.1.txt": {
+          "sha256": "93e231cad8fa35c534f4d16eb81c341729f218ee6316a63de767631b0dcbc951",
+          "size_bytes": 619
+        },
+        "data/package-names/perwendel__spark_CVE-2018-9159_2.7.1.txt": {
+          "sha256": "8e54e523c1a3493b7b876e1887ecd78286ec7114f5699aa499519b03828e4fcc",
+          "size_bytes": 668
+        },
+        "data/package-names/rhuss__jolokia_CVE-2018-1000129_1.4.0.txt": {
+          "sha256": "5216483b48c5d81d6da3bfec0fae95fdd62e0f8b51eecbd37c27f2e0b666a05a",
+          "size_bytes": 1123
+        },
+        "data/package-names/spring-cloud__spring-cloud-config_CVE-2020-5405_2.1.6.RELEASE.txt": {
+          "sha256": "ef155ab4a3683cca47021002f4614d3a6904392dece95dc648c35f3610af846b",
+          "size_bytes": 776
+        },
+        "data/package-names/spring-cloud__spring-cloud-config_CVE-2020-5410_2.1.8.RELEASE.txt": {
+          "sha256": "ef155ab4a3683cca47021002f4614d3a6904392dece95dc648c35f3610af846b",
+          "size_bytes": 776
+        },
+        "data/package-names/spring-cloud__spring-cloud-gateway_CVE-2022-22947_3.0.6.txt": {
+          "sha256": "6b7e454cde9903e730a7b3a1b5c50c4f8f0ffe27938fae3d618eda9cb96a2735",
+          "size_bytes": 1346
+        },
+        "data/package-names/spring-projects__spring-framework_CVE-2022-22965_5.2.19.RELEASE.txt": {
+          "sha256": "8cb454e456f62a2563e5e9ced7f64a6285d26e1523fd98148013e025577c2d21",
+          "size_bytes": 24373
+        },
+        "data/package-names/spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE.txt": {
+          "sha256": "27fe2a704073d7f235ee2a2eb254dcc4968d1cc59e78b09bc030dbe8f391c0d1",
+          "size_bytes": 4495
+        },
+        "data/package-names/square__retrofit_CVE-2018-1000850_2.4.0.txt": {
+          "sha256": "8ae46d6fb740a6d3edc2b62558e0ab61b3270abf4e3ba78a498cc72d96d0cc1c",
+          "size_bytes": 488
+        },
+        "data/package-names/srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2.txt": {
+          "sha256": "32285414b4d41c48171fc18b2f5031ba37dc77c39714813b3b8f884d33bff619",
+          "size_bytes": 398
+        },
+        "data/package-names/testng-team__testng_CVE-2022-4065_7.5.txt": {
+          "sha256": "5ea153532db530c52022ee7164b290ebbb86912539213dd3b022eb477c9c003f",
+          "size_bytes": 8824
+        },
+        "data/package-names/undertow-io__undertow_CVE-2014-7816_1.0.16.Final.txt": {
+          "sha256": "f694b36faf3ea5c6adf900b462a7e413219859140207eb2cb0dfd8120cc7fee3",
+          "size_bytes": 3809
+        },
+        "data/package-names/vert-x3__vertx-web_CVE-2018-12542_3.5.3.CR1.txt": {
+          "sha256": "a639a577d2a58866336dfec226caee827c1ef3f564059591679c296b9455dd58",
+          "size_bytes": 2147
+        },
+        "data/package-names/vert-x3__vertx-web_CVE-2019-17640_3.9.3.txt": {
+          "sha256": "526f5e95708894901a07d05012f214ff06c9e95bf0557fd958b118137edaab5a",
+          "size_bytes": 1800
+        },
+        "data/package-names/whitesource__curekit_CVE-2022-23082_1.1.3.txt": {
+          "sha256": "dceb116c0c6f76cc989139637505b1ee222c701384b5accec89e83124f9cc42a",
+          "size_bytes": 48
+        },
+        "data/package-names/wildfly__wildfly_CVE-2018-1047_11.0.0.Final.txt": {
+          "sha256": "e0013cea3bcd959a8c4e9a5e7f152e630c4b419fc1013b13e0d39f9cba4031c6",
+          "size_bytes": 58286
+        },
+        "data/package-names/x-stream__xstream_CVE-2013-7285_1.4.6.txt": {
+          "sha256": "b31ce5c9b1603bd2bd9a7d39f67cfdccd7ed841a9b4b373de85473a2a45c335f",
+          "size_bytes": 2172
+        },
+        "data/package-names/x-stream__xstream_CVE-2020-26217_1.4.14-java7.txt": {
+          "sha256": "707803cce94bbc8cce3325862f2d72773808af042c5a362ec87847eab61a849e",
+          "size_bytes": 1408
+        },
+        "data/package-names/x-stream__xstream_CVE-2021-21345_1.4.15.txt": {
+          "sha256": "f6a9f90b20ed1c2b9aa4c908f6f531ddb4c3ee197fcaefc9229e6168f5c5cfe9",
+          "size_bytes": 2289
+        },
+        "data/package-names/xerial__sqlite-jdbc_CVE-2023-32697_3.41.2.1.txt": {
+          "sha256": "2613d772e46a781779081c11e3ace92d71167abdcaaee50cd16878a50c92a20b",
+          "size_bytes": 142
+        },
+        "data/package-names/xuxueli__xxl-job_CVE-2020-29204_2.2.0.txt": {
+          "sha256": "89e700ee71b9d81d56bac66c41b3c705ecfb44dcaca26531a15b53a2cee6deb5",
+          "size_bytes": 2007
+        },
+        "data/package-names/xwiki__xwiki-commons_CVE-2022-24897_12.6.6.txt": {
+          "sha256": "ca928f8ad80a4a27cb1ece60d31f54a547cc0daa5666efe9548f4715ef58d82c",
+          "size_bytes": 8399
+        },
+        "data/package-names/xwiki__xwiki-commons_CVE-2023-29201_14.6.txt": {
+          "sha256": "e0f493e33d66c2e2b708d894d083b988058fb99295d8a892edacdf64aa5dfc9a",
+          "size_bytes": 8454
+        },
+        "data/package-names/xwiki__xwiki-commons_CVE-2023-29528_14.9-rc-1.txt": {
+          "sha256": "e0f493e33d66c2e2b708d894d083b988058fb99295d8a892edacdf64aa5dfc9a",
+          "size_bytes": 8454
+        },
+        "data/package-names/xwiki__xwiki-commons_CVE-2023-31126_14.10.3.txt": {
+          "sha256": "e0f493e33d66c2e2b708d894d083b988058fb99295d8a892edacdf64aa5dfc9a",
+          "size_bytes": 8454
+        },
+        "data/package-names/xwiki__xwiki-commons_CVE-2023-36471_14.10.5.txt": {
+          "sha256": "085d737be8a5313d87f93911c6b416fe64cc4878d852ee5bc9a0afe1a094ea70",
+          "size_bytes": 8481
+        },
+        "data/package-names/xwiki__xwiki-rendering_CVE-2023-32070_14.6.txt": {
+          "sha256": "166e965937d818648b3b3b158f51dcc7c4bb294c48b962a15a0370080e36469b",
+          "size_bytes": 6464
+        },
+        "data/package-names/xwiki__xwiki-rendering_CVE-2023-37908_14.10.3.txt": {
+          "sha256": "166e965937d818648b3b3b158f51dcc7c4bb294c48b962a15a0370080e36469b",
+          "size_bytes": 6464
+        },
+        "data/package-names/yamcs__yamcs_CVE-2023-45277_5.8.6.txt": {
+          "sha256": "2883ad29c74a79d9a65461e4d0110c472f17f1e4c7c43c42c6dfbf4d13ef85fd",
+          "size_bytes": 2183
+        },
+        "data/package-names/yamcs__yamcs_CVE-2023-45278_5.8.6.txt": {
+          "sha256": "2883ad29c74a79d9a65461e4d0110c472f17f1e4c7c43c42c6dfbf4d13ef85fd",
+          "size_bytes": 2183
+        },
+        "data/package-names/zeroturnaround__zt-zip_CVE-2018-1002201_1.12.txt": {
+          "sha256": "c8f89ec3a01595f0ff0db53eef446839885b29860b8a8119ecea33d7b7435eb6",
+          "size_bytes": 164
+        },
+        "data/patches/apache__camel_CVE-2018-8041_2.20.3.patch": {
+          "sha256": "512420667abfa1a0103d4b5fc634b1040a94741b1f0220964f74f112c9d957cf",
+          "size_bytes": 12470
+        },
+        "data/patches/apache__camel_CVE-2019-0194_2.21.4.patch": {
+          "sha256": "ffff6a10e58590981d4471aa77b735fddb9afa6f78d356e3091cd52828aae5f3",
+          "size_bytes": 2887
+        },
+        "data/patches/cassandra-lucene-index_CVE-2025-26511_cassandra-4.0.16-1.0.0.patch": {
+          "sha256": "4909294e3d481e47b9fa72ca7b3f4df952a6c9e612af70670772512b298576ab",
+          "size_bytes": 379
+        },
+        "data/patches/crate__crate_5.5.1_CVE-2023-51982_5.5.1.patch": {
+          "sha256": "09ef4c9f1c8264c01a424465612ea86b8d66efb26712b6740401003edd60db29",
+          "size_bytes": 2443
+        },
+        "data/patches/jstachio__jstachio_CVE-2023-33962_1.0.0.patch": {
+          "sha256": "ecaeb51ee5a65f75ea0c07bf0d2732d50a7f82478b9b2289158e4193834d0a40",
+          "size_bytes": 31630
+        },
+        "data/patches/keycloak__keycloak_CVE-2022-1274_20.0.4.patch": {
+          "sha256": "3b9f79de94b65a623fff8f0dc602f7cff61b2cc76484f8bef2b871bae0686034",
+          "size_bytes": 7156
+        },
+        "data/patches/keycloak__keycloak_CVE-2022-4137_20.0.4.patch": {
+          "sha256": "3b9f79de94b65a623fff8f0dc602f7cff61b2cc76484f8bef2b871bae0686034",
+          "size_bytes": 7156
+        },
+        "data/patches/keycloak__keycloak_CVE-2022-4361_21.1.1.patch": {
+          "sha256": "3b9f79de94b65a623fff8f0dc602f7cff61b2cc76484f8bef2b871bae0686034",
+          "size_bytes": 7156
+        },
+        "data/patches/mapfish__mapfish-print_CVE-2020-15231_3.22.0.patch": {
+          "sha256": "1e7972d6b7394b8111a47407d0e05a0a5aff9ecfd7482e1f925985622f23bbee",
+          "size_bytes": 3951
+        },
+        "data/patches/testng-team__testng_CVE-2022-4065_7.5.patch": {
+          "sha256": "de92788627c773d226adac85219a9b159fd4f14bd7cae04d48819d852fd26018",
+          "size_bytes": 461
+        },
+        "data/patches/xwiki__xwiki-commons_CVE-2022-24897_12.6.6.patch": {
+          "sha256": "1cbd574faf1ae72c8e2b30fc56681085f16cb895c490e82a784a1a6cf092c59a",
+          "size_bytes": 668
+        },
+        "data/project_info.csv": {
+          "sha256": "8582dc18b742d15427f54440863d0e42a9259a114b5188735044b9b50652b272",
+          "size_bytes": 66462
+        },
+        "data/scripts/fix_info_generator.py": {
+          "sha256": "7b0b48ef1dc3d015ed0c700becbf2bb499a7e4567797d1ab721307a81ea15d4d",
+          "size_bytes": 5524
+        },
+        "data/source_sink_detect.csv": {
+          "sha256": "49abaab5f66e841775c1e6129aaf82f1eab7a2d0b269d66c8242e1cd29924780",
+          "size_bytes": 32274
+        },
+        "data/tests/blank_values_test.py": {
+          "sha256": "5fbff78e9416ecd935226d727badedbf021abf6188b15718594fab0d566f10bf",
+          "size_bytes": 840
+        },
+        "data/tests/commit_diff_alignment_test.py": {
+          "sha256": "3c3ea96e5609cba8cd15ef409193f8c50b7e10988418ead98e9a7427655dc55f",
+          "size_bytes": 3607
+        },
+        "data/tests/conftest.py": {
+          "sha256": "0c79d898c1166b73d971a2b42379b155c32e4efef9373e14a591eb2b2663aab9",
+          "size_bytes": 1275
+        },
+        "data/tests/project_coverage_test.py": {
+          "sha256": "b117f75f3a77db0c23e1722a5c94a034bdda04364a8d700000d0ca5f71e81b8e",
+          "size_bytes": 1130
+        },
+        "data/tests/slug_format_test.py": {
+          "sha256": "fd04969c388b2e7848b529420b08dd0e6b2841eff30ce665ba4c1a71a59a8983",
+          "size_bytes": 1654
+        },
+        "dep_configs.json": {
+          "sha256": "9a769e9d4cebc096047f6558915587238aa52b05a24992d8a3d63e57bc0845f7",
+          "size_bytes": 534
+        },
+        "dep_configs.linux_x64.json": {
+          "sha256": "9a769e9d4cebc096047f6558915587238aa52b05a24992d8a3d63e57bc0845f7",
+          "size_bytes": 534
+        },
+        "docs/SUMMARY.md": {
+          "sha256": "736407acfb4e62d0223793931236fb4d80b9669c85d67f1369b7ec1fb176d118",
+          "size_bytes": 707
+        },
+        "docs/about/citation.md": {
+          "sha256": "3dc7f62a1e7e3af5747e36a73cb60e1b6553a7ac6305618709d5ed824197793d",
+          "size_bytes": 391
+        },
+        "docs/about/team.md": {
+          "sha256": "8394da458986cfb2e8b84a5567926323668dcd8a6ec674fb3695318990d5c053",
+          "size_bytes": 1230
+        },
+        "docs/architecture/dataset.md": {
+          "sha256": "272df7fec42807500c11a396a32b1a4d7ea46eb5257dd2efdebccc76301e8625",
+          "size_bytes": 576
+        },
+        "docs/architecture/results.md": {
+          "sha256": "54647cf5532dfb66773e1d4d6fd89b28c53cb14a2939ad950cbbc4973a09fce9",
+          "size_bytes": 824
+        },
+        "docs/architecture/workflow.md": {
+          "sha256": "35baee01a799253cdc9c01301a66cc2a3366d3526bfffbee7decbc0f1065bb7a",
+          "size_bytes": 985
+        },
+        "docs/assets/dataset-collection.png": {
+          "sha256": "b2bba0d5abdced2dddc089826940aff9075fc6398425cdc51108054cf6d688d1",
+          "size_bytes": 272994
+        },
+        "docs/assets/iris_arch.png": {
+          "sha256": "141cd96f689da6cf4d5701935445568406c97c86223913b8ac1cbd44e00b5119",
+          "size_bytes": 284416
+        },
+        "docs/assets/iris_logo.svg": {
+          "sha256": "bf7b67f3a32fd0420576c03dc8b253b53784751e8538b8b2a18e8dd5ceb33c89",
+          "size_bytes": 16756
+        },
+        "docs/assets/visualizer.png": {
+          "sha256": "b5c59288fd2fbfdd0725427abc573837cb13fe443377e2995bee2f142bdd0272",
+          "size_bytes": 53240
+        },
+        "docs/development/adding-cwes.md": {
+          "sha256": "f14375d0bcd3e3ac97596435cc68ac974839ff7fed41253e406fd097b28a61ec",
+          "size_bytes": 6793
+        },
+        "docs/development/changelog.md": {
+          "sha256": "438f508da0b6df051bc01b716e564709d33ec160641bb2c7353e98fcaf228897",
+          "size_bytes": 779
+        },
+        "docs/development/contributing.md": {
+          "sha256": "320bfc7a57397b12698a9ef4d20f4ab009840ac57ac233116a7032c45b0954be",
+          "size_bytes": 983
+        },
+        "docs/environment-setup/docker.md": {
+          "sha256": "a676525a9441d2b49b1a6c937700891617e17bb462c49c87b2482dba91ccd710",
+          "size_bytes": 300
+        },
+        "docs/environment-setup/native.md": {
+          "sha256": "911a2eecfc4a5c7a8b1064ffae0c0bff86dbb5e38a6d173005d9b0b9c915fa3b",
+          "size_bytes": 2408
+        },
+        "docs/features/cwes.md": {
+          "sha256": "be417564545b4503d5bda5a1c7aced325f7eb65fcb32a439e9f6b3b27ba00df0",
+          "size_bytes": 1132
+        },
+        "docs/features/models.md": {
+          "sha256": "e1c096f8a76a140a2e19aba7ae0bb7b380bbe962a145f67578216696b2fd1d7c",
+          "size_bytes": 2249
+        },
+        "docs/features/visualizer.md": {
+          "sha256": "93a289fe2e1743957b18aa5c943f7721287127472e672d515a6b7fb3299fabfd",
+          "size_bytes": 9167
+        },
+        "docs/introduction.md": {
+          "sha256": "243d51b60dad611e7efbb07666ee376f834c256534bff426dae0bac823da7282",
+          "size_bytes": 1394
+        },
+        "docs/quickstart.md": {
+          "sha256": "8bfcef3057dc25b24d6edfcbb9162f65852282d1aebd5b6373b511480534a21c",
+          "size_bytes": 861
+        },
+        "environment.yml": {
+          "sha256": "cc5bb6296dcfcf86c50890717b39d566536dd5a19fb4839b0a873a5ff025969c",
+          "size_bytes": 254
+        },
+        "iclr-2025-results/CodeQL.csv": {
+          "sha256": "443e51e25db6dec106a75db708b30e703a006d8306ebfa805d6bf6727b2d2689",
+          "size_bytes": 8729
+        },
+        "iclr-2025-results/IRIS+DeepSeekCoder-33B.csv": {
+          "sha256": "19ec3bc699c2d2265f713827e1f050e7b40f87d9a01ffc573826af460d8cdbc8",
+          "size_bytes": 9128
+        },
+        "iclr-2025-results/IRIS+DeepSeekCoder-7B.csv": {
+          "sha256": "d59d63e64b96f0f19b9dd7d79bd405054c5f70210945fa1c42e56c56d2a8a140",
+          "size_bytes": 9531
+        },
+        "iclr-2025-results/IRIS+GPT-3.5.csv": {
+          "sha256": "7535015adfa67bbdab8463b976502a1eb036c3e979582140315ac080eae7d357",
+          "size_bytes": 9164
+        },
+        "iclr-2025-results/IRIS+GPT-4.csv": {
+          "sha256": "4180870009ae6f63e537e9791944e30b2f1cabc9cf56cbc2a7e2b202f8069c94",
+          "size_bytes": 9184
+        },
+        "iclr-2025-results/IRIS+Gemma2-27B.csv": {
+          "sha256": "ba2bc4a2d5cdec8b79d0118907106a90e1fb20f1f2d021687085ebb80149f769",
+          "size_bytes": 9621
+        },
+        "iclr-2025-results/IRIS+Llama3-70B.csv": {
+          "sha256": "e0edea963de34d3d6726af22ea2b12dafed3a8721b276d8c0075c1f05a8061c6",
+          "size_bytes": 9464
+        },
+        "iclr-2025-results/IRIS+Llama3-8B.csv": {
+          "sha256": "d9a8a2bb288e18c87000b74f08fe5fb2bda9027a31e642539f044869fcded904",
+          "size_bytes": 9159
+        },
+        "iclr-2025-results/IRIS+Qwen2.5-32B.csv": {
+          "sha256": "3fcf3ef70d68c1f7862ec13e77c9e2c45de5f10759c6ad3238e75a574d3b3e50",
+          "size_bytes": 9217
+        },
+        "scripts/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        },
+        "scripts/build_codeql_dbs.py": {
+          "sha256": "3b878e3bd24a2f147887a1e08f148b2eb3cbabc9ef366780a6c63b24ff96431e",
+          "size_bytes": 12728
+        },
+        "scripts/build_one.py": {
+          "sha256": "401ffa4ad0960567919900534e4ef445dd104f2044aaed89283c9ed37e7284cf",
+          "size_bytes": 19415
+        },
+        "scripts/codeql-queries/packages.ql": {
+          "sha256": "db587695abc660898e36ccc3ce4a1d0186fee1df657e498a01b35b47b9fec4e4",
+          "size_bytes": 287
+        },
+        "scripts/codeql-queries/qlpack.yml": {
+          "sha256": "6b7ca3714ce895c3fe7c9595c28215f507aec081eeaef3911047982405cd8d5f",
+          "size_bytes": 77
+        },
+        "scripts/docker_utils.py": {
+          "sha256": "4297dff5456b01be68e7eb46762d2579b29fdb1c7cddb4561265d8ea78843629",
+          "size_bytes": 5277
+        },
+        "scripts/fetch_and_build.py": {
+          "sha256": "351b5256177b22fe9d50c3a3815d84156883792ea080bad03f2ceb74224ba790",
+          "size_bytes": 9347
+        },
+        "scripts/fetch_one.py": {
+          "sha256": "667c97c24e0a25ab870b062e21d8f28576ad81a623b867f7be76a760d2929e6c",
+          "size_bytes": 5860
+        },
+        "scripts/get_packages_codeql.py": {
+          "sha256": "cf37f09d26736a918857669f897508f19e8723632a2de74f83e5020209a53adb",
+          "size_bytes": 5883
+        },
+        "scripts/install_deps.sh": {
+          "sha256": "23c1db3bc5a531c27d335ee681a174c55c71b16d1a9a53db5c57eb8728bb34a3",
+          "size_bytes": 4432
+        },
+        "src/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        },
+        "src/codeql_queries.py": {
+          "sha256": "751fc2af2dff1ee913b1990f47d7d1c6ea8a4e29f2864380cbcea53d9923e8c7",
+          "size_bytes": 2770
+        },
+        "src/codeql_vul.py": {
+          "sha256": "d4afe361b12d7d717a36a15d789783e0236cb2aec26cef3c78ba9b93ca0206a6",
+          "size_bytes": 7869
+        },
+        "src/config.py": {
+          "sha256": "0623ba5926317468214228bc6a02d4621064cec7be5916cd74df3b3ad85ec605",
+          "size_bytes": 1504
+        },
+        "src/cwe-queries/codeql-version-2.15.0/cwe-queries-2.15.0.zip": {
+          "sha256": "5c48b557973d9f05ef813c849f902bf93b4d98253f9e99471e99b03bab91f606",
+          "size_bytes": 56129
+        },
+        "src/cwe-queries/cwe-022/MyTaintedPathQuery.qll": {
+          "sha256": "25b543830b1e3cdfd69de9fe94883c470a4fa00a732024ff4b92f8305de212f0",
+          "size_bytes": 3118
+        },
+        "src/cwe-queries/cwe-022/PathCreation.qll": {
+          "sha256": "4c74a3116f8a09268f1590164cde778a39b6215891d493ad726e227e436db34e",
+          "size_bytes": 4703
+        },
+        "src/cwe-queries/cwe-022/cwe-022wLLM.ql": {
+          "sha256": "b381f14e9f4121838a65ad8f9409e0813ecc4081ba8133702502320ea77fafad",
+          "size_bytes": 1653
+        },
+        "src/cwe-queries/cwe-022/cwe-022wLLMAugmented.ql": {
+          "sha256": "797d4a7f05dcdb8333578bb3cd014887eb590c4e90c781967aedd6fa64527bb9",
+          "size_bytes": 6073
+        },
+        "src/cwe-queries/cwe-022/cwe-022wLLMSinksOnly.ql": {
+          "sha256": "166bd6a16bd53bb2197013a9de4d1889c8a20bd05e0aa52e8a6b3eaf9d1e6eac",
+          "size_bytes": 1477
+        },
+        "src/cwe-queries/cwe-022/cwe-022wLLMSourcesOnly.ql": {
+          "sha256": "364dcc5bd3e98e8c4855ad36b6acecf52b3f9accbf30c9dbc2c69d1cdbbb4899",
+          "size_bytes": 1487
+        },
+        "src/cwe-queries/cwe-078/CommandInjectionRuntimeExecLocalwLLM.ql": {
+          "sha256": "ffd5db486800eb7cfc55771a8b5b8d7cd9604206ebfe1641664e36804c8e4652",
+          "size_bytes": 1352
+        },
+        "src/cwe-queries/cwe-078/CommandInjectionRuntimeExecwLLM.ql": {
+          "sha256": "c2b16daf6ecc5e36d129f8841229e9c163228a05562e423bbfd3abadc5e39cc6",
+          "size_bytes": 1007
+        },
+        "src/cwe-queries/cwe-078/CommandInjectionRuntimeExecwLLMSinksOnly.ql": {
+          "sha256": "9bef2fa766f59d88687a65807cc3e43a613e730b8499195ae79a30e0c8bf2cfa",
+          "size_bytes": 1043
+        },
+        "src/cwe-queries/cwe-078/CommandInjectionRuntimeExecwLLMSourcesOnly.ql": {
+          "sha256": "96ac36bf8d0a524c7682d020968919ff1e67c330735c693ac977be74dde7a568",
+          "size_bytes": 1064
+        },
+        "src/cwe-queries/cwe-078/ExecRelativewLLM.ql": {
+          "sha256": "aa182e90217e3e8aaa1fa9aac10f0111879a3adc9740c6320e55aafa075e9400",
+          "size_bytes": 818
+        },
+        "src/cwe-queries/cwe-078/ExecTaintedLocalwLLM.ql": {
+          "sha256": "321d5a8baed8a217ac4827a69f8202a4d40028fc16d71e2cac7313f61fe77c19",
+          "size_bytes": 901
+        },
+        "src/cwe-queries/cwe-078/ExecTaintedwLLM.ql": {
+          "sha256": "67f72066f6a17c1f4d3169dce43ab407cec0e7552c329c467ef4f909bf6e4ef2",
+          "size_bytes": 794
+        },
+        "src/cwe-queries/cwe-078/ExecUnescapedwLLM.ql": {
+          "sha256": "b4a89480b6266f81b243519d612f2b23a9d5a88873e3ecda1165b6176e015c42",
+          "size_bytes": 1703
+        },
+        "src/cwe-queries/cwe-078/MyCommandArguments.qll": {
+          "sha256": "e684fc5dbce9638d33b1b625c6526e53bfc31dd467fb200cebcfef1c8a84acf4",
+          "size_bytes": 6113
+        },
+        "src/cwe-queries/cwe-078/MyCommandInjectionRuntimeExec.qll": {
+          "sha256": "e622de34008fc0a24e9cf310178fc4d8f70d39974760b4dd5f710c3ca29fb4f8",
+          "size_bytes": 4090
+        },
+        "src/cwe-queries/cwe-078/MyCommandLineQuery.qll": {
+          "sha256": "16e155501372ad8231d490638da69a05d230b9f27538ef7fff75cfce28799a6a",
+          "size_bytes": 5705
+        },
+        "src/cwe-queries/cwe-078/MyExternalProcess.qll": {
+          "sha256": "d6ab38b64960a0148858932a06dbc9bbc761d4f36ac9080b9686ab62af96477d",
+          "size_bytes": 1369
+        },
+        "src/cwe-queries/cwe-079/MyXSS.qll": {
+          "sha256": "58c8c0ffc0e45083f39df41808ebbcf9409ae1a585685f9a79a056d6010d68bd",
+          "size_bytes": 4652
+        },
+        "src/cwe-queries/cwe-079/MyXssLocalQuery.qll": {
+          "sha256": "66e946c634780f062d690ad8ed841b73c1ae02554e29984ed9d31cdacab8327c",
+          "size_bytes": 1172
+        },
+        "src/cwe-queries/cwe-079/MyXssQuery.qll": {
+          "sha256": "d924748088ff991501983afd3a0362c05363535339dedd581a09bd73c171a1eb",
+          "size_bytes": 2456
+        },
+        "src/cwe-queries/cwe-079/XSS.ql": {
+          "sha256": "7dc9d20970227fc21003f8280ac50f5476a87ffeb7f6118f8c7501f098c3829b",
+          "size_bytes": 891
+        },
+        "src/cwe-queries/cwe-079/XSSLocal.ql": {
+          "sha256": "8ea79ed01204be0b4c52059546e27df490b73d0a97ca7a644826487f0d67c60a",
+          "size_bytes": 706
+        },
+        "src/cwe-queries/cwe-079/XSSSinksOnly.ql": {
+          "sha256": "2e2b0cf91df04b35e25ca5f7c041a6a4138c62d87bcee3ac65082e1c80229d68",
+          "size_bytes": 677
+        },
+        "src/cwe-queries/cwe-079/XSSSourcesOnly.ql": {
+          "sha256": "57940984560e9e5fb8f4be57497c96785689966b8631ee1795cf09201c34db2d",
+          "size_bytes": 687
+        },
+        "src/cwe-queries/cwe-089/MySqlConcatenatedLib.qll": {
+          "sha256": "250688da8cacdd2f5e7b8edd1d2a1b6d248913d08fd0dfc66df579219ede462f",
+          "size_bytes": 1592
+        },
+        "src/cwe-queries/cwe-089/MySqlInjectionQuery.qll": {
+          "sha256": "8cd9bd9891c5224067edc876a42d8de9b794aabe65e4bee96f246c1f03e62ba5",
+          "size_bytes": 914
+        },
+        "src/cwe-queries/cwe-089/cwe-089wLLM.ql": {
+          "sha256": "fd3cda9d29c28fa7093b055a469d225d19771b8fbca27461936171a217476237",
+          "size_bytes": 846
+        },
+        "src/cwe-queries/cwe-094/MySpelInjection.qll": {
+          "sha256": "5c1cf94fa826532dfd2c6e70f95a874a75034123bff653cb21e1490555092259",
+          "size_bytes": 1660
+        },
+        "src/cwe-queries/cwe-094/MySpelInjectionQuery.qll": {
+          "sha256": "3c04af9d3fb308f6e4a2f8b0e1ae06791d4971c9c3d64b9214b2cccc42aeb6ab",
+          "size_bytes": 4166
+        },
+        "src/cwe-queries/cwe-094/MyTemplateInjection.qll": {
+          "sha256": "7a28dd27921db62b9a909e5f67e19a31f12889de79f1248d045c0d1de2b3c087",
+          "size_bytes": 2949
+        },
+        "src/cwe-queries/cwe-094/MyTemplateInjectionQuery.qll": {
+          "sha256": "2284f5512f8097cfb91bcc137c25255ffef18a5b119a98e18bff81a893ccf45f",
+          "size_bytes": 1569
+        },
+        "src/cwe-queries/cwe-094/SpelInjection.ql": {
+          "sha256": "1142a9d9bd7578d2a2670209e5d4d1f871937e2362d6e13b0b7cc374040eadb8",
+          "size_bytes": 1043
+        },
+        "src/cwe-queries/cwe-094/SpelInjectionSinksOnly.ql": {
+          "sha256": "2a59ed83251d6618e1c8791efd93c4071b7e4af7a36a7de8a6f64d81054e2666",
+          "size_bytes": 827
+        },
+        "src/cwe-queries/cwe-094/SpelInjectionSourcesOnly.ql": {
+          "sha256": "3169cb4230cfda9061f1f6f5554112ba1ef21658b77d89a42a8d27da8e93f53f",
+          "size_bytes": 835
+        },
+        "src/cwe-queries/cwe-094/TemplateInjection.ql": {
+          "sha256": "56e11a265fd5c9f5b17e6e74196b7ba75174aa2466bd056ce42b77e44d2dabfe",
+          "size_bytes": 751
+        },
+        "src/cwe-queries/cwe-295/InsecureTrustManager.ql": {
+          "sha256": "2fe62e308461342ee6128487e04565ab843504660f0259cd9662d7643247b005",
+          "size_bytes": 885
+        },
+        "src/cwe-queries/cwe-295/MyInsecureTrustManager.qll": {
+          "sha256": "864ee91a63c69f92af518255218b35084593c4a54aea0f0942096b6f13a6ccbc",
+          "size_bytes": 2185
+        },
+        "src/cwe-queries/cwe-295/MyInsecureTrustManagerQuery.qll": {
+          "sha256": "fbb6786945790cd01324f73f05f5c3a1c4be02a55968bb6ba0373443d355d697",
+          "size_bytes": 1121
+        },
+        "src/cwe-queries/cwe-352/MyJsonStringLib.qll": {
+          "sha256": "057b7a16ea8bfebbb8624c2964d3fe0245081bb608e7c8c9a1e90692255f4fe1",
+          "size_bytes": 1745
+        },
+        "src/cwe-queries/cwe-352/MyJsonpInjectionLib.qll": {
+          "sha256": "5f6882d1686d02605b3b8c0b2460d6b527d5b6051089958152a6b817fcd95a4f",
+          "size_bytes": 3188
+        },
+        "src/cwe-queries/cwe-352/cwe-352wLLM.ql": {
+          "sha256": "15a3180f6a5687fff41dd84f324200abfbdeb1279e5496ea50cf64631dffd44b",
+          "size_bytes": 1065
+        },
+        "src/cwe-queries/cwe-502/MyUnsafeDeserialization.ql": {
+          "sha256": "9971739c4d470fd1328c88f792be16796109204354b50b15bf1af83179e3a929",
+          "size_bytes": 778
+        },
+        "src/cwe-queries/cwe-502/MyUnsafeDeserializationQuery.qll": {
+          "sha256": "f323e68a5204dffec2cde13d509e02f472f1b448ceb12d2bbae03f8b6f79b29d",
+          "size_bytes": 21602
+        },
+        "src/cwe-queries/cwe-502/UnsafeDeserialization.ql": {
+          "sha256": "8f8e1e168753b3ee1bdaf60f0f91760b6c81eb236e29dade7690316f40946e00",
+          "size_bytes": 799
+        },
+        "src/cwe-queries/cwe-502/UnsafeDeserializationQuery.qll": {
+          "sha256": "189e602788a482195d5ce112e19826eb0c07390b16f3de63f57ea37c702a0937",
+          "size_bytes": 25078
+        },
+        "src/cwe-queries/cwe-611/MyXxe.qll": {
+          "sha256": "d63d6b4b295d6646ea6f606b925c8b90414ea557f154704361dcbb3d5400248c",
+          "size_bytes": 847
+        },
+        "src/cwe-queries/cwe-611/MyXxeQuery.qll": {
+          "sha256": "3f152f642d227889231a218bf9683cbbba655e6ef88e7c6fd4bc9f50defa453d",
+          "size_bytes": 1078
+        },
+        "src/cwe-queries/cwe-611/MyXxeRemoteQuery.qll": {
+          "sha256": "22f3c5af259c38b786a1e881479c79176c33136e81ace943ed85a00b1ec4a202",
+          "size_bytes": 1096
+        },
+        "src/cwe-queries/cwe-611/XXE.ql": {
+          "sha256": "9607ebaa6cc16113e23580618c6b57bf6f628393da3e30e5e5a994fefb3acd12",
+          "size_bytes": 874
+        },
+        "src/cwe-queries/cwe-807/MyTaintedPermissionsCheckQuery.qll": {
+          "sha256": "51a103c5a48289a31f94b09e784ac26f8dfc9d1232f05cc9c3ecf001e05f2290",
+          "size_bytes": 2436
+        },
+        "src/cwe-queries/cwe-807/cwe-807wLLM.ql": {
+          "sha256": "06e870d5a8e4ab0c3e0b703be350397b5ae2256a61601e551c59913dcfff5594",
+          "size_bytes": 868
+        },
+        "src/cwe-queries/cwe-918/MyRequestForgeryQuery.qll": {
+          "sha256": "3e8dcfd974b3c1fedd5eeb7b3c40821aa93b3a504a58e040e8791cd89bd0f57d",
+          "size_bytes": 1557
+        },
+        "src/cwe-queries/cwe-918/cwe-918wLLM.ql": {
+          "sha256": "4e5aea3e57deaf47e6d273c18206b57f3ec368df36616933a43bc582f90e5946",
+          "size_bytes": 833
+        },
+        "src/cwe-queries/cwe-general/GeneralSpecs.qll": {
+          "sha256": "a255d23fc221bf4901a6640800d457ca3c079c522296f53c2ce8ee7fd782a30a",
+          "size_bytes": 1351
+        },
+        "src/evaluate_spec_against_codeql.py": {
+          "sha256": "3218ace2cb4068d533181bc0dee17eb0db56364768ac301bbe0ffc94ea28147d",
+          "size_bytes": 4405
+        },
+        "src/iris.py": {
+          "sha256": "58c1d6c51d76a3c311f2eb2b76d3ec04c52aaac1116f9386d727c1cf96494d62",
+          "size_bytes": 71091
+        },
+        "src/logger.py": {
+          "sha256": "f424b5c53aa11594e6bc3a5340984828bf4f64c06c9f61b10a6781a8afb0b342",
+          "size_bytes": 1099
+        },
+        "src/models/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        },
+        "src/models/codegen.py": {
+          "sha256": "86c0d8bdeee4b1c57c73fa0ab27c282b0cc4edf53e632a25c9baf792d9cc70eb",
+          "size_bytes": 1229
+        },
+        "src/models/codellama.py": {
+          "sha256": "0b9010c12e8fb5144105d83bf0258cce257033d42c977a3cb6bc7d380b1509ac",
+          "size_bytes": 3697
+        },
+        "src/models/codet5.py": {
+          "sha256": "3f408b1fce1da07489540c295dedf4e5e816286664ca44d3ed974064dcb7086d",
+          "size_bytes": 3551
+        },
+        "src/models/config.py": {
+          "sha256": "30f183560901fd688d713b0f8a5a1f0108c939890f8eb87ac13b601f3c910d95",
+          "size_bytes": 355
+        },
+        "src/models/deepseek.py": {
+          "sha256": "7cb561f7e18b7b679d551a943a2c88e8dd88cbdcbe2d807b427567e75679f2e0",
+          "size_bytes": 2150
+        },
+        "src/models/gemini.py": {
+          "sha256": "9c3b75ab5a80cc788ea10c5421a170c36ce3705412c6f2597d55409da63cfed3",
+          "size_bytes": 2876
+        },
+        "src/models/google.py": {
+          "sha256": "f687d95a0cf01e56f8a445a7ad068907b786d8ef874020c9051becf973b25d2b",
+          "size_bytes": 3561
+        },
+        "src/models/gpt.py": {
+          "sha256": "516e3019ff486b4f295c6686ab644009a897509b6e24d206f820f20d25ed8f46",
+          "size_bytes": 4206
+        },
+        "src/models/llama.py": {
+          "sha256": "238d6ecc4be15b5d553acdaf30c2cd5f0de902c7460200677414baab365f4d4f",
+          "size_bytes": 3710
+        },
+        "src/models/llm.py": {
+          "sha256": "2092921b8b943170cfd14a308826264cd6e77ce004f0a2f8e17c688f9befb011",
+          "size_bytes": 12364
+        },
+        "src/models/mistral.py": {
+          "sha256": "3ae848d3f5238e581ea662bb28c2efc172dba5c7702764ffe3dfaa9e9b5844c2",
+          "size_bytes": 3630
+        },
+        "src/models/ollama.py": {
+          "sha256": "8ccd20118ad5d6bf673c6653bd957681800e21e49b079e2e836b602a65d827f9",
+          "size_bytes": 2342
+        },
+        "src/models/openaimodels.py": {
+          "sha256": "2e21e272bde889d906a997e690acc119303b63856fe1bbf2a793dd1117c361ad",
+          "size_bytes": 4822
+        },
+        "src/models/qwen.py": {
+          "sha256": "93ff3e845caa906c1e7eca8309659d8e2babcc680f9b181505ec9cf2f3a10b41",
+          "size_bytes": 1916
+        },
+        "src/models/starcoder.py": {
+          "sha256": "787ef31378ff8ac09851ff7943ea810476df75918d6232b739fcc2cc27fe1af4",
+          "size_bytes": 1700
+        },
+        "src/models/wizarcoder.py": {
+          "sha256": "3e5e063f2d06e9297b581f81899274a850d57469cc1cecb4cede37f3a4265beb",
+          "size_bytes": 1289
+        },
+        "src/modules/codeql_query_runner.py": {
+          "sha256": "493a358981c9c21e4843ddfb49d050aea8fc29681da428c4e6662a826a43cccc",
+          "size_bytes": 3903
+        },
+        "src/modules/contextual_analysis_pipeline.py": {
+          "sha256": "0cccdec55b914973ad404b9397bdabf9ccc366f46a9486ffb1310079b22d85c3",
+          "size_bytes": 36818
+        },
+        "src/modules/evaluation_pipeline.py": {
+          "sha256": "8f529144936f76e923baadaeddfb0b59311352c74072d12b2108a0b1fd4868a9",
+          "size_bytes": 16775
+        },
+        "src/prompts.py": {
+          "sha256": "07f657b9a2451799525f97c259d449fd475d28ce619c5633a87ed2354830e9ac",
+          "size_bytes": 8207
+        },
+        "src/queries.py": {
+          "sha256": "bcd1ecc64214012e7b9a03bffbe38d7f4e6ad8730d7913765f72513eb994b37b",
+          "size_bytes": 28700
+        },
+        "src/queries/fetch_class_locs.ql": {
+          "sha256": "d4f0e56dc2eef65fbda38668092bb38dabdfb57ab0aa8cbfe9a9de4049c854df",
+          "size_bytes": 279
+        },
+        "src/queries/fetch_external_apis.ql": {
+          "sha256": "6872dc554975ff9f93c0f063b3f6b97a8873075301d28217c3721af3bf63fd9a",
+          "size_bytes": 2431
+        },
+        "src/queries/fetch_field_reads.ql": {
+          "sha256": "b0d07bd09cf35e524e8cd1759df4333a5e8ac8e2b0e50865c19259f3e133d37f",
+          "size_bytes": 681
+        },
+        "src/queries/fetch_func_locs.ql": {
+          "sha256": "f41740b415565810619929bd047952a24e4dcd936e07858ab09904ea5f694017",
+          "size_bytes": 278
+        },
+        "src/queries/fetch_func_params.ql": {
+          "sha256": "e3ba73e2b09a948f40cb595d71bca7ceec3eb4a6fa5c73c03159648cfeff4c01",
+          "size_bytes": 2051
+        },
+        "src/queries/fetch_sinks.ql": {
+          "sha256": "4be6b435bbe9b2b96798f08b341075366929aedb38dab70787e0981cb12d6425",
+          "size_bytes": 263
+        },
+        "src/queries/fetch_sources.ql": {
+          "sha256": "964c4ff2edc71f51e84ba85c465ea10d856393443b45076d9f72572933335198",
+          "size_bytes": 267
+        },
+        "src/queries/getpackages.ql": {
+          "sha256": "5fe20e2765bda1b67cd06f125c21db115e30629bf2d403a2403740ee215b754b",
+          "size_bytes": 74
+        },
+        "src/utils/__init__.py": {
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "size_bytes": 0
+        },
+        "src/utils/cwenames_top25.txt": {
+          "sha256": "008ea759d275dedf9684eb8a7f2a89b65071e92805e16c5ed48a1ca6e71377e9",
+          "size_bytes": 1111
+        },
+        "src/utils/mylogger.py": {
+          "sha256": "4aaf31a573f92835d8d26c65693f83372f896cf0194bf47672f6faf35c4ce7cc",
+          "size_bytes": 368
+        },
+        "src/utils/prompt_utils.py": {
+          "sha256": "c895e0e19d968e53f8d419dd6e11e2c5b5a9538864cb2ffd335895e70d9e0383",
+          "size_bytes": 6826
+        },
+        "visualizer/app.js": {
+          "sha256": "91478b6687248b9a81787a47e266d6267e233c63286e0e5aabae50325420ccfe",
+          "size_bytes": 33548
+        },
+        "visualizer/file_browser.html": {
+          "sha256": "47e59648312f1706b8281ebf8e4cbe329cb687e67bc7d0af770ad64548d1b0f6",
+          "size_bytes": 3050
+        },
+        "visualizer/file_browser.js": {
+          "sha256": "e1dee039390435bc522eccf217b09ef4ac507916d47908374447f14bc8ee419f",
+          "size_bytes": 6156
+        },
+        "visualizer/index.html": {
+          "sha256": "a72354ea6027517a0a78e6a3749c853ab448444bf31d63873c64e4106d5d7951",
+          "size_bytes": 7291
+        },
+        "visualizer/server.py": {
+          "sha256": "588eea25c4ad7711ec3c06a08874fde529bccb7c96674235b718a0ba41cc0548",
+          "size_bytes": 30249
+        },
+        "visualizer/styles.css": {
+          "sha256": "7baef29a5f6b2c513d953c754c92cb73b132a48f1c4f5f700ced3ae7df21aef5",
+          "size_bytes": 14880
+        }
+      },
+      "git_commit": "3a12f45750f58135bcc58c7fdf4c20786b600e31",
+      "hash_contract": "sha256(canonical-json(manifest-without-sha256_manifest))",
+      "num_curated_source_sink_instances_matched": 49,
+      "num_cwes": 45,
+      "num_fix_location_rows": 1302,
+      "num_instances": 213,
+      "num_orphan_curated_source_sink_rows": 1,
+      "num_raw_curated_source_sink_rows": 50,
+      "num_raw_cwe_labels": 49,
+      "num_unique_repositories": 135,
+      "num_upstream_build_status_missing": 0,
+      "num_upstream_declared_build_failure": 10,
+      "num_upstream_declared_build_success": 203,
+      "schema_version": "1.0",
+      "sha256_files": "3a2c9d98282a10b778cf65eaf75dd43cf800cb7a693ce20cd13098ac90ee573b",
+      "sha256_manifest": "84178ba6424cc6ceedac90b62b1fd407d6a42557cdd1fc516c451524f9dc4262",
+      "snapshot_id": "cwe_bench_java_v2_3a12f457",
+      "source_url": "https://github.com/iris-sast/iris.git",
+      "track": "v2"
+    }
+  ],
+  "generated_at": "2026-08-23T14:20:20.608340Z",
+  "interpretation": {
+    "paper_scale_gate": false,
+    "published_reference_is_local_rerun": false,
+    "smoke_gate": true,
+    "upstream_build_status_is_local_verification": false
+  },
+  "iris_token_usage": {
+    "completion_tokens": 46053,
+    "generated_at": "2026-08-23T14:18:12.0798622Z",
+    "interpretation": {
+      "estimated_cost_usd": 0.0,
+      "note": "The pinned upstream local-model path does not emit token counters; exact retained text was tokenized post hoc with the pinned tokenizer and chat template.",
+      "registry_zero_token_fields_are_sentinels": true
+    },
+    "method": "Qwen chat-template tokenization of retained raw prompt/response artifacts",
+    "model_id": "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+    "model_revision": "2e1fd397ee46e1388853d2af2c993145b0f1098a",
+    "num_prompt_batches": 40,
+    "num_response_batches": 40,
+    "prompt_tokens": 44970,
+    "run_id": "phase0_iris_qwen15b_local_001",
+    "schema_version": 1,
+    "source_artifacts": {
+      "final_results_sha256": "0930458dbcc1922eac9205c5e815295332e9854d481f4e7e4e0dfd0e5cfb3118",
+      "model_snapshot_sha256": "bb7b527be7e6901f645fc0392e8a556904bec6562a4bf8502dc8650c5d2a7210",
+      "num_raw_text_files": 80,
+      "sha256_paths_and_contents": "baee4b0b3e34f3b3aec614db5b1319151a2ae57cd3c4d61a0863a8bb0808164d"
+    },
+    "total_tokens": 91023
+  },
+  "local_results": {
+    "codeql": [
+      {
+        "baseline": "codeql",
+        "command_record": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\commands\\decode_func_locations\\command.json",
+        "cve": "CVE-2022-4065",
+        "cwe": "CWE-22",
+        "error": null,
+        "exit_code": 0,
+        "metadata": {
+          "command_records": [
+            "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\commands\\database_create\\command.json",
+            "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\commands\\builtin_sarif\\command.json",
+            "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\commands\\builtin_csv\\command.json",
+            "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\commands\\fetch_class_locations\\command.json",
+            "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\commands\\decode_class_locations\\command.json",
+            "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\commands\\fetch_func_locations\\command.json",
+            "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\commands\\decode_func_locations\\command.json"
+          ],
+          "database_provenance": {
+            "mode": "created_in_run",
+            "source_path": null,
+            "source_sha256": null
+          },
+          "docker_image": "maxvera-phase0:codeql",
+          "docker_platform": "linux/amd64",
+          "evaluation": {
+            "num_paths": 36,
+            "num_results": 15,
+            "num_tp_paths_file": 4,
+            "num_tp_paths_method": 4,
+            "num_tp_results_file": 1,
+            "num_tp_results_method": 1,
+            "recall_file": true,
+            "recall_method": true
+          },
+          "instance_id": "oi_d67309725ca108a035d5bb04a9b302b4",
+          "orchestrator": "maxvera_docker_codeql_smoke",
+          "query_directory": "/opt/codeql/qlpacks/codeql/java-queries/0.8.3/Security/CWE/CWE-022/",
+          "runtime_source_copied": true,
+          "snapshot_id": "cwe_bench_java_legacy_698fb724"
+        },
+        "number_of_paths": 36,
+        "output_artifacts": [
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\workspace\\output\\results.sarif",
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\workspace\\output\\results.csv",
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\workspace\\output\\fetch_class_locs.bqrs",
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\workspace\\output\\fetch_class_locs.csv",
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\workspace\\output\\fetch_func_locs.bqrs",
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\workspace\\output\\fetch_func_locs.csv",
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_codeql_smoke_local_001\\evaluation.json"
+        ],
+        "project": "testng-team__testng_CVE-2022-4065_7.5",
+        "query": "cwe-022wCodeQL",
+        "run_id": "phase0_codeql_smoke_local_001",
+        "runtime_seconds": 1557.375,
+        "schema_version": 1,
+        "status": "COMPLETE",
+        "track": "legacy",
+        "vulnerability_detected": true
+      }
+    ],
+    "iris": [
+      {
+        "baseline": "iris",
+        "command_record": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_iris_qwen15b_local_001\\commands\\oi_d67309725ca108a035d5bb04a9b302b4\\command.json",
+        "cve": "CVE-2022-4065",
+        "cwe": "CWE-22",
+        "error": null,
+        "exit_code": 0,
+        "metadata": {
+          "detection_metric": "recall_method",
+          "docker_image": "maxvera-phase0:iris-local",
+          "docker_platform": "linux/amd64",
+          "evaluator_bundle_hashes": {
+            "fix_info.csv": "e3696a13b97cf0ffc87861fc356adc6e1ed0f6186a82649c1263eb5d5767c731",
+            "package-names.txt": "5ea153532db530c52022ee7164b290ebbb86912539213dd3b022eb477c9c003f",
+            "project_info.csv": "10a95c63b0cc577dc2230ba076256d281ded0f048f1833a711028a5ebb744c95",
+            "provenance.json": "314103be32a1bd3744d7e66a4aa3fe8a4b18889dcfbd1730770ed4e23b390539",
+            "selected_ground_truth.json": "4f2ba36a01ce9adf349e9afc3f39aef912cd8974e89c3a6dfc7ac8425928e7ad"
+          },
+          "gpu_request": "all",
+          "iris_commit": "7aa94755d43898a623307935e853b954afc79a5d",
+          "leakage_exception": {
+            "analysis_source_selection": "opaque_instance_id",
+            "classification": "declared-paper-reproduction-exception",
+            "exposed_to_upstream": [
+              "semantic_project_slug",
+              "oracle_cwe_query",
+              "selected_fix_metadata_for_upstream_evaluation"
+            ],
+            "id": "iris-v1-oracle-interface",
+            "reason": "Pinned IRIS v1 parses the CVE from the semantic project slug, uses an oracle CWE query, and reads project_info.csv/fix_info.csv in its analysis constructor. The compatibility data is therefore not a zero-hint input.",
+            "scope": "IRIS v1 Phase 0 paper-compatibility smoke only"
+          },
+          "model": "qwen2.5-coder-1.5b",
+          "model_id": "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+          "model_revision_enforced_via_offline_cache": true,
+          "model_revision_forwarded_by_upstream": false,
+          "model_revision_requested": "2e1fd397ee46e1388853d2af2c993145b0f1098a",
+          "orchestrator": "iris_v1_docker_compatibility",
+          "runtime_instance_id": "oi_d67309725ca108a035d5bb04a9b302b4",
+          "runtime_revision": "d8adcef70a9e0b8fcef5eab92ca87a8d398cfb89",
+          "seed": 345,
+          "skip_posthoc_filter": true,
+          "upstream_project_slug": "testng-team__testng_CVE-2022-4065_7.5",
+          "upstream_qwen_do_sample": false,
+          "upstream_qwen_effective_temperature": 0.01
+        },
+        "number_of_paths": 45,
+        "output_artifacts": [
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_iris_qwen15b_local_001\\artifacts\\iris\\model_snapshot.json",
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_iris_qwen15b_local_001\\artifacts\\iris\\upstream_output\\cwe-022wLLM-final\\results.json",
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_iris_qwen15b_local_001\\artifacts\\iris\\upstream_output\\cwe-022wLLM\\results.sarif",
+          "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\runs\\phase0_iris_qwen15b_local_001\\artifacts\\iris\\upstream_output\\cwe-022wLLM\\results_pp.sarif"
+        ],
+        "project": "oi_d67309725ca108a035d5bb04a9b302b4",
+        "query": "cwe-022wLLM",
+        "run_id": "phase0_iris_qwen15b_local_001",
+        "runtime_seconds": 1427.0,
+        "schema_version": 1,
+        "status": "COMPLETE",
+        "track": "legacy",
+        "vulnerability_detected": true
+      }
+    ]
+  },
+  "published_reference_alignment": {
+    "extra_pairs": [
+      "CVE-2021-21345::CWE-094"
+    ],
+    "frozen_pairs": 120,
+    "missing_pairs": [],
+    "published_distinct_projects": 120,
+    "published_rows": 121
+  },
+  "published_references": [
+    {
+      "cwe_distribution": {
+        "CWE-022": 55,
+        "CWE-078": 13,
+        "CWE-079": 31,
+        "CWE-094": 22
+      },
+      "frozen_pair_detected": 27,
+      "frozen_pair_records": 120,
+      "num_detected": 27,
+      "num_records": 121,
+      "output": "results/phases/phase_00/baselines/published_reference/codeql.jsonl",
+      "schema_version": 1,
+      "source": "data/external/iris_v1/results/CodeQL.csv",
+      "source_commit": "7aa94755d43898a623307935e853b954afc79a5d",
+      "source_name": "codeql",
+      "source_sha256": "443e51e25db6dec106a75db708b30e703a006d8306ebfa805d6bf6727b2d2689"
+    },
+    {
+      "cwe_distribution": {
+        "CWE-022": 55,
+        "CWE-078": 13,
+        "CWE-079": 31,
+        "CWE-094": 22
+      },
+      "frozen_pair_detected": 54,
+      "frozen_pair_records": 120,
+      "num_detected": 55,
+      "num_records": 121,
+      "output": "results/phases/phase_00/baselines/published_reference/iris_gpt4.jsonl",
+      "schema_version": 1,
+      "source": "data/external/iris_v1/results/IRIS+GPT-4.csv",
+      "source_commit": "7aa94755d43898a623307935e853b954afc79a5d",
+      "source_name": "iris_gpt4",
+      "source_sha256": "4180870009ae6f63e537e9791944e30b2f1cabc9cf56cbc2a7e2b202f8069c94"
+    },
+    {
+      "cwe_distribution": {
+        "CWE-022": 55,
+        "CWE-078": 13,
+        "CWE-079": 31,
+        "CWE-094": 22
+      },
+      "frozen_pair_detected": 47,
+      "frozen_pair_records": 120,
+      "num_detected": 47,
+      "num_records": 121,
+      "output": "results/phases/phase_00/baselines/published_reference/iris_qwen_32b.jsonl",
+      "schema_version": 1,
+      "source": "data/external/iris_v1/results/IRIS+Qwen2.5-32B.csv",
+      "source_commit": "7aa94755d43898a623307935e853b954afc79a5d",
+      "source_name": "iris_qwen_32b",
+      "source_sha256": "3fcf3ef70d68c1f7862ec13e77c9e2c45de5f10759c6ad3238e75a574d3b3e50"
+    }
+  ],
+  "schema_version": 1,
+  "migration_note": "Frozen legacy smoke status; the canonical notebook adds the Qwen 3B Q4_K_M CUDA smoke and regenerates this file on the experimental machine.",
+  "scope": {
+    "legacy_instances": 120,
+    "local_codeql_complete": 1,
+    "local_codeql_records": 1,
+    "local_iris_complete": 1,
+    "local_iris_records": 1,
+    "locally_exercised_projects": 1
+  },
+  "status": "SMOKE_PASS",
+  "toolchain": {
+    "checks": [
+      {
+        "detail": null,
+        "expected": null,
+        "name": "git",
+        "observed": "git version 2.51.2.windows.1",
+        "status": "OK"
+      },
+      {
+        "detail": null,
+        "expected": null,
+        "name": "python",
+        "observed": "Python 3.11.15",
+        "status": "OK"
+      },
+      {
+        "detail": null,
+        "expected": null,
+        "name": "uv",
+        "observed": "uv 0.11.32 (3010295ae 2026-07-23 x86_64-pc-windows-msvc)",
+        "status": "OK"
+      },
+      {
+        "detail": "not found on PATH",
+        "expected": null,
+        "name": "javac",
+        "observed": null,
+        "status": "MISSING"
+      },
+      {
+        "detail": "not found on PATH",
+        "expected": null,
+        "name": "maven",
+        "observed": null,
+        "status": "MISSING"
+      },
+      {
+        "detail": "not found on PATH",
+        "expected": null,
+        "name": "gradle",
+        "observed": null,
+        "status": "MISSING"
+      },
+      {
+        "detail": null,
+        "expected": null,
+        "name": "docker-client",
+        "observed": "Docker version 29.6.2, build dfc4efb",
+        "status": "OK"
+      },
+      {
+        "detail": null,
+        "expected": "running (optional)",
+        "name": "docker-daemon",
+        "observed": "29.6.2",
+        "status": "OK"
+      },
+      {
+        "detail": null,
+        "expected": "maxvera-phase0:jdk17",
+        "name": "phase0-container-image",
+        "observed": "sha256:031fc83d3a8164e0531815a628bdd22c44876ed2f5bc9f4e1f29680ba5df01b0",
+        "status": "OK"
+      },
+      {
+        "detail": null,
+        "expected": "maxvera-phase0:codeql",
+        "name": "codeql-container-image",
+        "observed": "sha256:0ac9c9c6fec00cf81029230094f6d41e27e4ba1abbd73312c8de438ba8fc2fe2",
+        "status": "OK"
+      },
+      {
+        "detail": null,
+        "expected": "maxvera-phase0:iris-local",
+        "name": "iris-container-image",
+        "observed": "sha256:8aaca0f7a2a22aada2d14a273e751f0682577da3e7a447d96dd6b60c9a50fe71",
+        "status": "OK"
+      },
+      {
+        "detail": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\tools\\codeql-2.15.3-patched\\codeql\\codeql.exe",
+        "expected": "2.15.5",
+        "name": "codeql-host",
+        "observed": null,
+        "status": "MISSING"
+      },
+      {
+        "detail": "maxvera-phase0:codeql",
+        "expected": "2.15.5",
+        "name": "codeql-container-cli",
+        "observed": "2.15.5",
+        "status": "OK"
+      },
+      {
+        "detail": "maxvera-phase0:iris-local",
+        "expected": "cuda=true",
+        "name": "iris-container-gpu-runtime",
+        "observed": "cuda=true",
+        "status": "OK"
+      },
+      {
+        "detail": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\data\\external\\iris_v1",
+        "expected": "7aa94755d43898a623307935e853b954afc79a5d",
+        "name": "iris-v1-checkout",
+        "observed": "7aa94755d43898a623307935e853b954afc79a5d",
+        "status": "OK"
+      },
+      {
+        "detail": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\data\\external\\cwe_bench_legacy_paper",
+        "expected": "698fb7248ae30cb7f7782d59c841f05ad70ea9cc",
+        "name": "legacy-dataset-checkout",
+        "observed": "698fb7248ae30cb7f7782d59c841f05ad70ea9cc",
+        "status": "OK"
+      }
+    ],
+    "environment_flags": {
+      "google_api_key_present": false,
+      "nvidia_smi_present": true,
+      "openai_api_key_present": false
+    },
+    "execution_mode": "docker",
+    "host": {
+      "cwd": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera",
+      "machine": "AMD64",
+      "platform": "Windows-10-10.0.26200-SP0",
+      "python": "3.11.15"
+    },
+    "ready": true,
+    "ready_full_matrix": false,
+    "ready_smoke": true,
+    "schema_version": 1
+  }
+}

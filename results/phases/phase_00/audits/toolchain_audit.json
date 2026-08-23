@@ -1,0 +1,132 @@
+{
+  "checks": [
+    {
+      "detail": null,
+      "expected": null,
+      "name": "git",
+      "observed": "git version 2.51.2.windows.1",
+      "status": "OK"
+    },
+    {
+      "detail": null,
+      "expected": null,
+      "name": "python",
+      "observed": "Python 3.11.15",
+      "status": "OK"
+    },
+    {
+      "detail": null,
+      "expected": null,
+      "name": "uv",
+      "observed": "uv 0.11.32 (3010295ae 2026-07-23 x86_64-pc-windows-msvc)",
+      "status": "OK"
+    },
+    {
+      "detail": "not found on PATH",
+      "expected": null,
+      "name": "javac",
+      "observed": null,
+      "status": "MISSING"
+    },
+    {
+      "detail": "not found on PATH",
+      "expected": null,
+      "name": "maven",
+      "observed": null,
+      "status": "MISSING"
+    },
+    {
+      "detail": "not found on PATH",
+      "expected": null,
+      "name": "gradle",
+      "observed": null,
+      "status": "MISSING"
+    },
+    {
+      "detail": null,
+      "expected": null,
+      "name": "docker-client",
+      "observed": "Docker version 29.6.2, build dfc4efb",
+      "status": "OK"
+    },
+    {
+      "detail": null,
+      "expected": "running (optional)",
+      "name": "docker-daemon",
+      "observed": "29.6.2",
+      "status": "OK"
+    },
+    {
+      "detail": null,
+      "expected": "maxvera-phase0:jdk17",
+      "name": "phase0-container-image",
+      "observed": "sha256:031fc83d3a8164e0531815a628bdd22c44876ed2f5bc9f4e1f29680ba5df01b0",
+      "status": "OK"
+    },
+    {
+      "detail": null,
+      "expected": "maxvera-phase0:codeql",
+      "name": "codeql-container-image",
+      "observed": "sha256:0ac9c9c6fec00cf81029230094f6d41e27e4ba1abbd73312c8de438ba8fc2fe2",
+      "status": "OK"
+    },
+    {
+      "detail": null,
+      "expected": "maxvera-phase0:iris-local",
+      "name": "iris-container-image",
+      "observed": "sha256:8aaca0f7a2a22aada2d14a273e751f0682577da3e7a447d96dd6b60c9a50fe71",
+      "status": "OK"
+    },
+    {
+      "detail": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\tools\\codeql-2.15.3-patched\\codeql\\codeql.exe",
+      "expected": "2.15.5",
+      "name": "codeql-host",
+      "observed": null,
+      "status": "MISSING"
+    },
+    {
+      "detail": "maxvera-phase0:codeql",
+      "expected": "2.15.5",
+      "name": "codeql-container-cli",
+      "observed": "2.15.5",
+      "status": "OK"
+    },
+    {
+      "detail": "maxvera-phase0:iris-local",
+      "expected": "cuda=true",
+      "name": "iris-container-gpu-runtime",
+      "observed": "cuda=true",
+      "status": "OK"
+    },
+    {
+      "detail": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\data\\external\\iris_v1",
+      "expected": "7aa94755d43898a623307935e853b954afc79a5d",
+      "name": "iris-v1-checkout",
+      "observed": "7aa94755d43898a623307935e853b954afc79a5d",
+      "status": "OK"
+    },
+    {
+      "detail": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera\\data\\external\\cwe_bench_legacy_paper",
+      "expected": "698fb7248ae30cb7f7782d59c841f05ad70ea9cc",
+      "name": "legacy-dataset-checkout",
+      "observed": "698fb7248ae30cb7f7782d59c841f05ad70ea9cc",
+      "status": "OK"
+    }
+  ],
+  "environment_flags": {
+    "google_api_key_present": false,
+    "nvidia_smi_present": true,
+    "openai_api_key_present": false
+  },
+  "execution_mode": "docker",
+  "host": {
+    "cwd": "C:\\Users\\Admin\\Documents\\1. UET\\lab\\OpenIRIS\\MaxVera",
+    "machine": "AMD64",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.15"
+  },
+  "ready": true,
+  "ready_full_matrix": false,
+  "ready_smoke": true,
+  "schema_version": 1
+}

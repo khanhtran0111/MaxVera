@@ -1,0 +1,85 @@
+"""Dataset freezing, sanitization, inventory, and split APIs for OpenIRIS."""
+
+from .cwe_bench import (
+    SUPPORTED_TRACKS,
+    load_cwe_bench,
+    load_dataset,
+    normalize_cwe_id,
+    read_csv_records,
+    read_cwe_bench,
+)
+from .errors import DatasetError, DatasetFormatError, DatasetIntegrityError, LeakageError
+from .inventory import REQUIRED_REPORT_FILES, generate_inventory, generate_inventory_reports
+from .manifest import (
+    build_snapshot_manifest,
+    freeze_snapshot,
+    read_snapshot_manifest,
+    verify_snapshot_manifest,
+)
+from .models import BuildInfo, DatasetBundle, FixLocation, ProjectRecord
+from .runtime_view import (
+    RuntimeInstance,
+    RuntimeRepository,
+    assert_no_evaluation_leakage,
+    audit_runtime_manifest,
+    audit_runtime_repository,
+    build_runtime_instances,
+    create_runtime_views,
+    load_runtime_manifest,
+    materialize_dataset_views,
+    materialize_repository_source,
+    materialize_runtime_repository,
+    opaque_instance_id,
+    read_runtime_manifest,
+)
+from .splits import (
+    create_repository_split,
+    create_repository_split_from_manifest,
+    create_splits,
+    read_split_manifest,
+    validate_repository_split,
+    write_split_manifest,
+)
+
+__all__ = [
+    "BuildInfo",
+    "DatasetBundle",
+    "DatasetError",
+    "DatasetFormatError",
+    "DatasetIntegrityError",
+    "FixLocation",
+    "LeakageError",
+    "ProjectRecord",
+    "REQUIRED_REPORT_FILES",
+    "RuntimeInstance",
+    "RuntimeRepository",
+    "SUPPORTED_TRACKS",
+    "assert_no_evaluation_leakage",
+    "audit_runtime_repository",
+    "audit_runtime_manifest",
+    "build_runtime_instances",
+    "build_snapshot_manifest",
+    "create_repository_split",
+    "create_repository_split_from_manifest",
+    "create_runtime_views",
+    "create_splits",
+    "freeze_snapshot",
+    "generate_inventory",
+    "generate_inventory_reports",
+    "load_cwe_bench",
+    "load_dataset",
+    "load_runtime_manifest",
+    "materialize_dataset_views",
+    "materialize_repository_source",
+    "materialize_runtime_repository",
+    "normalize_cwe_id",
+    "opaque_instance_id",
+    "read_csv_records",
+    "read_cwe_bench",
+    "read_runtime_manifest",
+    "read_snapshot_manifest",
+    "read_split_manifest",
+    "validate_repository_split",
+    "verify_snapshot_manifest",
+    "write_split_manifest",
+]

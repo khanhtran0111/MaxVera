@@ -1,0 +1,24 @@
+FROM maxvera-phase0:jdk17
+
+ARG CODEQL_ARCHIVE_SHA256=e61633fa05ee291ba01cdaa36bbe96acfe83ca3e6aa6b77b06406abb24cec094
+
+COPY iris-codeql-2.15.3-patched.zip /tmp/codeql.zip
+
+RUN echo "${CODEQL_ARCHIVE_SHA256}  /tmp/codeql.zip" | sha256sum --check - \
+    && unzip -q /tmp/codeql.zip -d /opt \
+    && test -x /opt/codeql/codeql \
+    && /opt/codeql/codeql version --format=terse \
+    && rm /tmp/codeql.zip
+
+ENV PATH="/opt/codeql:${PATH}"
+
+# The base image uses ``bash -lc`` for interactive build probes.  CodeQL runs
+# need ordinary argv semantics so the experiment registry can retain each
+# argument exactly as executed.
+ENTRYPOINT []
+CMD ["bash"]
+
+LABEL org.opencontainers.image.title="MaxVera Phase 0 CodeQL toolchain" \
+      org.opencontainers.image.version="2.15.3-patched" \
+      org.opencontainers.image.source="https://github.com/iris-sast/iris/releases/tag/codeql-0.8.3-patched" \
+      org.maxvera.codeql.archive.sha256="e61633fa05ee291ba01cdaa36bbe96acfe83ca3e6aa6b77b06406abb24cec094"

@@ -1,0 +1,26 @@
+snapshot_id: cwe_bench_java_v2_3a12f457
+dataset_name: cwe_bench_java
+track: v2
+purpose: future_zero_hint_main_track
+source_url: https://github.com/iris-sast/iris.git
+git_ref: v2
+git_commit: 3a12f45750f58135bcc58c7fdf4c20786b600e31
+downloaded_at: "2026-08-23T12:58:06Z"
+source_path: data/external/iris_v2
+dataset_subdir: data
+metadata_files:
+  - data/project_info.csv
+  - data/build_info.csv
+  - data/fix_info.csv
+  - data/fix_info_source_sink.csv
+runtime_source_fields:
+  - github_url
+  - buggy_commit_id
+  - github_username
+  - github_repository_name
+ground_truth_fields:
+  - cve_id
+  - cwe_id
+  - cwe_name
+  - advisory_id
+  - fix_commit_ids
