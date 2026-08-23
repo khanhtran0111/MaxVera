@@ -6,7 +6,111 @@
 
 ---
 
-## 1. Mục tiêu khoa học
+## 0. Nguồn dữ liệu, code tham chiếu và chính sách versioning
+
+Phần này là **bắt buộc** trước khi bắt đầu code để tránh thay đổi benchmark/toolchain giữa các experiment.
+
+## 0.1. Nguồn chính thức cần lưu trong project
+
+| Resource | Link | Vai trò |
+|---|---|---|
+| CWE-Bench-Java legacy | https://github.com/iris-sast/cwe-bench-java | Benchmark gốc của IRIS/ICLR 2025; 120 CVEs, 4 CWEs; có scripts fetch/build, metadata, patch và fix locations |
+| CWE-Bench-Java trên Hugging Face | https://huggingface.co/datasets/iris-sast/CWE-Bench-Java | Bản đóng gói thuận tiện để đọc metadata bằng Hugging Face Datasets; hiện vẫn mô tả benchmark legacy 120 CVEs/4 CWEs |
+| IRIS repository | https://github.com/iris-sast/iris | Code IRIS, baseline, Docker, query/config và dữ liệu mở rộng |
+| IRIS v2 data | https://github.com/iris-sast/iris/tree/v2/data | Nguồn dữ liệu mở rộng hiện tại; README v2 công bố 213 CVEs trên 49 CWEs |
+| IRIS paper | https://arxiv.org/abs/2405.17238 | Paper gốc để reproduce protocol, metric và baseline |
+| MITRE CWE downloads | https://cwe.mitre.org/data/downloads.html | Nguồn chuẩn để xây Security KG; phải snapshot version |
+| CodeQL | https://github.com/github/codeql | Query/library reference |
+| CodeQL docs | https://codeql.github.com/docs/ | Tài liệu CLI, database, dataflow/taint tracking |
+
+## 0.2. Hai benchmark track phải tách riêng
+
+### Track A — Legacy reproduction
+
+Mục tiêu: so sánh trực tiếp với IRIS ICLR 2025.
+
+```text
+CWE-Bench-Java legacy
+120 CVEs / 4 CWEs
++
+IRIS v1 / paper protocol
++
+CodeQL version tương thích với reproduction
+```
+
+Không trộn kết quả Track A với dataset v2 rồi gọi là reproduction của paper gốc.
+
+### Track B — Main zero-hint research
+
+Mục tiêu: đánh giá contribution mới, đặc biệt generalization.
+
+```text
+IRIS v2 CWE-Bench-Java snapshot
+213 CVEs / 49 CWEs (theo README v2 hiện tại)
++
+repository-only zero-hint protocol
++
+toolchain được pin version
+```
+
+Bản v2 còn có **manually curated source/sink annotations cho 50 CVEs**, rất hữu ích cho RQ4/specification-quality evaluation.
+
+## 0.3. Dataset freeze policy
+
+Không dùng branch `master`/`v2` dạng floating cho experiment paper.
+
+Mỗi dataset snapshot phải có:
+
+```yaml
+dataset_name: cwe_bench_java
+track: legacy | v2
+source_url: ...
+git_commit: ...
+downloaded_at: ...
+num_instances: ...
+num_unique_repositories: ...
+num_cwes: ...
+sha256_manifest: ...
+```
+
+Lưu tại:
+
+```text
+data/manifests/datasets/<dataset_snapshot_id>.yaml
+```
+
+Với knowledge source cũng tương tự. Ví dụ MITRE CWE phải ghi:
+
+```yaml
+source: MITRE CWE
+version: 4.xx
+download_date: YYYY-MM-DD
+sha256: ...
+```
+
+## 0.4. Toolchain compatibility
+
+Tách rõ:
+
+- **Paper legacy:** paper gốc dùng CodeQL 2.15.3.
+- **IRIS v2:** README v2 khuyến nghị CodeQL 2.23.2 với query version 1.8.1.
+
+Mọi experiment phải pin:
+
+```text
+CodeQL CLI version
+CodeQL query-pack version
+Java/JDK version
+Maven/Gradle version
+IRIS commit (nếu dùng baseline)
+Python lockfile
+model ID/revision
+prompt version
+```
+
+---
+
+# 1. Mục tiêu khoa học
 
 ### 1.1. Bài toán trung tâm
 
@@ -1103,32 +1207,79 @@ Metric:
 
 # 16. Dataset design
 
-## 16.1. Primary dataset
+## 16.1. Dataset strategy
 
-CWE-Bench-Java.
+Không nên chỉ ghi chung chung `CWE-Bench-Java`. Phải chỉ rõ **snapshot nào được dùng cho mục đích nào**.
 
-Lý do:
+### A. Legacy benchmark — direct comparability
 
-- real repositories;
-- compilable;
-- fix locations;
-- vetted vulnerabilities;
-- phù hợp CodeQL;
-- trực tiếp đối chiếu IRIS.
+Dùng cho:
 
-## 16.2. Ground truth leakage prevention
+- reproduce CodeQL/IRIS;
+- kiểm tra evaluator;
+- đối chiếu trực tiếp với số liệu paper;
+- sanity check MVP.
 
-Tạo hai views:
+Nguồn:
+
+- GitHub: https://github.com/iris-sast/cwe-bench-java
+- Hugging Face: https://huggingface.co/datasets/iris-sast/CWE-Bench-Java
+
+Đặc điểm:
+
+```text
+120 CVEs
+4 CWEs:
+CWE-22, CWE-78, CWE-79, CWE-94
+```
+
+### B. Extended benchmark — main zero-hint evaluation
+
+Dùng IRIS v2 data:
+
+- https://github.com/iris-sast/iris/tree/v2/data
+
+README v2 hiện mô tả:
+
+```text
+213 CVEs
+49 CWEs
+```
+
+Đây nên là dataset chính để kiểm tra:
+
+- zero-hint trên search space rộng hơn;
+- unseen-CWE;
+- rare-CWE;
+- generalization;
+- scalability.
+
+**Quan trọng:** freeze bằng commit SHA ngay khi bắt đầu experiment chính.
+
+### C. Curated source/sink subset
+
+IRIS v2 cung cấp source/sink annotations thủ công cho 50 CVEs.
+
+Dùng riêng cho:
+
+- source precision/recall;
+- sink precision/recall;
+- specification synthesis evaluation;
+- error analysis RQ4.
+
+Không dùng annotation này làm input cho runtime zero-hint.
+
+## 16.2. Runtime view vs evaluation-only view
 
 ### Runtime view
 
-Hệ thống được thấy:
+Hệ thống được phép thấy:
 
 ```text
-repository source
+repository source ở vulnerable revision
 README
-dependency metadata
-public docs
+build/dependency metadata cần thiết để compile/analyze
+public source documentation nằm trong repository
 ```
 
 ### Evaluation-only view
@@ -1136,18 +1287,62 @@ public docs
 Hệ thống không được thấy:
 
 ```text
-CVE
-CWE label
+CVE ID
+CWE ground-truth label
+advisory vulnerability description
 fix commit
 patch
-vulnerability description
-ground-truth vulnerable methods
+fixed version source
+ground-truth vulnerable methods/lines
+manual source/sink annotations
 ```
 
-Đây phải là invariant được enforce bằng code.
+Các trường này chỉ evaluator được truy cập.
 
----
+## 16.3. Leakage prevention bằng code
 
+Không chỉ ghi policy trong tài liệu. Phải enforce bằng package boundary:
+
+```text
+src/openiris/data/runtime_view.py
+src/openiris/evaluation/ground_truth.py
+```
+
+Runtime pipeline **không được import** `ground_truth.py`.
+
+Test bắt buộc:
+
+```text
+tests/leakage/test_runtime_manifest_has_no_cve.py
+tests/leakage/test_runtime_manifest_has_no_cwe_label.py
+tests/leakage/test_runtime_cannot_read_fix_info.py
+tests/leakage/test_runtime_cannot_read_advisory.py
+```
+
+## 16.4. Dataset inventory report
+
+Mỗi snapshot phải tự động sinh:
+
+```text
+reports/datasets/<snapshot_id>/
+├── summary.md
+├── cwe_distribution.csv
+├── repository_distribution.csv
+├── build_status.csv
+├── duplicate_repository_versions.csv
+└── leakage_audit.json
+```
+
+`summary.md` tối thiểu phải ghi:
+
+- số benchmark instances;
+- số unique GitHub repositories;
+- số CWE;
+- phân bố CWE;
+- số build thành công/thất bại;
+- repository xuất hiện nhiều CVE/version;
+- missing fix/source/sink metadata;
+- snapshot hash.
 # 17. Split protocol
 
 Không dùng random split duy nhất.
@@ -1387,25 +1582,73 @@ peak context length
 
 # 23. Repository structure đề xuất
 
+Cấu trúc cũ đúng ở mức module, nhưng chưa tách rõ **source-controlled data**, **generated artifacts**, **experiment runs**, **ground truth** và **paper outputs**. Cấu trúc dưới đây an toàn hơn cho reproducibility và quality control.
+
 ```text
 openiris/
 ├── README.md
+├── LICENSE
 ├── pyproject.toml
+├── uv.lock / requirements.lock
+├── Makefile
+├── .env.example
+├── .gitignore
+│
 ├── configs/
 │   ├── datasets/
+│   │   ├── legacy.yaml
+│   │   └── v2_snapshot.yaml
 │   ├── models/
 │   ├── codeql/
+│   ├── retrieval/
+│   ├── calibration/
 │   └── experiments/
+│       ├── rq1/
+│       ├── rq2/
+│       ├── rq3/
+│       ├── rq4/
+│       ├── rq5/
+│       └── rq6/
+│
+├── schemas/
+│   ├── hypothesis.schema.json
+│   ├── specification.schema.json
+│   ├── evidence.schema.json
+│   ├── verification.schema.json
+│   └── run_manifest.schema.json
+│
+├── prompts/
+│   ├── hypothesis/
+│   │   └── v001.md
+│   ├── spec_synthesis/
+│   │   └── v001.md
+│   └── triage/
+│       └── v001.md
 │
 ├── data/
-│   ├── raw/
+│   ├── manifests/
+│   │   ├── datasets/
+│   │   ├── knowledge/
+│   │   └── splits/
+│   ├── external/              # gitignored/raw third-party downloads
+│   │   ├── cwe_bench_legacy/
+│   │   ├── cwe_bench_v2/
+│   │   └── mitre_cwe/
+│   ├── runtime_views/         # sanitized input visible to system
+│   ├── ground_truth/          # evaluator-only; never imported by runtime
 │   ├── processed/
-│   ├── security_kg/
-│   └── splits/
+│   └── cache/
+│
+├── knowledge/
+│   ├── builders/
+│   ├── snapshots/
+│   └── validators/
 │
 ├── src/
 │   └── openiris/
+│       ├── data/
 │       ├── preprocessing/
+│       ├── candidates/
 │       ├── program_graph/
 │       ├── security_kg/
 │       ├── evidence_graph/
@@ -1418,23 +1661,60 @@ openiris/
 │       ├── calibration/
 │       ├── routing/
 │       ├── evaluation/
+│       ├── logging/
 │       └── utils/
 │
 ├── queries/
 │   ├── extraction/
 │   ├── verification/
-│   └── templates/
+│   ├── templates/
+│   └── tests/
 │
 ├── scripts/
-│   ├── build_codeql_db.py
-│   ├── extract_program_graph.py
-│   ├── build_security_kg.py
-│   ├── generate_hypotheses.py
-│   ├── run_verification.py
-│   ├── run_experiment.py
-│   └── evaluate.py
+│   ├── data/
+│   │   ├── fetch_dataset.py
+│   │   ├── freeze_snapshot.py
+│   │   ├── create_runtime_views.py
+│   │   └── create_splits.py
+│   ├── baselines/
+│   │   ├── run_codeql.py
+│   │   └── run_iris.py
+│   ├── pipeline/
+│   │   ├── extract_program_graph.py
+│   │   ├── build_security_kg.py
+│   │   ├── generate_hypotheses.py
+│   │   ├── synthesize_specs.py
+│   │   └── verify.py
+│   ├── experiments/
+│   │   └── run_experiment.py
+│   └── analysis/
+│       ├── evaluate.py
+│       ├── aggregate_runs.py
+│       ├── make_tables.py
+│       └── make_figures.py
 │
-├── experiments/
+├── runs/                      # immutable per-run artifacts; gitignored
+│   └── <run_id>/
+│       ├── manifest.yaml
+│       ├── config.resolved.yaml
+│       ├── environment.json
+│       ├── hypotheses.jsonl
+│       ├── specs.jsonl
+│       ├── verification.jsonl
+│       ├── decisions.jsonl
+│       ├── usage.jsonl
+│       ├── metrics.json
+│       ├── errors.jsonl
+│       └── logs/
+│
+├── artifacts/                 # generated reusable research artifacts
+│   ├── codeql_databases/
+│   ├── program_graphs/
+│   ├── security_kg/
+│   └── useg/
+│
+├── results/                   # aggregated/frozen results
+│   ├── baselines/
 │   ├── rq1/
 │   ├── rq2/
 │   ├── rq3/
@@ -1442,25 +1722,78 @@ openiris/
 │   ├── rq5/
 │   └── rq6/
 │
-├── results/
-│   ├── raw/
+├── reports/
+│   ├── datasets/
+│   ├── phases/
+│   ├── ablations/
+│   ├── error_analysis/
+│   └── final/
+│
+├── paper/
 │   ├── tables/
-│   └── figures/
+│   ├── figures/
+│   └── numbers/
+│
+├── notebooks/                 # exploration only; không phải pipeline canonical
+│   └── exploratory/
 │
 ├── tests/
 │   ├── unit/
 │   ├── integration/
-│   └── leakage/
+│   ├── regression/
+│   ├── leakage/
+│   └── reproducibility/
 │
 └── docs/
     ├── architecture.md
     ├── dataset_protocol.md
+    ├── experiment_protocol.md
+    ├── leakage_policy.md
+    ├── metric_definitions.md
     ├── threat_model.md
-    └── experiment_protocol.md
+    ├── decisions.md
+    ├── research_log.md
+    └── reproducibility.md
 ```
 
----
+## 23.1. Quy tắc bố cục
 
+### `src/`
+
+Chỉ chứa implementation reusable. Không hard-code:
+
+- dataset path;
+- model;
+- CWE;
+- experiment ID;
+- prompt;
+- threshold.
+
+Tất cả phải đi qua config.
+
+### `scripts/`
+
+Chỉ là entrypoint/orchestration; business logic nằm trong `src/`.
+
+### `data/ground_truth/`
+
+Evaluator-only. Runtime pipeline không được import hoặc đọc.
+
+### `runs/`
+
+Mỗi lần chạy là **immutable**. Không sửa file trong run cũ.
+
+### `results/`
+
+Chỉ chứa kết quả đã aggregate/freeze từ một hoặc nhiều `run_id`.
+
+### `paper/`
+
+Table/figure phải sinh từ script và có mapping ngược về `run_id`.
+
+### `notebooks/`
+
+Chỉ dùng exploratory analysis. Không để một kết quả paper phụ thuộc vào thao tác notebook thủ công.
 # 24. Logging schema bắt buộc
 
 ## `hypotheses.jsonl`
@@ -1511,6 +1844,289 @@ openiris/
   "decision": "ACCEPT",
   "evidence_ids": []
 }
+```
+
+---
+
+# 24A. Run artifact contract
+
+Mỗi run phải đủ thông tin để một người khác biết chính xác **code nào + data nào + config nào + model nào** tạo ra kết quả.
+
+## `manifest.yaml`
+
+```yaml
+run_id: 2026xxxx_rq1_zh_static_001
+started_at: ...
+git_commit: ...
+dirty_worktree: false
+
+dataset:
+  snapshot_id: ...
+  manifest_sha256: ...
+  split_id: ...
+
+toolchain:
+  codeql_version: ...
+  query_pack_version: ...
+  java_version: ...
+  python_version: ...
+
+model:
+  provider: ...
+  model_id: ...
+  revision: ...
+  temperature: ...
+  seed: ...
+
+prompt_versions:
+  hypothesis: v001
+  spec_synthesis: v001
+
+config_sha256: ...
+```
+
+## Run completion invariant
+
+Một run chỉ được đánh dấu `COMPLETE` khi có:
+
+```text
+manifest.yaml
+config.resolved.yaml
+metrics.json
+usage.jsonl
+errors.jsonl
+```
+
+và các artifact phase tương ứng.
+
+Run lỗi vẫn phải giữ manifest + error log để audit.
+
+---
+
+# 24B. Phase control matrix
+
+Mọi phase phải dùng cùng một template:
+
+```text
+Goal
+Inputs
+Implementation tasks
+Required outputs
+Metrics
+Tests
+Failure taxonomy
+Gate/DoD
+Phase report
+```
+
+## Phase 0 — Reproduction & benchmark freeze
+
+**Inputs**
+
+- legacy dataset snapshot;
+- IRIS v1/paper;
+- CodeQL pinned version.
+
+**Required outputs**
+
+```text
+data/manifests/datasets/...
+data/manifests/splits/...
+results/baselines/codeql/
+results/baselines/iris/
+reports/phases/phase0.md
+```
+
+**DoD**
+
+- dataset snapshot hash frozen;
+- build inventory generated;
+- evaluator reproduces ground-truth matching logic;
+- CodeQL baseline run is reproducible;
+- at least one IRIS reference configuration runs;
+- leakage tests pass.
+
+## Phase 1 — Zero-hint baseline
+
+**Required outputs**
+
+```text
+runs/<id>/candidates.jsonl
+runs/<id>/hypotheses.jsonl
+results/rq1/recall_at_k.csv
+reports/phases/phase1.md
+```
+
+**DoD**
+
+- runtime receives repository-only view;
+- ZH-Static implemented;
+- at least one LLM zero-hint baseline implemented;
+- Recall@1/3/5/10 measured;
+- errors categorized as hypothesis-generation vs ranking failures;
+- no test-set tuning.
+
+**Go/No-Go**
+
+Do not proceed to full graph work if Recall@10 is too low to produce meaningful verification candidates.
+
+## Phase 2 — Program Graph
+
+**Required outputs**
+
+```text
+artifacts/program_graphs/<snapshot>/<project_slug>/
+    nodes.parquet
+    edges.parquet
+    metadata.json
+```
+
+**DoD**
+
+- graph schema validated;
+- node source locations resolve back to code;
+- deterministic extraction on same CodeQL DB;
+- source/sink/path slice serializer tested;
+- raw-context vs graph-slice experiment completed.
+
+## Phase 3 — Security KG
+
+**Required outputs**
+
+```text
+data/manifests/knowledge/mitre_cwe_<version>.yaml
+artifacts/security_kg/<kg_version>/
+reports/phases/phase3.md
+```
+
+**DoD**
+
+- knowledge source/version frozen;
+- parser unit tests pass;
+- every KG fact has provenance;
+- No-KG vs Text-RAG vs Graph-KG comparison exists;
+- runtime KG contains no benchmark fix/advisory ground truth.
+
+## Phase 4 — Evidence Graph / USEG
+
+**DoD**
+
+- typed IDs prevent node collisions;
+- all cross-layer edges carry provenance;
+- hypothesis can be traced to program evidence + knowledge evidence;
+- graph state can be serialized/reloaded losslessly;
+- schema regression tests pass.
+
+## Phase 5 — Retrieval / pruning
+
+**Required experiment grid**
+
+At least:
+
+```text
+no-pruning
+k-hop
+path-only
+top-k
+budget-aware
+```
+
+Across fixed context budgets, e.g.:
+
+```text
+2k / 4k / 8k tokens
+```
+
+**DoD**
+
+- retrieval deterministic given graph + config;
+- token estimator logged;
+- quality-cost trade-off measured;
+- no method claims efficiency without showing Delta Recall/F1.
+
+## Phase 6 — LLM specification synthesis
+
+**DoD**
+
+- output validates against JSON schema;
+- arbitrary QL generation disabled in MVP;
+- invalid specs explicitly logged;
+- source/sink P/R measured on curated annotation subset;
+- prompt version/hash recorded.
+
+## Phase 7 — CodeQL verification
+
+**Required outputs**
+
+```text
+query_source.ql
+query_config.json
+result.sarif
+normalized_paths.jsonl
+verification.jsonl
+```
+
+**DoD**
+
+- QL template compiler unit-tested;
+- timeout/error status standardized;
+- SARIF retained;
+- normalized paths map to repository locations;
+- evaluation overlap only happens after runtime finishes.
+
+## Phase 8 — Calibration & selective routing
+
+**Critical split rule**
+
+Calibration parameters and thresholds are fitted on **calibration/dev only**.
+
+Never choose `tau_accept`/`tau_verify` using test results.
+
+**DoD**
+
+- calibration dataset manifest frozen;
+- ECE/Brier reported;
+- threshold selection procedure recorded;
+- risk-coverage generated;
+- test thresholds loaded read-only from frozen calibration artifact.
+
+## Phase 9 — Iterative graph update
+
+Phase này nên là **optional extension cho paper đầu tiên** nếu Phase 1–8 đã đủ story.
+
+Chỉ đưa vào main method nếu experiment chứng minh graph memory cải thiện:
+
+- context cost;
+- consistency;
+- hoặc effectiveness.
+
+Không nên để Phase 9 làm chậm MVP/core paper.
+
+## Phase report template
+
+Mỗi phase kết thúc phải có:
+
+```text
+reports/phases/phase<N>.md
+```
+
+Template:
+
+```markdown
+# Phase N Report
+## Goal
+## Dataset snapshot / split
+## Git commit
+## Environment
+## Implemented components
+## Tests
+## Experiments executed
+## Key results
+## Failures / anomalies
+## Decisions made
+## Open issues
+## Gate decision: PASS / PASS-WITH-RISK / FAIL
+## Next phase
 ```
 
 ---
@@ -2280,3 +2896,80 @@ lower resource cost
 ```
 
 Nếu triển khai theo roadmap này, hướng nghiên cứu có thể hình thành một hệ thống đủ rõ về **problem formulation**, **methodology**, **evaluation** và **research contribution** để nhắm tới các hội nghị security hoặc software engineering cấp cao, thay vì chỉ dừng ở một prototype kết hợp LLM + SAST.
+
+---
+
+# 41. Quality-control checklist
+
+## Dataset
+
+- [ ] Dataset snapshot được pin bằng commit/hash.
+- [ ] Legacy 120/4 và v2 extended không bị trộn metric.
+- [ ] Số instances / repos / CWEs được inventory tự động.
+- [ ] Runtime view và ground truth tách vật lý.
+- [ ] Split manifest được version-control.
+- [ ] Duplicate repository/version được audit.
+- [ ] Build failures được ghi lại, không silently drop.
+
+## Leakage
+
+- [ ] Runtime không thấy CVE.
+- [ ] Runtime không thấy ground-truth CWE.
+- [ ] Runtime không thấy advisory text.
+- [ ] Runtime không thấy patch/fix commit/fixed source.
+- [ ] Runtime không thấy curated source/sink labels.
+- [ ] Calibration không dùng test labels.
+- [ ] Prompt không chứa project-specific ground truth.
+
+## Reproducibility
+
+- [ ] Git commit sạch được log.
+- [ ] Dataset hash được log.
+- [ ] CodeQL/query-pack version được log.
+- [ ] Model ID/revision được log.
+- [ ] Prompt version/hash được log.
+- [ ] Seed/temperature được log.
+- [ ] Resolved config được lưu.
+- [ ] Raw output được giữ.
+- [ ] Table/figure có thể regenerate bằng script.
+
+## Experiment quality
+
+- [ ] Baseline protocol frozen trước khi tune proposed method.
+- [ ] Main metric definition không đổi giữa chừng.
+- [ ] Ablation config chỉ thay đúng module cần kiểm tra.
+- [ ] Cost/token/latency logging bật ở mọi LLM experiment.
+- [ ] Error taxonomy được gắn vào false positive/negative.
+- [ ] Failed/timeout runs vẫn được tính và báo cáo rõ.
+- [ ] Mean/std hoặc CI được dùng khi cần.
+- [ ] Không cherry-pick seed/model/project.
+
+## Code quality
+
+- [ ] `src/` không hard-code đường dẫn/CWE/model.
+- [ ] Schema validation cho mọi artifact JSON/JSONL.
+- [ ] Unit tests cho parser/serializer/scorer/compiler.
+- [ ] Integration test trên 1–3 tiny repositories.
+- [ ] Regression tests cho known benchmark cases.
+- [ ] Static type/lint/format check trong CI.
+- [ ] Không có notebook-only logic trong pipeline paper.
+
+---
+
+# 42. Checklist trước khi bắt đầu code
+
+Thứ tự nên làm ngay:
+
+1. Freeze **legacy** và **v2** dataset snapshots.
+2. Sinh dataset inventory report.
+3. Tạo `runtime_views/` và `ground_truth/` boundary.
+4. Tạo deterministic split manifests.
+5. Pin CodeQL/toolchain.
+6. Tạo run-manifest + config system trước khi experiment.
+7. Reproduce CodeQL baseline.
+8. Reproduce một IRIS reference run.
+9. Viết evaluator + leakage tests.
+10. Chỉ sau đó implement Phase 1 zero-hint baseline.
+
+**Nguyên tắc:** nếu một experiment không thể truy ngược từ số trong paper về `run_id -> config -> code commit -> dataset snapshot`, experiment đó chưa đạt chuẩn paper-ready.
+
