@@ -1,0 +1,11 @@
+schema_version: 1
+dataset_id: D_extended
+status: revision_frozen_split_pending_phase_2
+upstream_url: https://github.com/iris-sast/cwe-bench-java.git
+revision: afe0ebd0adc237abb46255f9cd479b1d71819136
+split_unit: github_username/github_repository_name
+split_seed: 1234
+random_row_split_forbidden: true
+analysis_view: data/processed/analysis_input
+evaluator_view: data/processed/evaluator_only
+license: MIT

@@ -1,0 +1,5 @@
+schema_version: 1
+experiment_id: ablation
+status: scheduled_phase_13
+parent_config: configs/experiments/main.yaml
+cells: [A0, A1, A2, A3, A4, A5, Full]

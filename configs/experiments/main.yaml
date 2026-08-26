@@ -1,0 +1,55 @@
+schema_version: 1
+protocol_version: "1.0.0"
+experiment_id: main_zero_hint
+status: draft
+draft_blockers:
+  - D_extended manifests and group-wise split checksums are created in Phase 2.
+  - Development-only calibration thresholds are created and frozen in Phase 12.
+scope:
+  language: Java
+  static_analyzer: CodeQL
+  analysis_condition: repository_only_zero_hint
+dataset:
+  config: configs/datasets/cwe_bench_extended.yaml
+  split: data/processed/splits/test_locked.csv
+  analysis_view: data/processed/analysis_input
+  evaluator_view: data/processed/evaluator_only
+budget:
+  comparison_modes: [budget_matched, best_effort]
+  max_context_tokens_per_call: 8192
+  max_output_tokens_per_call: 1024
+  max_calls_per_project: 30
+  max_total_input_tokens_per_project: 160000
+  temperature_canonical: 0.0
+  seed_canonical: 1234
+execution:
+  project_workers: 1
+  graph_build_workers: 1
+  llm_parallel_requests: 1
+  concurrent_codeql_and_llm: false
+evaluation:
+  primary_unit: vulnerability_project
+  alert_unit: unique_taint_path
+  bootstrap_unit: repository_project
+  build_failure_primary_policy: count_as_miss
+  build_success_sensitivity_analysis: true
+  unknown_unreviewed_is_false_positive: false
+statistics:
+  paired_bootstrap_samples: 10000
+  confidence_level: 0.95
+  paired_detection_test: mcnemar
+  continuous_paired_test: wilcoxon_or_permutation
+  multiple_comparison_correction: holm
+  report_effect_sizes: true
+leakage_firewall:
+  enabled: true
+  forbidden_analysis_fields:
+    - cve_id
+    - ground_truth_cwe
+    - advisory_text
+    - patch_commit
+    - fix_commit
+    - fixed_method
+    - fixed_line
+    - vulnerable_description
+    - same_project_published_baseline_result

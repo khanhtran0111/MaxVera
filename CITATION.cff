@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this research artifact, cite the associated paper or this software record."
+title: "MaxVera: Graph-Grounded Zero-Hint Repository-Level Vulnerability Discovery"
+type: software
+authors:
+  - name: "MaxVera contributors"
+version: 0.1.0
+date-released: 2026-08-26
+repository-code: "https://github.com/khanhtran0111/MaxVera"

@@ -1,0 +1,6 @@
+schema_version: 1
+experiment_id: pilot
+status: draft
+parent_config: configs/experiments/main.yaml
+dataset_split: development_only
+scientific_result: false

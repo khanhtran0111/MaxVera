@@ -1,0 +1,9 @@
+schema_version: 1
+baseline_id: B8
+name: useg_no_pruning
+status: scheduled_phase_10
+hint_condition: zero_hint
+llm_enabled: true
+model_config: configs/models/qwen25_coder_3b_q4km.yaml
+retrieval: unified_graph_unpruned
+role: nearest_ablation

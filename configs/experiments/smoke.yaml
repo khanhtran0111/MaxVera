@@ -1,0 +1,8 @@
+schema_version: 1
+experiment_id: smoke
+status: scheduled_phase_3
+mode: smoke
+manifest: data/processed/manifests/smoke.csv
+output_root: results/smoke
+reuse_in_full_run: forbidden
+cleanup_required_on_exit: true

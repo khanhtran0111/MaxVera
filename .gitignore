@@ -1,0 +1,58 @@
+# Machine-local configuration and secrets
+.env
+.env.*
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Editors and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Runtime caches and logs
+.cache/
+logs/
+*.log
+
+# Models and large binary artifacts
+*.gguf
+*.safetensors
+*.pt
+*.pth
+*.onnx
+
+# Downloaded sources and generated data
+/data/raw/**
+!/data/raw/.gitkeep
+/data/interim/**
+!/data/interim/.gitkeep
+/data/processed/analysis_input/**
+!/data/processed/analysis_input/.gitkeep
+/data/processed/evaluator_only/**
+!/data/processed/evaluator_only/.gitkeep
+/data/processed/useg/**
+!/data/processed/useg/.gitkeep
+
+# Immutable experiment outputs are external artifacts, not source files
+/results/**
+!/results/README.md
+
+# Third-party checkouts
+/third_party/**
+!/third_party/README.md
+
+# Build/package outputs
+build/
+dist/
+site/

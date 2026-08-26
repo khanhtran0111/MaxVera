@@ -1,0 +1,5 @@
+schema_version: 1
+experiment_id: generalization
+status: scheduled_phase_13
+parent_config: configs/experiments/main.yaml
+tracks: [D_generalization_repo, D_generalization_cwe]

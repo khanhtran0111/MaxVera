@@ -1,0 +1,9 @@
+schema_version: 1
+baseline_id: B1
+name: codeql_oracle_cwe
+status: scheduled_phase_4
+hint_condition: oracle_cwe
+llm_enabled: false
+role: oracle_reference
+codeql_toolchain: iris_reproduction_patched
+paper_comparable: true

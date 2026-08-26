@@ -1,0 +1,8 @@
+schema_version: 1
+baseline_id: B5
+name: static_hypothesis
+status: scheduled_phase_5
+hint_condition: zero_hint
+llm_enabled: false
+retrieval: static_signals
+role: fair_baseline

@@ -1,0 +1,59 @@
+schema_version: 1
+frozen_at: "2026-08-26T00:00:00+07:00"
+protocol_version: "1.0.0"
+
+iris_reproduction:
+  repository: https://github.com/iris-sast/iris.git
+  branch: v1
+  commit: 67140e84e6a01da2b44803a6208be2ea7bd4bd51
+  paper: https://arxiv.org/abs/2405.17238v3
+  codeql_artifact:
+    release: codeql-0.8.3-patched
+    release_tag_commit: 5c367d2bb6375a57c7554d20feb2f5074f1c5d9b
+    url: https://github.com/iris-sast/iris/releases/download/codeql-0.8.3-patched/codeql.zip
+    query_pack_version: 0.8.3-patched
+    sha256: e61633fa05ee291ba01cdaa36bbe96acfe83ca3e6aa6b77b06406abb24cec094
+    size_bytes: 807846025
+
+cwe_bench_java:
+  repository: https://github.com/iris-sast/cwe-bench-java.git
+  reproduction_commit: 698fb7248ae30cb7f7782d59c841f05ad70ea9cc
+  extended_commit: afe0ebd0adc237abb46255f9cd479b1d71819136
+
+codeql_main:
+  cli_version: 2.26.2
+  bundle_release: codeql-bundle-v2.26.2
+  bundle_tag_commit: 18420e3271f74589575af831a523c833acda327f
+  query_repository_tag: codeql-cli/v2.26.2
+  query_repository_commit: 03a143d69e45b6e3d3655b8200cfe2b85de91436
+  java_queries_pack: codeql/java-queries@1.11.7
+  java_library_pack: codeql/java-all@9.2.2
+  linux_x64:
+    url: https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.26.2/codeql-bundle-linux64.tar.gz
+    sha256: cb361567fa1bdb9d322da4240f621b36f245e4d7bb97db3c3a2ad7f743c8e8e7
+  windows_x64:
+    url: https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.26.2/codeql-bundle-win64.tar.gz
+    sha256: 6f0eeb9d9168ffb0567768102ae2c3bcb159a091c19f9adf46b0de2965254278
+
+qwen:
+  repository: Qwen/Qwen2.5-Coder-3B-Instruct-GGUF
+  revision: f74adce6aa16316c625447af059dbebe4983757c
+  filename: qwen2.5-coder-3b-instruct-q4_k_m.gguf
+  sha256: 724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7
+  size_bytes: 2104932800
+
+llama_cpp:
+  repository: https://github.com/ggml-org/llama.cpp.git
+  release: v0.3.0
+  commit: c1d0e7a004015f23bc0233470b747b596f29b264
+
+container:
+  image: python:3.10.16-slim-bookworm
+  platform: linux/amd64
+  digest: sha256:5fb1a18941b20a1be253974bf5ad9e63c9e251279856649b356178962e8908a2
+
+python:
+  version: 3.10.16
+  uv_version: 0.11.32
+  uv_installer_url: https://astral.sh/uv/0.11.32/install.sh
+  uv_installer_sha256: 43aff33a967fe40e8c17949d8c85c65bc43f3b5c94742393c957f56ab5ba80f4

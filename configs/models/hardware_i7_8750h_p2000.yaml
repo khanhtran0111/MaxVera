@@ -1,0 +1,17 @@
+schema_version: 1
+profile_id: hardware_i7_8750h_p2000
+cpu: Intel Core i7-8750H
+physical_cores: 6
+logical_threads: 12
+ram_gb: 32
+gpu: NVIDIA Quadro P2000
+vram_gb: 4
+project_workers: 1
+graph_build_workers: 1
+codeql_threads: 4
+codeql_ram_mb: 16384
+llm_parallel_requests: 1
+canonical_gpu_layers: 0
+minimum_free_disk_gb: 25
+minimum_free_ram_gb: 6
+heavy_jobs_must_be_serial: true

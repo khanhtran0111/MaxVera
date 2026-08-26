@@ -1,0 +1,63 @@
+schema_version: 1
+matrix_version: "1.0.0"
+protocol_version: "1.0.0"
+entries:
+  B0:
+    name: CodeQL Security Suite
+    config: configs/baselines/b0_codeql_zero_hint.yaml
+    information_class: fair_zero_hint
+    paper_role: baseline
+  B1:
+    name: CodeQL per-CWE queries
+    config: configs/baselines/b1_codeql_oracle_cwe.yaml
+    information_class: oracle_cwe
+    paper_role: oracle_reference
+  B2:
+    name: IRIS pipeline reproduction with Qwen3B
+    config: configs/baselines/b2_iris_qwen3b.yaml
+    information_class: oracle_cwe
+    paper_role: model_substitution_reproduction
+  B3:
+    name: Raw-context chunked Qwen
+    config: configs/baselines/b3_raw_context.yaml
+    information_class: fair_zero_hint
+    paper_role: baseline
+  B4:
+    name: Text-RAG Qwen
+    config: configs/baselines/b4_text_rag.yaml
+    information_class: fair_zero_hint
+    paper_role: baseline
+  B5:
+    name: Static hypothesis generator
+    config: configs/baselines/b5_static_hypothesis.yaml
+    information_class: fair_zero_hint
+    paper_role: baseline
+  B6:
+    name: Program-graph-only retrieval
+    config: configs/baselines/b6_program_graph_only.yaml
+    information_class: fair_zero_hint
+    paper_role: baseline
+  B7:
+    name: Security-KG-only retrieval
+    config: configs/baselines/b7_security_kg_only.yaml
+    information_class: fair_zero_hint
+    paper_role: baseline
+  B8:
+    name: USEG without pruning
+    config: configs/baselines/b8_useg_no_pruning.yaml
+    information_class: fair_zero_hint
+    paper_role: nearest_ablation
+  B9:
+    name: Full USEG method
+    config: configs/baselines/b9_full_useg.yaml
+    information_class: fair_zero_hint
+    paper_role: proposed_method
+excluded_native_setting_references:
+  - QLCoder
+  - SemTaint
+  - LLMxCPG
+  - VulReaD
+  - VulnAgent-R2
+  - Argus
+  - AgenticSCR
+  - EntailLLM
