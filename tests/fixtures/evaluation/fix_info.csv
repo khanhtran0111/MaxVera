@@ -1,4 +1,0 @@
-project_slug,cve_id,file,class,method
-fixture_project,CVE-2099-0001,src/main/java/com/acme/Vulnerable.java,Inner,dangerous
-fixture_project,CVE-2099-0001,src/test/java/com/acme/VulnerableTest.java,VulnerableTest,testDangerous
-another_project,CVE-2099-0002,src/main/java/com/acme/Unrelated.java,Unrelated,unrelated

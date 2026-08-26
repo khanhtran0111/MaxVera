@@ -1,4 +1,0 @@
-name,file,start_line,end_line
-Outer,src\main\java\com\acme\Vulnerable.java,1,100
-Inner,src\main\java\com\acme\Vulnerable.java,8,30
-VulnerableTest,src/test/java/com/acme/VulnerableTest.java,1,50

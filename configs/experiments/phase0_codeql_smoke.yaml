@@ -1,7 +1,0 @@
-experiment_id: phase0_codeql_smoke
-dataset_config: configs/datasets/legacy_paper.yaml
-toolchain_config: configs/toolchain/phase0.yaml
-baseline: codeql
-projects:
-  - testng-team__testng_CVE-2022-4065_7.5
-timeout_seconds: 3600
