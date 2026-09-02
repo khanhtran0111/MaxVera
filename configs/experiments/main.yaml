@@ -1,9 +1,8 @@
 schema_version: 1
-protocol_version: "1.0.0"
+protocol_version: "1.1.1"
 experiment_id: main_zero_hint
 status: draft
 draft_blockers:
-  - D_extended manifests and group-wise split checksums are created in Phase 2.
   - Development-only calibration thresholds are created and frozen in Phase 12.
 scope:
   language: Java
@@ -17,11 +16,12 @@ dataset:
 budget:
   comparison_modes: [budget_matched, best_effort]
   max_context_tokens_per_call: 8192
-  max_output_tokens_per_call: 1024
+  max_output_tokens_per_call: 2048
   max_calls_per_project: 30
   max_total_input_tokens_per_project: 160000
   temperature_canonical: 0.0
   seed_canonical: 1234
+  reasoning_effort_canonical: low
 execution:
   project_workers: 1
   graph_build_workers: 1

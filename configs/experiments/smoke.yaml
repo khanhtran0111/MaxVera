@@ -1,8 +1,13 @@
 schema_version: 1
 experiment_id: smoke
-status: scheduled_phase_3
+status: phase_3_gate_passed
 mode: smoke
 manifest: data/processed/manifests/smoke.csv
 output_root: results/smoke
 reuse_in_full_run: forbidden
 cleanup_required_on_exit: true
+gate:
+  validated_at: "2026-08-29"
+  real_pass_path: endpoint_schema_candidate_codeql_sarif_evaluator
+  injected_failure_stage: after_analysis
+  artifacts_remaining_after_each_path: 0

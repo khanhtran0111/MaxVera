@@ -1,8 +1,8 @@
-# Experimental Protocol 1.0.0
+# Experimental Protocol 1.1.1
 
 **Mục đích:** định nghĩa dataset view, baseline, evaluation unit, metric, budget,
 failure policy và kiểm định thống kê áp dụng cho mọi kết quả chính. Protocol này
-được frozen ngày 26/08/2026; `configs/experiments/main.yaml` còn `draft` chỉ vì
+được cập nhật và frozen ngày 01/09/2026; `configs/experiments/main.yaml` còn `draft` chỉ vì
 checksum split và threshold calibration chưa tồn tại ở Phase 0.
 
 ## Dataset và label firewall
@@ -28,14 +28,14 @@ cùng repository nằm cùng split. Cấm random row split. Seed là `1234`; Pha
 phải lưu manifest, split CSV và checksum, sau đó chuyển main config từ `draft`
 sang `frozen` bằng decision record.
 
-## Baseline matrix 1.0.0
+## Baseline matrix 1.1.1
 
 | ID | Điều kiện | Phân loại | Vai trò paper |
 |---|---|---|---|
 | B0 CodeQL Security Suite | zero-hint, no LLM | fair | baseline |
 | B1 CodeQL per-CWE | oracle CWE, no LLM | oracle | reference |
-| B2 IRIS + Qwen3B | oracle CWE | oracle | model-substitution reproduction |
-| B3 raw/chunked Qwen | zero-hint | fair | baseline |
+| B2 IRIS + GPT-OSS 20B/OpenRouter | oracle CWE | oracle | model-substitution reproduction |
+| B3 raw/chunked GPT-OSS 20B | zero-hint | fair | baseline |
 | B4 text-RAG | zero-hint | fair | baseline |
 | B5 static hypothesis | zero-hint | fair | baseline |
 | B6 Program Graph only | zero-hint | fair | baseline |
@@ -49,15 +49,16 @@ không vào main table nếu chưa có adapter công bằng.
 
 ## Budget và execution
 
-Qwen baselines báo hai bảng: `budget_matched` và `best_effort`. Budget-matched
-khóa 8,192 input context tokens/call, 1,024 output tokens/call, 30 calls/project,
+Các baseline LLM dùng cùng `openai/gpt-oss-20b` và provider route đã pin, báo hai
+bảng: `budget_matched` và `best_effort`. Budget-matched
+khóa 8,192 input context tokens/call, 2,048 output tokens/call, 30 calls/project,
 160,000 total input tokens/project, temperature `0`, top-p `1`, seed `1234`.
 Best-effort vẫn phải công bố chi phí thực tế.
 
 Chạy tuần tự một project, một graph build và một LLM request. Không chạy CodeQL
-và LLM đồng thời. CodeQL mặc định 4 threads/16 GB RAM. CPU inference là canonical
-(`n_gpu_layers=0`); partial offload chỉ được khóa sau cùng một benchmark 20
-prompt, end-to-end project, headroom VRAM và fallback CPU được ghi manifest.
+và LLM đồng thời. CodeQL mặc định 4 threads/16 GB RAM. Hosted inference phải pin
+model/provider route, tắt fallback, yêu cầu parameter support, ZDR và
+`data_collection=deny`; mọi request ghi token usage, cost, latency và request ID.
 
 ## Evaluation unit và ground truth
 
@@ -86,9 +87,9 @@ review phải mù với cấu hình phương pháp.
 - Calibration: ECE equal-width (10 bins canonical; equal-mass sensitivity),
   Brier Score, AURC/selective risk, coverage ở risk targets, post-abstention
   precision/recall và routing cost. `ABSTAIN` không phải negative.
-- Efficiency: input/output tokens, calls, retries/schema failures, wall/CPU/GPU
-  time, peak RSS/VRAM, DB time, query time, indexing/online time, disk và
-  GPU-hours/project.
+- Efficiency: input/output/reasoning tokens, calls, retries/schema failures,
+  wall/API latency, CPU time và peak RSS phía client, DB/query/indexing time,
+  disk, API cost/project và cost/verified finding.
 
 Metric aggregate luôn sinh từ immutable project outputs. Cấm copy số bằng tay.
 

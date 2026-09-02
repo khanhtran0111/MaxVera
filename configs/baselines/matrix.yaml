@@ -1,6 +1,6 @@
 schema_version: 1
-matrix_version: "1.0.0"
-protocol_version: "1.0.0"
+matrix_version: "1.1.1"
+protocol_version: "1.1.1"
 entries:
   B0:
     name: CodeQL Security Suite
@@ -13,17 +13,17 @@ entries:
     information_class: oracle_cwe
     paper_role: oracle_reference
   B2:
-    name: IRIS pipeline reproduction with Qwen3B
-    config: configs/baselines/b2_iris_qwen3b.yaml
+    name: IRIS pipeline reproduction with GPT-OSS 20B via OpenRouter
+    config: configs/baselines/b2_iris_gptoss20b.yaml
     information_class: oracle_cwe
     paper_role: model_substitution_reproduction
   B3:
-    name: Raw-context chunked Qwen
+    name: Raw-context chunked GPT-OSS 20B
     config: configs/baselines/b3_raw_context.yaml
     information_class: fair_zero_hint
     paper_role: baseline
   B4:
-    name: Text-RAG Qwen
+    name: Text-RAG GPT-OSS 20B
     config: configs/baselines/b4_text_rag.yaml
     information_class: fair_zero_hint
     paper_role: baseline

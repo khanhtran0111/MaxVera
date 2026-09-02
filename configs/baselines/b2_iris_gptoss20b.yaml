@@ -1,0 +1,13 @@
+schema_version: 1
+baseline_id: B2
+name: iris_gptoss20b
+status: implemented_phase_4
+hint_condition: oracle_cwe
+llm_enabled: true
+model_config: configs/models/gpt_oss_20b_openrouter.yaml
+role: model_substitution_reproduction
+requested_codeql_toolchain: iris_reproduction_patched
+effective_codeql_toolchain: main_existing_databases
+toolchain_substitution: user_authorized_reuse_of_phase2_databases
+claim_language: IRIS pipeline reproduction with GPT-OSS 20B via OpenRouter
+exact_numerical_reproduction_claim: forbidden

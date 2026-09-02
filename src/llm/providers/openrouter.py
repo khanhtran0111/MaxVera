@@ -1,0 +1,246 @@
+"""Minimal OpenRouter client for the canonical GPT-OSS 20B research route."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import sys
+import time
+import urllib.error
+import urllib.request
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, cast
+
+import yaml
+
+from src.common.envfile import effective_env
+
+CANONICAL_BASE_URL = "https://openrouter.ai/api/v1"
+CANONICAL_MODEL = "openai/gpt-oss-20b"
+
+
+class OpenRouterError(RuntimeError):
+    """A bounded, secret-safe OpenRouter request failure."""
+
+
+@dataclass(frozen=True)
+class OpenRouterSettings:
+    base_url: str
+    api_key: str
+    model: str
+    provider: str
+    max_tokens: int
+    temperature: float
+    top_p: float
+    seed: int
+    reasoning_effort: str
+    timeout_seconds: int
+    max_retries: int
+
+    @classmethod
+    def load(cls, repo_root: Path) -> OpenRouterSettings:
+        config_path = repo_root / "configs/models/gpt_oss_20b_openrouter.yaml"
+        loaded = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+        if not isinstance(loaded, dict):
+            raise ValueError(f"invalid model configuration: {config_path}")
+        config = cast(dict[str, Any], loaded)
+        env = effective_env(repo_root / ".env")
+        base_url = env.get("MAXVERA_OPENROUTER_BASE_URL", "").rstrip("/")
+        api_key = env.get("OPENROUTER_API_KEY", "")
+        provider = env.get("MAXVERA_OPENROUTER_PROVIDER", "")
+        if base_url != CANONICAL_BASE_URL:
+            raise ValueError(f"MAXVERA_OPENROUTER_BASE_URL must be {CANONICAL_BASE_URL}")
+        if not api_key:
+            raise ValueError("OPENROUTER_API_KEY is missing from .env")
+        if not provider:
+            raise ValueError("MAXVERA_OPENROUTER_PROVIDER is missing from .env")
+        if config.get("model_id") != CANONICAL_MODEL:
+            raise ValueError(f"model_id must be {CANONICAL_MODEL}")
+        return cls(
+            base_url=base_url,
+            api_key=api_key,
+            model=CANONICAL_MODEL,
+            provider=provider,
+            max_tokens=int(config["max_output_tokens"]),
+            temperature=float(config["temperature"]),
+            top_p=float(config["top_p"]),
+            seed=int(config["seed"]),
+            reasoning_effort=str(config["reasoning_effort"]),
+            timeout_seconds=int(config["timeout_seconds"]),
+            max_retries=int(config["max_retries"]),
+        )
+
+
+class OpenRouterClient:
+    """Synchronous one-request-at-a-time client with provenance-only logging."""
+
+    def __init__(self, settings: OpenRouterSettings, call_log: Path | None = None):
+        self.settings = settings
+        self.call_log = call_log
+        self.call_number = 0
+
+    def _payload(
+        self,
+        messages: Sequence[Mapping[str, Any]],
+        *,
+        expect_json: bool,
+        max_tokens: int | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "model": self.settings.model,
+            "messages": list(messages),
+            "temperature": self.settings.temperature,
+            "top_p": self.settings.top_p,
+            "seed": self.settings.seed,
+            "max_tokens": min(max_tokens or self.settings.max_tokens, self.settings.max_tokens),
+            "reasoning": {"effort": self.settings.reasoning_effort, "exclude": True},
+            "provider": {
+                "only": [self.settings.provider],
+                "allow_fallbacks": False,
+                "require_parameters": True,
+                "zdr": True,
+                "data_collection": "deny",
+            },
+        }
+        if expect_json:
+            payload["response_format"] = {"type": "json_object"}
+        return payload
+
+    def _append_log(self, record: Mapping[str, Any]) -> None:
+        if self.call_log is None:
+            return
+        self.call_log.parent.mkdir(parents=True, exist_ok=True)
+        with self.call_log.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(dict(record), sort_keys=True, ensure_ascii=False) + "\n")
+
+    @staticmethod
+    def _error_detail(error: urllib.error.HTTPError) -> str:
+        try:
+            loaded = json.loads(error.read().decode("utf-8", errors="replace"))
+            message = loaded.get("error", {}).get("message") if isinstance(loaded, dict) else None
+            return str(message)[:500] if message else f"HTTP {error.code}"
+        except (OSError, ValueError, AttributeError):
+            return f"HTTP {error.code}"
+
+    def complete(
+        self,
+        messages: Sequence[Mapping[str, Any]],
+        *,
+        expect_json: bool = False,
+        max_tokens: int | None = None,
+    ) -> str:
+        payload = self._payload(messages, expect_json=expect_json, max_tokens=max_tokens)
+        encoded = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        prompt_sha256 = hashlib.sha256(encoded).hexdigest()
+        started = time.monotonic()
+        last_error = "no response"
+        self.call_number += 1
+        for attempt in range(1, self.settings.max_retries + 2):
+            request = urllib.request.Request(
+                f"{self.settings.base_url}/chat/completions",
+                data=encoded,
+                headers={
+                    "Authorization": f"Bearer {self.settings.api_key}",
+                    "Content-Type": "application/json",
+                    "X-OpenRouter-Title": "MaxVera vulnerability research",
+                },
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(
+                    request, timeout=self.settings.timeout_seconds
+                ) as response:
+                    loaded = json.loads(response.read().decode("utf-8"))
+                if not isinstance(loaded, dict):
+                    raise ValueError("OpenRouter response is not an object")
+                choices = loaded.get("choices")
+                if not isinstance(choices, list) or not choices:
+                    raise ValueError("OpenRouter response has no choices")
+                choice = choices[0]
+                if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
+                    raise ValueError("OpenRouter response choice has no message")
+                content = choice["message"].get("content")
+                if not isinstance(content, str):
+                    raise ValueError("OpenRouter response content is not text")
+                returned_model = loaded.get("model")
+                if returned_model != self.settings.model:
+                    raise ValueError(
+                        "returned model mismatch: expected "
+                        f"{self.settings.model}, got {returned_model}"
+                    )
+                self._append_log(
+                    {
+                        "schema_version": 1,
+                        "call": self.call_number,
+                        "request_id": loaded.get("id"),
+                        "requested_model": self.settings.model,
+                        "returned_model": returned_model,
+                        "provider": loaded.get("provider", self.settings.provider),
+                        "provider_route": self.settings.provider,
+                        "system_fingerprint": loaded.get("system_fingerprint"),
+                        "prompt_sha256": prompt_sha256,
+                        "attempt": attempt,
+                        "seconds": round(time.monotonic() - started, 3),
+                        "usage": loaded.get("usage", {}),
+                        "finish_reason": choice.get("finish_reason"),
+                        "max_output_tokens": payload["max_tokens"],
+                        "reasoning_effort": self.settings.reasoning_effort,
+                    }
+                )
+                return content
+            except urllib.error.HTTPError as error:
+                last_error = self._error_detail(error)
+                if error.code not in {408, 409, 429, 500, 502, 503, 504}:
+                    break
+            except (OSError, ValueError, KeyError, urllib.error.URLError) as error:
+                last_error = str(error)[:500]
+            if attempt <= self.settings.max_retries:
+                time.sleep(min(2 ** (attempt - 1), 8))
+        raise OpenRouterError(
+            f"OpenRouter request failed after {attempt} attempt(s): {last_error}"
+        )
+
+
+def validate_connection(repo_root: Path) -> dict[str, Any]:
+    settings = OpenRouterSettings.load(repo_root)
+    client = OpenRouterClient(settings)
+    content = client.complete(
+        [{"role": "user", "content": "Return exactly the word OK."}],
+        max_tokens=128,
+    )
+    if not content.strip():
+        raise OpenRouterError("OpenRouter validation returned empty content")
+    return {
+        "model": settings.model,
+        "provider_route": settings.provider,
+        "response_nonempty": bool(content.strip()),
+        "routing": {
+            "allow_fallbacks": False,
+            "require_parameters": True,
+            "zdr": True,
+            "data_collection": "deny",
+        },
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--validate", action="store_true")
+    args = parser.parse_args()
+    if not args.validate:
+        parser.error("--validate is required")
+    try:
+        result = validate_connection(args.repo_root.resolve())
+    except (OSError, ValueError, OpenRouterError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,9 +1,9 @@
 schema_version: 1
 baseline_id: B3
-name: raw_context_qwen
+name: raw_context_gptoss20b
 status: scheduled_phase_5
 hint_condition: zero_hint
 llm_enabled: true
-model_config: configs/models/qwen25_coder_3b_q4km.yaml
+model_config: configs/models/gpt_oss_20b_openrouter.yaml
 retrieval: raw_chunked_context
 role: fair_baseline

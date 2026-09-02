@@ -1,7 +1,7 @@
 schema_version: 1
 baseline_id: B0
 name: codeql_zero_hint
-status: scheduled_phase_4
+status: implemented_phase_4
 hint_condition: zero_hint
 llm_enabled: false
 role: fair_baseline

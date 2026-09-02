@@ -1,4 +1,4 @@
-"""Guarded placeholder for baseline phases that are not implemented yet."""
+"""Validate a baseline config and dispatch implemented experiment runners."""
 
 from __future__ import annotations
 
@@ -6,6 +6,8 @@ import argparse
 from pathlib import Path
 
 import yaml
+
+from src.reproduction.runner import main as reproduction_main
 
 
 def main() -> int:
@@ -18,6 +20,11 @@ def main() -> int:
         config = yaml.safe_load(handle)
     if not isinstance(config, dict) or config.get("baseline_id") != args.baseline_id:
         parser.error("baseline ID does not match config")
+    if args.baseline_id in {"B0", "B1", "B2"}:
+        forwarded = list(args.baseline_args)
+        if forwarded[:1] == ["--"]:
+            forwarded = forwarded[1:]
+        return reproduction_main(["--baseline-id", args.baseline_id, *forwarded])
     status = config.get("status", "unknown")
     print(
         f"{args.baseline_id} is intentionally disabled ({status}). "

@@ -1,10 +1,16 @@
 schema_version: 1
 dataset_id: D_extended
-status: revision_frozen_split_pending_phase_2
+status: revision_frozen_split_materialized_build_pending
 upstream_url: https://github.com/iris-sast/cwe-bench-java.git
 revision: afe0ebd0adc237abb46255f9cd479b1d71819136
+observed_cves: 120
+observed_cwes: [CWE-22, CWE-78, CWE-79, CWE-94]
+observed_repository_groups: 77
 split_unit: github_username/github_repository_name
 split_seed: 1234
+split_ratios:
+  development: 0.8
+  test_locked: 0.2
 random_row_split_forbidden: true
 analysis_view: data/processed/analysis_input
 evaluator_view: data/processed/evaluator_only

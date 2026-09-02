@@ -1,0 +1,5 @@
+schema_version,mode,slot_id,project_id,source_dir,codeql_database
+1,smoke,slot_01,proj_812b3471cfa383819b2b,data/interim/project_sources/proj_812b3471cfa383819b2b,data/interim/codeql_databases/proj_812b3471cfa383819b2b
+1,smoke,slot_02,proj_72d09858ddc2684db98c,data/interim/project_sources/proj_72d09858ddc2684db98c,data/interim/codeql_databases/proj_72d09858ddc2684db98c
+1,smoke,slot_03,proj_00dc6799d39f75749f84,data/interim/project_sources/proj_00dc6799d39f75749f84,data/interim/codeql_databases/proj_00dc6799d39f75749f84
+1,smoke,slot_04,proj_adaf3c23579b24658351,data/interim/project_sources/proj_adaf3c23579b24658351,data/interim/codeql_databases/proj_adaf3c23579b24658351

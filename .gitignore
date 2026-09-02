@@ -47,6 +47,10 @@ logs/
 # Immutable experiment outputs are external artifacts, not source files
 /results/**
 !/results/README.md
+!/results/reproduction/
+!/results/reproduction/phase4_gptoss20b_full_001__*
+!/results/paper/
+!/results/paper/table_reproduction.csv
 
 # Third-party checkouts
 /third_party/**

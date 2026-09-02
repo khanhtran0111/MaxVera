@@ -15,7 +15,7 @@ def test_exactly_ten_numbered_baseline_entrypoints() -> None:
 def test_baseline_matrix_and_configs_are_consistent() -> None:
     matrix_path = REPO_ROOT / "configs/baselines/matrix.yaml"
     matrix = yaml.safe_load(matrix_path.read_text(encoding="utf-8"))
-    assert matrix["matrix_version"] == "1.0.0"
+    assert matrix["matrix_version"] == "1.1.1"
     assert set(matrix["entries"]) == {f"B{index}" for index in range(10)}
     for baseline_id, entry in matrix["entries"].items():
         config = yaml.safe_load((REPO_ROOT / entry["config"]).read_text(encoding="utf-8"))
@@ -26,7 +26,7 @@ def test_main_protocol_is_draft_for_explicit_phase_blockers() -> None:
     config = yaml.safe_load(
         (REPO_ROOT / "configs/experiments/main.yaml").read_text(encoding="utf-8")
     )
-    assert config["protocol_version"] == "1.0.0"
+    assert config["protocol_version"] == "1.1.1"
     assert config["status"] == "draft"
     assert config["draft_blockers"]
     assert config["leakage_firewall"]["enabled"] is True

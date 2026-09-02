@@ -2,9 +2,9 @@
 
 **Mục đích:** khóa câu hỏi khoa học, điều kiện đầu vào và tiêu chí thành công trước khi phát triển phương pháp.
 
-**Protocol:** `1.0.0` — frozen ngày 26/08/2026.
+**Protocol:** `1.1.1` — cập nhật và frozen ngày 01/09/2026.
 
-**Phạm vi:** Java, CodeQL, CWE-Bench-Java và Qwen2.5-Coder-3B-Instruct Q4_K_M chạy local.
+**Phạm vi:** Java, CodeQL, CWE-Bench-Java và `openai/gpt-oss-20b` qua OpenRouter.
 
 ## Bài toán và ranh giới
 
@@ -17,7 +17,7 @@ evidence path, provenance, confidence và quyết định `ACCEPT`, `VERIFY` ho�
 
 Ba track được tách biệt:
 
-1. **Reproduction:** IRIS v1 với dataset/toolchain gốc và Qwen3B thay model.
+1. **Reproduction:** IRIS v1 với dataset/toolchain đã khóa và GPT-OSS 20B thay model.
 2. **Controlled baselines:** B0-B9 dùng cùng data, evaluator và budget khi có LLM.
 3. **Proposed method:** Program Graph + Security KG + Evidence Graph (USEG),
    minimal retrieval, spec synthesis, static verification và selective routing.
@@ -51,8 +51,8 @@ trong [`07_DECISION_LOG.md`](07_DECISION_LOG.md).
 Claim chỉ được chốt sau locked test. Novelty dự kiến nằm ở zero-hint
 repository-only setting, USEG, minimal-context retrieval và static-semantics-
 grounded selective verification. Không claim “first SAST + LLM + KG”. Với IRIS,
-chỉ dùng cụm **“IRIS pipeline reproduction with Qwen3B”**; cấm dùng “exact
-reproduction” hoặc “numerically reproduced”.
+chỉ dùng cụm **“IRIS pipeline reproduction with GPT-OSS 20B via OpenRouter”**;
+cấm dùng “exact reproduction” hoặc “numerically reproduced”.
 
 ## Publishability gates
 
@@ -75,6 +75,7 @@ resource-efficient retrieval. Không kết hợp hai claim khi dữ liệu khôn
 
 Nguồn machine-readable duy nhất là [`configs/upstreams.yaml`](../configs/upstreams.yaml).
 IRIS v1, CWE-Bench reproduction, CWE-Bench extended, CodeQL reproduction/main,
-Qwen GGUF, llama.cpp và Docker base đều dùng commit/revision/digest cụ thể. Vì
+GPT-OSS 20B/OpenRouter model/provider route và Docker base đều được khóa. Phase 3
+chỉ dùng một endpoint dùng một lần để kiểm tra kỹ thuật và không giữ lại output LLM. Vì
 API release cũ không công bố digest, legacy IRIS CodeQL ZIP đã được tải trực tiếp,
 kiểm tra cấu trúc archive và khóa SHA256 trong upstream config.

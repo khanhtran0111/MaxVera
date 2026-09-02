@@ -1,0 +1,5 @@
+name: maxvera/smoke-queries
+version: 0.0.1
+library: false
+dependencies:
+  codeql/java-all: 9.2.2

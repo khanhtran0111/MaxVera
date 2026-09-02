@@ -4,7 +4,7 @@ name: full_useg
 status: scheduled_phase_10
 hint_condition: zero_hint
 llm_enabled: true
-model_config: configs/models/qwen25_coder_3b_q4km.yaml
+model_config: configs/models/gpt_oss_20b_openrouter.yaml
 retrieval: unified_graph_pruned
 static_verification: true
 calibration: true

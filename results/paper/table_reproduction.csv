@@ -1,0 +1,9 @@
+run_id,baseline_id,scope,label,projects,analysis_successes,detected_projects,macro_fdr_successes,macro_f1_successes,paper_comparable
+paper_reference,B1,published_reference,IRIS public CodeQL.csv (121 artifact rows),121,N/A,27,0.9003,0.076,reference_only
+paper_reference,B2,published_reference,"IRIS paper reference (32B model, 120 projects)",120,N/A,47,0.9238,0.097,reference_only
+phase4_gptoss20b_full_001,B0,dataset_canonical,CodeQL reference under the effective Phase 2 toolchain,120,104,36,0.8129176800232365,0.08382855844601657,False
+phase4_gptoss20b_full_001,B0,artifact_compatible,CodeQL reference under the effective Phase 2 toolchain,120,104,36,0.8129176800232365,0.08382855844601657,False
+phase4_gptoss20b_full_001,B1,dataset_canonical,CodeQL reference under the effective Phase 2 toolchain,120,104,21,0.34123198375723646,0.13762803947272104,False
+phase4_gptoss20b_full_001,B1,artifact_compatible,CodeQL reference under the effective Phase 2 toolchain,121,105,21,0.33798215534050086,0.1363172962396475,False
+phase4_gptoss20b_full_001,B2,dataset_canonical,IRIS pipeline reproduction with GPT-OSS 20B via OpenRouter,120,99,36,0.8054538048984612,0.10931324303562423,False
+phase4_gptoss20b_full_001,B2,artifact_compatible,IRIS pipeline reproduction with GPT-OSS 20B via OpenRouter,121,100,37,0.8067213007477817,0.10948995187510926,False

@@ -1,0 +1,22 @@
+{
+  "analysis_successes": 100,
+  "artifact_row_121_present": true,
+  "detected_projects": 37,
+  "expected_rows": 121,
+  "ground_truth_scopes": {
+    "class": 7,
+    "file": 4,
+    "method": 984
+  },
+  "macro_f1_successes": 0.10948995187510926,
+  "macro_fdr_successes": 0.8067213007477817,
+  "macro_precision_successes": 0.08327869925221812,
+  "projects": 121,
+  "recall_build_success_only": 0.37,
+  "recall_intention_to_analyze": 0.30578512396694213,
+  "schema_version": 1,
+  "total_alerts": 7176,
+  "total_paths": 7932,
+  "total_tp_alerts": 154,
+  "total_tp_paths": 238
+}

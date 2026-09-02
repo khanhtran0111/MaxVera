@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.common.envfile import effective_env, initialize_env_file, parse_env_file
+from src.common.envfile import (
+    effective_env,
+    initialize_env_file,
+    parse_env_file,
+    set_env_value_if_empty,
+)
 
 
 def test_initialize_env_preserves_values_and_adds_names(tmp_path: Path) -> None:
@@ -21,3 +26,14 @@ def test_effective_env_process_value_overrides_file(monkeypatch, tmp_path: Path)
     env_path.write_text("MAXVERA_MODEL_PATH=/file/value\n", encoding="utf-8")
     monkeypatch.setenv("MAXVERA_MODEL_PATH", "/process/value")
     assert effective_env(env_path)["MAXVERA_MODEL_PATH"] == "/process/value"
+
+
+def test_set_env_value_only_fills_empty_entry(tmp_path: Path) -> None:
+    env_path = tmp_path / ".env"
+    env_path.write_text("MAXVERA_CODEQL_HOME=\nKEEP=existing\n", encoding="utf-8")
+    assert set_env_value_if_empty(env_path, "MAXVERA_CODEQL_HOME", "/pinned/codeql") is True
+    assert set_env_value_if_empty(env_path, "MAXVERA_CODEQL_HOME", "/other") is False
+    assert parse_env_file(env_path) == {
+        "MAXVERA_CODEQL_HOME": "/pinned/codeql",
+        "KEEP": "existing",
+    }

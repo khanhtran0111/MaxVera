@@ -4,6 +4,6 @@ name: program_graph_only
 status: scheduled_phase_10
 hint_condition: zero_hint
 llm_enabled: true
-model_config: configs/models/qwen25_coder_3b_q4km.yaml
+model_config: configs/models/gpt_oss_20b_openrouter.yaml
 retrieval: program_graph_only
 role: fair_baseline

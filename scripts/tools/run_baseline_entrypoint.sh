@@ -12,6 +12,8 @@ shift 2
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 cd "$ROOT_DIR"
 
+bash "$ROOT_DIR/scripts/tools/assert_no_smoke_artifacts.sh"
+
 exec uv run --frozen python -m src.cli.run_baseline \
   --baseline-id "$BASELINE_ID" \
   --config "$CONFIG_PATH" \

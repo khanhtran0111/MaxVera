@@ -5,7 +5,10 @@ description = "Reproducible graph-grounded zero-hint vulnerability research pipe
 readme = "README.md"
 requires-python = ">=3.10,<3.11"
 dependencies = [
+  "pandas>=2.2,<3",
   "pyyaml>=6.0.2,<7",
+  "requests>=2.32,<3",
+  "tqdm>=4.67,<5",
 ]
 
 [dependency-groups]

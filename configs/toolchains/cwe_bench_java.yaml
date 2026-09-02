@@ -1,0 +1,77 @@
+schema_version: 1
+source: CWE-Bench-Java metadata at pinned dataset revision
+install_root: .cache/toolchains/cwe_bench_java
+default_env_homes:
+  MAXVERA_MAVEN_HOME: apache-maven-3.9.8
+  MAXVERA_GRADLE_HOME: gradle-8.9
+jdk:
+  7u80:
+    vendor: Azul Zulu Community Availability
+    url: https://cdn.azul.com/zulu/bin/zulu7.10.0.1-ca-jdk7.0.80-linux_x64.zip
+    archive: zulu7.10.0.1-ca-jdk7.0.80-linux_x64.zip
+    archive_type: zip
+    directory: zulu1.7.0_80-7.10.0.1-x86lx64
+    sha256: 2f7fc53e8ee98667777d12c91234184b3e7f943a835f56dd7fc893019b989ce5
+    env_home: MAXVERA_JAVA_7_HOME
+    acquisition: checksum_pinned_public_archive
+  8u202:
+    vendor: Azul Zulu Community Availability
+    url: https://cdn.azul.com/zulu/bin/zulu8.36.0.1-ca-jdk8.0.202-linux_x64.tar.gz
+    archive: zulu8.36.0.1-ca-jdk8.0.202-linux_x64.tar.gz
+    archive_type: tar.gz
+    directory: zulu8.36.0.1-ca-jdk8.0.202-linux_x64
+    sha256: a0e6e5ee2853b03f6db299e5a5b6350a07fe495a06491024b7caf95eeed99b15
+    env_home: MAXVERA_JAVA_8_HOME
+    acquisition: checksum_pinned_public_archive
+  "17":
+    vendor: Oracle
+    url: https://download.oracle.com/java/17/archive/jdk-17_linux-x64_bin.tar.gz
+    archive: jdk-17_linux-x64_bin.tar.gz
+    archive_type: tar.gz
+    directory: jdk-17
+    sha256: 106e3fc31b9fe4d0fd76c6c92b1931bdd1b0ac4d788747951de0f92cc73b1ffe
+    env_home: MAXVERA_JAVA_17_HOME
+    acquisition: checksum_pinned_public_archive
+maven:
+  3.2.1:
+    url: https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.2.1/apache-maven-3.2.1-bin.zip
+    archive: apache-maven-3.2.1-bin.zip
+    directory: apache-maven-3.2.1
+    sha256: df3338233b34f6d65ec3901fc0039f72ba59ff1380d09eebc5b58916b5fea2a3
+  3.5.0:
+    url: https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.0/apache-maven-3.5.0-bin.zip
+    archive: apache-maven-3.5.0-bin.zip
+    directory: apache-maven-3.5.0
+    sha256: a6866b0a0dd5abe3a51124a758a0a842a24edd0bea42ebc74dbf93ad44eb1960
+  3.9.8:
+    url: https://archive.apache.org/dist/maven/maven-3/3.9.8/binaries/apache-maven-3.9.8-bin.zip
+    archive: apache-maven-3.9.8-bin.zip
+    directory: apache-maven-3.9.8
+    sha512: e5a034a255b5f940d2baa0db1b64bed6ccbc1f568da6b79e37acd92817809c273158f52b2e0e2b942020efc203202f1338f2580590c8fd0ee4fca9bc08679577
+gradle:
+  "6.8.2":
+    url: https://services.gradle.org/distributions/gradle-6.8.2-bin.zip
+    archive: gradle-6.8.2-bin.zip
+    directory: gradle-6.8.2
+    sha256: 8de6efc274ab52332a9c820366dd5cf5fc9d35ec7078fd70c8ec6913431ee610
+  "7.6.4":
+    url: https://services.gradle.org/distributions/gradle-7.6.4-bin.zip
+    archive: gradle-7.6.4-bin.zip
+    directory: gradle-7.6.4
+    sha256: bed1da33cca0f557ab13691c77f38bb67388119e4794d113e051039b80af9bb1
+  "8.9":
+    url: https://services.gradle.org/distributions/gradle-8.9-bin.zip
+    archive: gradle-8.9-bin.zip
+    directory: gradle-8.9
+    sha256: d725d707bfabd4dfdc958c624003b3c80accc03f7037b5122c4b1d0ef15cecab
+build_attempts:
+  - {jdk: 8u202, maven: 3.5.0}
+  - {jdk: "17", maven: 3.5.0}
+  - {jdk: "17", maven: 3.9.8}
+  - {jdk: 8u202, maven: 3.9.8}
+  - {jdk: 7u80, maven: 3.2.1}
+  - {jdk: "17", gradle: "8.9"}
+  - {jdk: 8u202, gradle: "7.6.4"}
+  - {jdk: 8u202, gradle: "6.8.2"}
+  - {jdk: 8u202, gradlew: true}
+  - {jdk: "17", gradlew: true}

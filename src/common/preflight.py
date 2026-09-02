@@ -25,7 +25,7 @@ from src.common.provenance import (
 )
 
 Status = Literal["PASS", "WARN", "FAIL"]
-Profile = Literal["phase1", "full", "ci"]
+Profile = Literal["phase1", "phase4", "full", "ci"]
 
 
 @dataclass(frozen=True)
@@ -37,7 +37,11 @@ class Check:
     version: str | None = None
 
 
-def _execute(command: list[str], timeout: int = 15) -> tuple[int, str]:
+def _execute(
+    command: list[str],
+    timeout: int = 15,
+    environment: dict[str, str] | None = None,
+) -> tuple[int, str]:
     try:
         process = subprocess.run(
             command,
@@ -45,6 +49,7 @@ def _execute(command: list[str], timeout: int = 15) -> tuple[int, str]:
             capture_output=True,
             text=True,
             timeout=timeout,
+            env=environment,
         )
     except (OSError, subprocess.TimeoutExpired):
         return 127, ""
@@ -86,6 +91,7 @@ def _tool_check(
     configured: str | None = None,
     expected_pattern: str | None = None,
     require_configured: bool = False,
+    environment: dict[str, str] | None = None,
 ) -> Check:
     if require_configured and not configured:
         configured_status: Status = "FAIL" if required else "WARN"
@@ -94,7 +100,7 @@ def _tool_check(
     if executable is None:
         missing_status: Status = "FAIL" if required else "WARN"
         return Check(name, missing_status, required, "not found or not configured")
-    return_code, output = _execute([executable, *version_args])
+    return_code, output = _execute([executable, *version_args], environment=environment)
     first_line = output.splitlines()[0].strip() if output else None
     if return_code != 0:
         command_status: Status = "FAIL" if required else "WARN"
@@ -168,11 +174,41 @@ def _file_check(
     return Check(name, "PASS", required, "file exists and checksum matches")
 
 
+def _openrouter_checks(machine: dict[str, str], *, required: bool) -> list[Check]:
+    api_key = machine.get("OPENROUTER_API_KEY", "")
+    base_url = machine.get("MAXVERA_OPENROUTER_BASE_URL", "")
+    provider = machine.get("MAXVERA_OPENROUTER_PROVIDER", "")
+    missing_status: Status = "FAIL" if required else "WARN"
+    return [
+        Check(
+            "openrouter_api_key",
+            "PASS" if api_key else missing_status,
+            required,
+            "configured" if api_key else "not configured",
+        ),
+        Check(
+            "openrouter_base_url",
+            "PASS" if base_url == "https://openrouter.ai/api/v1" else missing_status,
+            required,
+            "canonical HTTPS endpoint"
+            if base_url == "https://openrouter.ai/api/v1"
+            else "must be https://openrouter.ai/api/v1",
+        ),
+        Check(
+            "openrouter_provider",
+            "PASS" if provider else missing_status,
+            required,
+            "provider route pinned" if provider else "not configured",
+        ),
+    ]
+
+
 def run_preflight(repo_root: Path, profile: Profile, env_path: Path) -> dict[str, JsonValue]:
     """Run checks and return a report that never includes .env values or paths."""
     initialize_env_file(env_path)
     machine = effective_env(env_path)
     full = profile == "full"
+    phase4 = profile == "phase4"
     ci = profile == "ci"
     checks: list[Check] = [
         _python_check(),
@@ -188,7 +224,15 @@ def run_preflight(repo_root: Path, profile: Profile, env_path: Path) -> dict[str
     ]
     checks.extend(_resource_checks(repo_root, required=not ci))
 
-    analysis_required = full
+    analysis_required = full or phase4
+    build_tool_environment: dict[str, str] | None = None
+    java_17_home = machine.get("MAXVERA_JAVA_17_HOME")
+    if java_17_home:
+        build_tool_environment = dict(os.environ)
+        build_tool_environment["JAVA_HOME"] = java_17_home
+        build_tool_environment["PATH"] = (
+            f"{Path(java_17_home) / 'bin'}{os.pathsep}{os.environ.get('PATH', '')}"
+        )
     checks.extend(
         [
             _tool_check(
@@ -225,6 +269,7 @@ def run_preflight(repo_root: Path, profile: Profile, env_path: Path) -> dict[str
                 required=analysis_required,
                 configured=machine.get("MAXVERA_MAVEN_HOME"),
                 require_configured=True,
+                environment=build_tool_environment,
             ),
             _tool_check(
                 "gradle",
@@ -233,6 +278,7 @@ def run_preflight(repo_root: Path, profile: Profile, env_path: Path) -> dict[str
                 required=analysis_required,
                 configured=machine.get("MAXVERA_GRADLE_HOME"),
                 require_configured=True,
+                environment=build_tool_environment,
             ),
             _tool_check(
                 "codeql_main",
@@ -251,39 +297,44 @@ def run_preflight(repo_root: Path, profile: Profile, env_path: Path) -> dict[str
                 configured=machine.get("MAXVERA_IRIS_CODEQL_HOME"),
                 require_configured=True,
             ),
+        ]
+    )
+    if not phase4:
+        checks.append(
             _tool_check(
                 "llama_cpp",
                 ("llama-server", "llama-server.exe"),
                 ["--version"],
-                required=analysis_required,
+                required=full,
                 configured=machine.get("MAXVERA_LLAMA_SERVER_BIN"),
                 require_configured=True,
-            ),
-        ]
-    )
-    pins = load_upstream_pins(repo_root)
-    qwen = cast(dict[str, Any], pins["qwen"])
-    checks.append(
-        _file_check(
-            "qwen_model",
-            machine.get("MAXVERA_MODEL_PATH"),
-            required=analysis_required,
-            expected_sha256=str(qwen["sha256"]) if full else None,
+            )
         )
-    )
-    gpu = collect_environment(repo_root).get("gpu")
-    checks.append(
-        Check(
-            "nvidia_gpu",
-            "PASS" if isinstance(gpu, list) and gpu else "WARN",
-            False,
-            (
-                "available for optional offload"
-                if isinstance(gpu, list) and gpu
-                else "not available; CPU is canonical"
-            ),
+        pins = load_upstream_pins(repo_root)
+        qwen = cast(dict[str, Any], pins["qwen"])
+        checks.append(
+            _file_check(
+                "qwen_model",
+                machine.get("MAXVERA_MODEL_PATH"),
+                required=full,
+                expected_sha256=str(qwen["sha256"]) if full else None,
+            )
         )
-    )
+    checks.extend(_openrouter_checks(machine, required=phase4))
+    if not phase4:
+        gpu = collect_environment(repo_root).get("gpu")
+        checks.append(
+            Check(
+                "nvidia_gpu",
+                "PASS" if isinstance(gpu, list) and gpu else "WARN",
+                False,
+                (
+                    "available for optional offload"
+                    if isinstance(gpu, list) and gpu
+                    else "not available; CPU is canonical"
+                ),
+            )
+        )
 
     missing_env_names = sorted(
         key for key in REQUIRED_ENV_KEYS if not machine.get(key)
@@ -312,7 +363,9 @@ def run_preflight(repo_root: Path, profile: Profile, env_path: Path) -> dict[str
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=("phase1", "full", "ci"), default="phase1")
+    parser.add_argument(
+        "--profile", choices=("phase1", "phase4", "full", "ci"), default="phase1"
+    )
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--env-file", type=Path)
     parser.add_argument("--output", type=Path)

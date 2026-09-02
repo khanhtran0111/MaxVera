@@ -1,9 +1,11 @@
 schema_version: 1
 baseline_id: B1
 name: codeql_oracle_cwe
-status: scheduled_phase_4
+status: implemented_phase_4
 hint_condition: oracle_cwe
 llm_enabled: false
 role: oracle_reference
-codeql_toolchain: iris_reproduction_patched
-paper_comparable: true
+requested_codeql_toolchain: iris_reproduction_patched
+effective_codeql_toolchain: main_existing_databases
+paper_comparable: false
+toolchain_substitution: user_authorized_reuse_of_phase2_databases

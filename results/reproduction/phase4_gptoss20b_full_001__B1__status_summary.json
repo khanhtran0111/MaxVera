@@ -1,0 +1,9 @@
+{
+  "counts": {
+    "BUILD_FAILED": 11,
+    "CODEQL_DB_FAILED": 5,
+    "SUCCESS": 104
+  },
+  "schema_version": 1,
+  "total": 120
+}

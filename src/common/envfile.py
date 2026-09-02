@@ -16,6 +16,9 @@ REQUIRED_ENV_KEYS = (
     "MAXVERA_JAVA_17_HOME",
     "MAXVERA_MAVEN_HOME",
     "MAXVERA_GRADLE_HOME",
+    "OPENROUTER_API_KEY",
+    "MAXVERA_OPENROUTER_BASE_URL",
+    "MAXVERA_OPENROUTER_PROVIDER",
 )
 
 
@@ -80,3 +83,33 @@ def effective_env(path: Path) -> dict[str, str]:
         if os.environ.get(key):
             values[key] = os.environ[key]
     return values
+
+
+def set_env_value_if_empty(path: Path, key: str, value: str) -> bool:
+    """Set one machine-local value only when it is absent or empty."""
+    initialize_env_file(path, (key,))
+    lines = path.read_text(encoding="utf-8").splitlines()
+    changed = False
+    updated: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        assignment = stripped[7:].lstrip() if stripped.startswith("export ") else stripped
+        if assignment.startswith(f"{key}="):
+            _, current = assignment.split("=", 1)
+            if not current.strip():
+                updated.append(f"{key}={value}")
+                changed = True
+            else:
+                updated.append(line)
+        else:
+            updated.append(line)
+    if changed:
+        descriptor, temporary_name = tempfile.mkstemp(prefix=".env.", dir=path.parent, text=True)
+        temporary_path = Path(temporary_name)
+        try:
+            with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write("\n".join(updated) + "\n")
+            os.replace(temporary_path, path)
+        finally:
+            temporary_path.unlink(missing_ok=True)
+    return changed

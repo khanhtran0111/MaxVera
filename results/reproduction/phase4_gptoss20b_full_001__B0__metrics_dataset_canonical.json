@@ -1,0 +1,20 @@
+{
+  "analysis_successes": 104,
+  "detected_projects": 36,
+  "ground_truth_scopes": {
+    "class": 6,
+    "file": 4,
+    "method": 980
+  },
+  "macro_f1_successes": 0.08382855844601657,
+  "macro_fdr_successes": 0.8129176800232365,
+  "macro_precision_successes": 0.062082319976763424,
+  "projects": 120,
+  "recall_build_success_only": 0.34615384615384615,
+  "recall_intention_to_analyze": 0.3,
+  "schema_version": 1,
+  "total_alerts": 12746,
+  "total_paths": 31456,
+  "total_tp_alerts": 427,
+  "total_tp_paths": 979
+}
