@@ -24,7 +24,12 @@ class GPTOSS20BProvider:
         self.logger = logger
         self.call_log = Path(os.environ["MAXVERA_IRIS_LLM_LOG"])
         self.max_tokens = min(int(kwargs.get("max_new_tokens", 2048)), 2048)
-        self.client = OpenRouterClient(OpenRouterSettings.load(Path.cwd()), self.call_log)
+        self.client = OpenRouterClient(
+            OpenRouterSettings.load(
+                Path.cwd(), Path("configs/models/gpt_oss_20b_openrouter_groq.yaml")
+            ),
+            self.call_log,
+        )
         self.logprobs = None
 
     def _one(self, messages: Any, expect_json: bool) -> str:

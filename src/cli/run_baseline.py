@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 
+from src.baselines.runner import main as phase5_main
 from src.reproduction.runner import main as reproduction_main
 
 
@@ -25,10 +26,25 @@ def main() -> int:
         if forwarded[:1] == ["--"]:
             forwarded = forwarded[1:]
         return reproduction_main(["--baseline-id", args.baseline_id, *forwarded])
+    if args.baseline_id in {"B3", "B4", "B5"}:
+        forwarded = list(args.baseline_args)
+        if forwarded[:1] == ["--"]:
+            forwarded = forwarded[1:]
+        return phase5_main(
+            [
+                "--baseline-id",
+                args.baseline_id,
+                "--config",
+                str(args.config),
+                *forwarded,
+            ]
+        )
     status = config.get("status", "unknown")
+    blockers = config.get("blocked_by", [])
+    blocker_text = f"; dependencies: {', '.join(map(str, blockers))}" if blockers else ""
     print(
         f"{args.baseline_id} is intentionally disabled ({status}). "
-        "Phase 0-1 define protocol and infrastructure only; no result was created."
+        f"Its implementation phase has not passed{blocker_text}. No result was created."
     )
     return 78
 

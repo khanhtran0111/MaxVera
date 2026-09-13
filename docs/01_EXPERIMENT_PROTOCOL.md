@@ -1,8 +1,8 @@
-# Experimental Protocol 1.1.1
+# Experimental Protocol 1.2.3
 
 **Mục đích:** định nghĩa dataset view, baseline, evaluation unit, metric, budget,
 failure policy và kiểm định thống kê áp dụng cho mọi kết quả chính. Protocol này
-được cập nhật và frozen ngày 01/09/2026; `configs/experiments/main.yaml` còn `draft` chỉ vì
+được cập nhật và frozen ngày 13/09/2026; `configs/experiments/main.yaml` còn `draft` chỉ vì
 checksum split và threshold calibration chưa tồn tại ở Phase 0.
 
 ## Dataset và label firewall
@@ -28,7 +28,7 @@ cùng repository nằm cùng split. Cấm random row split. Seed là `1234`; Pha
 phải lưu manifest, split CSV và checksum, sau đó chuyển main config từ `draft`
 sang `frozen` bằng decision record.
 
-## Baseline matrix 1.1.1
+## Baseline matrix 1.2.3
 
 | ID | Điều kiện | Phân loại | Vai trò paper |
 |---|---|---|---|
@@ -49,8 +49,8 @@ không vào main table nếu chưa có adapter công bằng.
 
 ## Budget và execution
 
-Các baseline LLM dùng cùng `openai/gpt-oss-20b` và provider route đã pin, báo hai
-bảng: `budget_matched` và `best_effort`. Budget-matched
+Các baseline LLM từ Phase 5 dùng cùng `openai/gpt-oss-20b` và provider route
+`akashml` đã pin, báo hai bảng: `budget_matched` và `best_effort`. Budget-matched
 khóa 8,192 input context tokens/call, 2,048 output tokens/call, 30 calls/project,
 160,000 total input tokens/project, temperature `0`, top-p `1`, seed `1234`.
 Best-effort vẫn phải công bố chi phí thực tế.
@@ -59,6 +59,8 @@ Chạy tuần tự một project, một graph build và một LLM request. Khôn
 và LLM đồng thời. CodeQL mặc định 4 threads/16 GB RAM. Hosted inference phải pin
 model/provider route, tắt fallback, yêu cầu parameter support, ZDR và
 `data_collection=deny`; mọi request ghi token usage, cost, latency và request ID.
+Kết quả Phase 4 protocol 1.1.1 đã hoàn tất bằng route `groq` là snapshot lịch sử,
+không được trộn vào so sánh model/provider-controlled với run Phase 5.
 
 ## Evaluation unit và ground truth
 

@@ -1,4 +1,4 @@
-.PHONY: setup setup-phase3 setup-phase4 preflight preflight-full test lint typecheck check manifest phase2-data phase2-build phase2-validate phase3-smoke phase4-pilot phase4-validate
+.PHONY: setup setup-phase3 setup-phase4 preflight preflight-full test lint typecheck check manifest phase2-data phase2-build phase2-validate phase3-smoke phase4-pilot phase4-validate phase5-budget phase5-check
 
 setup:
 	bash scripts/tools/setup_environment.sh
@@ -49,3 +49,9 @@ phase4-pilot:
 
 phase4-validate:
 	bash scripts/tools/validate_phase4.sh --run-id "$${RUN_ID}"
+
+phase5-budget:
+	bash scripts/tools/estimate_phase5_budget.sh
+
+phase5-check: check phase5-budget
+	bash scripts/tools/assert_no_smoke_artifacts.sh

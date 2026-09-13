@@ -1,9 +1,20 @@
 schema_version: 1
 baseline_id: B3
 name: raw_context_gptoss20b
-status: scheduled_phase_5
+status: implemented_phase_5
 hint_condition: zero_hint
 llm_enabled: true
 model_config: configs/models/gpt_oss_20b_openrouter.yaml
+provider_route: akashml
 retrieval: raw_chunked_context
 role: fair_baseline
+experiment_config: configs/experiments/phase5_baselines.yaml
+prompt_version: phase5-zero-hint-v3
+top_k: 10
+context:
+  chunk_lines: 120
+  overlap_lines: 20
+  max_file_bytes: 1048576
+  selection: breadth_first_round_robin
+schema_validation: required
+api_spend_confirmation: required

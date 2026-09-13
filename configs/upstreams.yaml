@@ -1,6 +1,6 @@
 schema_version: 1
-frozen_at: "2026-09-01T00:00:00+07:00"
-protocol_version: "1.1.1"
+frozen_at: "2026-09-03T00:00:00+07:00"
+protocol_version: "1.2.3"
 
 iris_reproduction:
   repository: https://github.com/iris-sast/iris.git
@@ -53,8 +53,11 @@ openrouter:
   model_id: openai/gpt-oss-20b
   base_url: https://openrouter.ai/api/v1
   endpoints_metadata_url: https://openrouter.ai/api/v1/models/openai/gpt-oss-20b/endpoints
-  provider_route: groq
-  metadata_snapshot_date: "2026-09-01"
+  provider_route: akashml
+  metadata_snapshot_date: "2026-09-03"
+  pricing_usd_per_million_tokens:
+    input: 0.02
+    output: 0.10
   allow_fallbacks: false
   require_parameters: true
   zdr: true

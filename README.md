@@ -6,11 +6,13 @@ CodeQL for static verification and `openai/gpt-oss-20b` through a pinned
 OpenRouter provider route for bounded, evidence-grounded reasoning.
 
 Phase 0 (protocol), Phase 1 (environment/provenance), Phase 2 (data/build),
-Phase 3 (disposable smoke harness), and the Phase 4 reproduction runner are implemented.
+Phase 3 (disposable smoke harness), the Phase 4 reproduction runner, and the
+immediately runnable Phase 5 context baselines B3-B5 are implemented.
 The frozen 120-row release has 120 final build statuses and 104 successful
-CodeQL databases. Phase 4 enables numbered entrypoints B0-B2; B3-B9 remain
-disabled until their implementation phases. Every entrypoint fails closed if
-any smoke artifact remains.
+CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw
+context, B4 text-RAG, and B5 static hypotheses; B6-B9 remain fail-closed until
+their graph, verification, and calibration dependencies in Phases 6-12 exist.
+Every entrypoint fails closed if any smoke artifact remains.
 
 ## Bootstrap
 
@@ -69,13 +71,15 @@ Prepare Phase 4 and run a one-project pilot:
 
 ```bash
 bash scripts/tools/preflight.sh --profile phase4
-bash scripts/tools/validate_openrouter.sh
+bash scripts/tools/validate_openrouter.sh \
+  --model-config configs/models/gpt_oss_20b_openrouter_groq.yaml
 make setup-phase4
 make phase4-pilot
 ```
 
 Set `OPENROUTER_API_KEY` by editing `.env` directly; do not paste the real key
-into shell history. The Phase 4 runner reuses the 104
+into shell history. A historical Phase 4 rerun also requires temporarily setting
+`MAXVERA_OPENROUTER_PROVIDER=groq`; Phase 5 uses `akashml`. The Phase 4 runner reuses the 104
 Phase 2 databases, calls GPT-OSS 20B through OpenRouter, and records both the
 CodeQL and hosted-model substitutions explicitly. See
 `docs/05_REPRODUCTION_REPORT.md` for its outputs and validation gate.
@@ -111,6 +115,30 @@ The curated export is indexed at
 [`results/reproduction/phase4_gptoss20b_full_001__README.md`](results/reproduction/phase4_gptoss20b_full_001__README.md),
 with the cross-baseline table at
 [`results/reproduction/phase4_gptoss20b_full_001__table_reproduction.csv`](results/reproduction/phase4_gptoss20b_full_001__table_reproduction.csv).
+
+## Phase 5 controlled context baselines
+
+B3-B5 use the frozen `D_repro_v1` analysis view so they can be evaluated beside
+the completed Phase 4 release without rebuilding or exposing evaluator labels.
+B3 and B4 share the same prompt, GPT-OSS 20B route, schema and protocol caps;
+the OpenRouter provider is pinned to `akashml`, and only context selection
+differs. B5 is deterministic and does not call an API. The completed Phase 4
+artifact remains the historical protocol 1.1.1/Groq snapshot and is not
+provider-controlled against the new Phase 5 runs.
+
+No Phase 5 baseline execution contacts OpenRouter unless
+`--confirm-api-spend` is supplied. The optional connection validator makes one
+small billed request.
+Estimate the token/cost envelope offline and follow the pilot-to-full sequence:
+
+```bash
+bash scripts/tools/estimate_phase5_budget.sh
+bash scripts/04_run_b3_raw_context_gptoss20b.sh \
+  --mode pilot --limit 1 --dry-run --run-id p5_b3_dry_001
+```
+
+See [`docs/10_PHASE5_RUNBOOK.md`](docs/10_PHASE5_RUNBOOK.md) for the complete
+execution, evaluator and validation commands.
 
 ## Frozen protocol
 

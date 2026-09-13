@@ -1,0 +1,38 @@
+schema_version: 1
+protocol_version: "1.2.3"
+experiment_id: phase5_controlled_baselines
+status: frozen_phase_5
+purpose: implementation_validation_and_controlled_comparison_on_reproduction_release
+paper_main_result: false
+llm:
+  model_id: openai/gpt-oss-20b
+  provider_route: akashml
+  provider_metadata_snapshot_date: "2026-09-03"
+  allow_fallbacks: false
+dataset:
+  id: D_repro_v1
+  analysis_manifest: data/processed/analysis_input/D_repro_v1_projects.csv
+  source_root: data/interim/project_sources
+  default_split: data/processed/analysis_input/D_repro_v1_projects.csv
+budget:
+  budget_matched:
+    max_context_tokens_per_call: 8192
+    max_output_tokens_per_call: 2048
+    max_calls_per_project: 30
+    max_total_input_tokens_per_project: 160000
+  best_effort:
+    max_context_tokens_per_call: 8192
+    max_output_tokens_per_call: 2048
+    max_calls_per_project: 30
+    max_total_input_tokens_per_project: 160000
+execution:
+  project_workers: 1
+  llm_parallel_requests: 1
+  concurrent_codeql_and_llm: false
+  atomic_finalization: true
+  full_result_overwrite: false
+evaluation:
+  role_required: evaluator
+  primary_unit: vulnerability_project
+  failures_count_as_miss: true
+  top_k: [1, 3, 5, 10]

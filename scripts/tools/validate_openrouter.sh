@@ -3,4 +3,5 @@ set -Eeuo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 cd "$ROOT_DIR"
-exec uv run --frozen python -m src.llm.providers.openrouter --repo-root "$ROOT_DIR" --validate
+exec uv run --frozen python -m src.llm.providers.openrouter \
+  --repo-root "$ROOT_DIR" --validate "$@"

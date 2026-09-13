@@ -1,0 +1,27 @@
+schema_version: 1
+model_id: openai/gpt-oss-20b
+backend: openrouter_chat_completions
+base_url_env: MAXVERA_OPENROUTER_BASE_URL
+api_key_env: OPENROUTER_API_KEY
+provider_env: MAXVERA_OPENROUTER_PROVIDER
+provider_route: groq
+provider_metadata_snapshot_date: "2026-09-01"
+context_tokens: 8192
+max_output_tokens: 2048
+temperature: 0.0
+top_p: 1.0
+seed: 1234
+reasoning_effort: low
+reasoning_exclude: true
+parallel_requests: 1
+timeout_seconds: 900
+max_retries: 3
+routing:
+  allow_fallbacks: false
+  require_parameters: true
+  zdr: true
+  data_collection: deny
+json_policy:
+  schema_validation: required
+  max_repair_attempts: 2
+  semantic_prompt_change_on_retry: false

@@ -1,8 +1,16 @@
 schema_version: 1
 baseline_id: B5
 name: static_hypothesis
-status: scheduled_phase_5
+status: implemented_phase_5
 hint_condition: zero_hint
 llm_enabled: false
 retrieval: static_signals
 role: fair_baseline
+experiment_config: configs/experiments/phase5_baselines.yaml
+top_k: 10
+context:
+  chunk_lines: 120
+  overlap_lines: 20
+  max_file_bytes: 1048576
+  selection: all_java_chunks
+signal_catalog_version: phase5-static-signals-v1

@@ -4,7 +4,8 @@ name: iris_gptoss20b
 status: implemented_phase_4
 hint_condition: oracle_cwe
 llm_enabled: true
-model_config: configs/models/gpt_oss_20b_openrouter.yaml
+model_config: configs/models/gpt_oss_20b_openrouter_groq.yaml
+provider_route: groq
 role: model_substitution_reproduction
 requested_codeql_toolchain: iris_reproduction_patched
 effective_codeql_toolchain: main_existing_databases

@@ -98,6 +98,84 @@ resume do resolved config thay đổi; pilot xác nhận mới dùng run ID 002.
 và baseline matrix tăng từ `1.1.0` lên `1.1.1`; input budget, call cap, model,
 provider, dataset, evaluator và RQ không đổi.
 
+## D-011 — Khóa context adapters và spend-confirmation cho Phase 5 (2026-09-03)
+
+B3 chọn Java chunks theo breadth-first round-robin giữa các file, không dùng
+security-aware ranking. B4 dùng cùng chunker nhưng xếp hạng bằng vocabulary bảo
+mật chung được version trong `src/baselines/context.py`. B3/B4 dùng chung prompt
+`phase5-zero-hint-v1`, schema, model route và budget. B5 dùng cùng source view,
+phát static hypothesis và không gọi LLM. Mọi LLM execution yêu cầu cờ
+`--confirm-api-spend`; dry-run và budget estimator tuyệt đối không gọi mạng.
+
+B3-B5 trước mắt chạy trên `D_repro_v1` để cùng release với B0-B2 Phase 4 và chỉ
+là implementation-validation. Không dùng chúng làm main locked-test claim.
+B6-B9 tiếp tục fail-closed vì phụ thuộc Phase 6-12; không tạo stub result giả.
+Quyết định không đổi RQ, metric, model, budget hoặc protocol version `1.1.1`.
+
+## D-012 — Chuyển Phase 5 và các run LLM mới sang AkashML (2026-09-03)
+
+Theo quyết định của chủ dự án, B3/B4 Phase 5 và các baseline LLM triển khai về
+sau dùng route OpenRouter `akashml` cho `openai/gpt-oss-20b`. Route được khóa
+đồng thời trong upstream, model, experiment và baseline config; `.env` phải
+khớp, fallback tiếp tục tắt, `require_parameters=true`, `zdr=true` và
+`data_collection=deny`. Snapshot giá dùng cho estimator là `$0.02/M` input và
+`$0.10/M` billed output tại ngày 03/09/2026; actual `usage.cost` của từng request
+vẫn là số liệu chi phí có thẩm quyền.
+
+Alternative giữ Groq bị loại vì chi phí cao hơn cho Phase 5. Kết quả Phase 4
+đã hoàn tất bằng Groq không bị sửa hoặc chạy lại ngầm; chúng giữ protocol
+`1.1.1` và config Groq riêng để có thể tái lập snapshot lịch sử. Vì provider
+khác nhau, không được quy chênh
+lệch B2/Groq với B3-B4/AkashML cho retrieval/model trong một so sánh
+provider-controlled. Model, prompt, token budget, dataset, evaluator và RQ
+không đổi. Thay đổi provider làm protocol và baseline matrix tăng lên `1.2.0`.
+
+## D-013 — Validation-aware schema repair cho Phase 5 (2026-09-13)
+
+Gate 20 project đầu tiên cho B3 pass 20/20, nhưng B4 chỉ pass 19/20. Project
+`proj_9473477120ad15346b26` trả một file path không tồn tại và lặp lại cùng lỗi
+qua ba response vì repair prompt cũ chỉ báo chung rằng JSON không hợp lệ. API,
+model và AkashML route đều trả response thành công; đây là lỗi repair contract.
+
+Prompt `phase5-zero-hint-v2` từ đây đưa thông báo validation đã giới hạn độ dài
+vào repair turn, yêu cầu sao chép chính xác file/line từ evidence và cho phép
+trả mảng rỗng nếu không còn hypothesis được hỗ trợ. Nhiệm vụ zero-hint, system
+prompt, model, provider, context selection và budget không đổi. Prompt hash nay
+bao phủ system, user và repair templates. Artifact attempt 001 được giữ nguyên;
+mọi gate mới dùng run ID mới và không trộn prompt version. Protocol/matrix tăng
+từ `1.2.0` lên `1.2.1`.
+
+## D-014 — Structured Outputs khóa file path theo context (2026-09-13)
+
+Targeted repair check v2 đã sửa được path ở lượt thứ hai, nhưng gate20 attempt
+002 vẫn lặp cùng path sai qua ba response cho cùng project. Vì hành vi sampling
+của hosted route không hoàn toàn deterministic, prompt-only repair không đủ làm
+gate tái lập được. File thật có mặt trong context, nhưng model đổi `src/test`
+thành `src/main`.
+
+Phase 5 từ đây dùng OpenRouter Structured Outputs với `strict=true` và JSON
+Schema động: `file` là enum chính xác của các path có trong context, các field
+còn lại bị khóa type/range/cardinality, và local parser vẫn validate file/line
+lần hai. `require_parameters=true` giữ fail-closed nếu provider không hỗ trợ
+schema. Không bật response healing và không tự động sửa đường dẫn model trả về.
+Prompt/request contract tăng thành `phase5-zero-hint-v3`; protocol/matrix tăng
+từ `1.2.1` lên `1.2.2`. Các attempt v1/v2 được giữ làm failed diagnostics và
+không trộn với run v3.
+
+## D-015 — Bounded rate-limit backoff cho AkashML (2026-09-13)
+
+Gate20 attempt 003 dùng Structured Outputs nhưng B3 dừng ở 19/20 vì một project
+nhận bốn HTTP 429 liên tiếp trong khoảng 14 giây. Không có response model hoặc
+API cost cho project đó; lỗi do transport retry 1/2/4 giây quá ngắn, không phải
+schema hay analysis. Các project trước và sau đều thành công.
+
+Client từ đây ưu tiên header `Retry-After` với trần 60 giây; nếu provider không
+trả header, 429 dùng backoff 5/10/20/40/60 giây. `max_retries` tăng từ 3 lên 5,
+mọi delay được ghi vào call log. Retry vẫn bounded và không làm tăng successful
+call/token budget; model, prompt v3, schema, provider và scientific task không
+đổi. Protocol/matrix tăng từ `1.2.2` lên `1.2.3`; attempt 003 giữ làm failed
+diagnostic và gate mới phải dùng run ID mới.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

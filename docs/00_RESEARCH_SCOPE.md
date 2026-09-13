@@ -2,7 +2,7 @@
 
 **Mục đích:** khóa câu hỏi khoa học, điều kiện đầu vào và tiêu chí thành công trước khi phát triển phương pháp.
 
-**Protocol:** `1.1.1` — cập nhật và frozen ngày 01/09/2026.
+**Protocol:** `1.2.3` — cập nhật và frozen ngày 13/09/2026.
 
 **Phạm vi:** Java, CodeQL, CWE-Bench-Java và `openai/gpt-oss-20b` qua OpenRouter.
 

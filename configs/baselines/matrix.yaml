@@ -1,6 +1,6 @@
 schema_version: 1
-matrix_version: "1.1.1"
-protocol_version: "1.1.1"
+matrix_version: "1.2.3"
+protocol_version: "1.2.3"
 entries:
   B0:
     name: CodeQL Security Suite
