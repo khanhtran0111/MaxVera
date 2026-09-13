@@ -176,6 +176,29 @@ call/token budget; model, prompt v3, schema, provider và scientific task không
 đổi. Protocol/matrix tăng từ `1.2.2` lên `1.2.3`; attempt 003 giữ làm failed
 diagnostic và gate mới phải dùng run ID mới.
 
+## D-016 — Final analysis failures được tính là miss (2026-09-13)
+
+Full B3 `p5_akashml_bm_full_001_b3` hoàn tất status cho 120/120 project: 119
+`SUCCESS` và một `ANALYSIS_FAILED` sau sáu HTTP 429 có bounded backoff. Runner
+đã giữ đúng `STATUS=FAILED`, nhưng validator cũ yêu cầu all-success và suite
+fail-fast trước B4/B5. Hành vi đó mâu thuẫn với protocol đã khóa: primary
+intention-to-analyze phải tính build/analysis failure là miss và Phase 5 gate
+chỉ yêu cầu 100% project có final status.
+
+Từ đây validator chấp nhận `STATUS=FAILED` chỉ khi mọi selected project có final
+status, ít nhất một selected project thực sự failed, resolved config khóa
+`failures_count_as_miss: true`, evaluator giữ failure là zero-alert miss, và
+aggregate khớp project statuses. Kết quả được ghi rõ
+`PASS_WITH_ANALYSIS_FAILURES`, không đổi failure thành success. Leaderboard công
+bố run status cùng số selected success/failure. Suite tiếp tục baseline kế tiếp
+sau exit khác 0 và hỗ trợ `--skip-existing` để tiếp tục immutable prefix.
+
+Alternative chạy lại riêng project 429 bị loại vì sẽ condition kết quả trên
+thành công và làm sai intention-to-analyze; alternative loại cả run bị loại vì
+drop một project đã được protocol yêu cầu giữ. Đây là sửa implementation để
+khớp policy có sẵn, không đổi RQ, dataset, model, budget, metric hay protocol
+version `1.2.3`.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

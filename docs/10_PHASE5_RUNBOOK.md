@@ -121,7 +121,19 @@ bash scripts/tools/run_phase5_suite.sh \
 ```
 
 Suite chạy B3, rồi B4, rồi B5; không song song. Evaluate và validate từng thư
-mục như mục 4. `best_effort` chỉ chạy sau budget-matched và phải dùng run ID mới:
+mục như mục 4. Một baseline có project failure không chặn các baseline còn lại;
+suite tiếp tục và cuối cùng trả exit khác 0 để buộc người chạy xem status. Nếu
+suite trước đây đã dừng sau B3, tiếp tục cùng immutable prefix mà không gọi lại
+B3 bằng:
+
+```bash
+bash scripts/tools/run_phase5_suite.sh \
+  --mode full --budget-mode budget_matched \
+  --confirm-api-spend --skip-existing \
+  --run-prefix p5_bm_full_001
+```
+
+`best_effort` chỉ chạy sau budget-matched và phải dùng run ID mới:
 
 ```bash
 bash scripts/tools/run_phase5_suite.sh \
@@ -131,8 +143,12 @@ bash scripts/tools/run_phase5_suite.sh \
 
 ## 6. Gate cần kiểm tra
 
-- `STATUS=SUCCESS` và mọi project selected là `SUCCESS`.
-- Validator pass sau evaluator; project statuses và metrics đều đủ 120 dòng.
+- Mỗi project selected có final status. `STATUS=SUCCESS` khi tất cả thành công;
+  nếu có failure thì giữ `STATUS=FAILED`, evaluator tính failure là miss và
+  validator trả `PASS_WITH_ANALYSIS_FAILURES` khi accounting hợp lệ.
+- Validator pass sau evaluator; project statuses và metrics đều đủ 120 dòng;
+  tuyệt đối không drop, đổi status hoặc chạy lại riêng project thất bại để làm
+  đẹp kết quả.
 - B3/B4 manifest chỉ có returned model `openai/gpt-oss-20b`, provider route
   `akashml`,
   fallback tắt và prompt hash giống nhau.

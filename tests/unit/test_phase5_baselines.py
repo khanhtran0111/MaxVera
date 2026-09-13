@@ -16,6 +16,7 @@ from src.baselines.context import (
     static_hypotheses,
 )
 from src.baselines.schema import findings_sarif, hypotheses_json_schema, parse_hypotheses
+from src.baselines.validate import _selected_outcomes
 from src.llm.prompts.phase5 import PROMPT_VERSION, repair_prompt
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -131,14 +132,10 @@ def test_phase5_configs_mark_only_immediately_runnable_entries() -> None:
 
 def test_phase5_llm_route_is_pinned_to_akashml() -> None:
     experiment = yaml.safe_load(
-        (REPO_ROOT / "configs/experiments/phase5_baselines.yaml").read_text(
-            encoding="utf-8"
-        )
+        (REPO_ROOT / "configs/experiments/phase5_baselines.yaml").read_text(encoding="utf-8")
     )
     model = yaml.safe_load(
-        (REPO_ROOT / "configs/models/gpt_oss_20b_openrouter.yaml").read_text(
-            encoding="utf-8"
-        )
+        (REPO_ROOT / "configs/models/gpt_oss_20b_openrouter.yaml").read_text(encoding="utf-8")
     )
     assert experiment["llm"]["provider_route"] == "akashml"
     assert model["provider_route"] == "akashml"
@@ -190,3 +187,25 @@ def test_phase5_analysis_runner_does_not_reference_protected_view() -> None:
     runner = (REPO_ROOT / "src/baselines/runner.py").read_text(encoding="utf-8")
     protected = "evaluator" + "_only"
     assert protected not in runner
+
+
+def test_validator_accepts_final_analysis_failure_as_recorded_miss() -> None:
+    statuses = [
+        {"project_id": "proj_success", "status": "SUCCESS"},
+        {"project_id": "proj_failure", "status": "ANALYSIS_FAILED"},
+    ]
+    assert _selected_outcomes(statuses, {"proj_success", "proj_failure"}, "FAILED") == (
+        1,
+        1,
+    )
+
+
+def test_validator_rejects_inconsistent_run_status() -> None:
+    statuses = [
+        {"project_id": "proj_success", "status": "SUCCESS"},
+        {"project_id": "proj_failure", "status": "ANALYSIS_FAILED"},
+    ]
+    with pytest.raises(ValueError, match="STATUS is SUCCESS"):
+        _selected_outcomes(statuses, {"proj_success", "proj_failure"}, "SUCCESS")
+    with pytest.raises(ValueError, match="STATUS is FAILED"):
+        _selected_outcomes(statuses[:1], {"proj_success"}, "FAILED")

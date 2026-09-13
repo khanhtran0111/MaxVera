@@ -44,8 +44,11 @@ hard cap, project bị `ANALYSIS_FAILED`; không âm thầm tăng budget.
 Mỗi run ghi manifest, resolved config, environment, command, status đủ 120
 project, hypotheses/findings, SARIF, call log, timing, resource/cost và checksum.
 Output được tạo trong thư mục `.inprogress` rồi atomic rename. Một project lỗi
-schema/API vẫn có status và khiến run không qua validator. Evaluator-only tạo
-metric sau analysis; analyzer không import hay mở label view.
+schema/API vẫn giữ status failure, `STATUS` toàn run là `FAILED`, và được tính
+là miss theo intention-to-analyze. Validator chỉ chấp nhận trường hợp này sau
+khi xác nhận đủ coverage, failure policy và metric miss; không biến failure
+thành success. Evaluator-only tạo metric sau analysis; analyzer không import
+hay mở label view.
 
 Run Phase 5 hiện là implementation-validation trên `D_repro_v1`, không phải
 main locked-test claim. B0-B9 trên `D_extended/test_locked` chỉ được chạy sau

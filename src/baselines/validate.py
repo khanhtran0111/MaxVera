@@ -9,6 +9,8 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from src.common.provenance import sha256_file
 from src.reproduction.common import FINAL_STATUSES, read_jsonl
 
@@ -62,29 +64,89 @@ def _verify_checksums(run_root: Path) -> None:
         raise ValueError(f"unindexed run output: {sorted(missing)[:5]}")
 
 
+def _selected_outcomes(
+    statuses: Sequence[Mapping[str, Any]], selected: set[str], run_status: str
+) -> tuple[int, int]:
+    if run_status not in {"SUCCESS", "FAILED"}:
+        raise ValueError(f"run STATUS is not final: {run_status or '<empty>'}")
+    if not selected:
+        raise ValueError("manifest selected-project coverage is empty")
+    status_by_id = {str(row.get("project_id")): row.get("status") for row in statuses}
+    missing = selected - set(status_by_id)
+    if missing:
+        raise ValueError(f"selected project status coverage is incomplete: {sorted(missing)[:5]}")
+    successes = sum(status_by_id[project_id] == "SUCCESS" for project_id in selected)
+    failures = len(selected) - successes
+    if run_status == "SUCCESS" and failures:
+        raise ValueError("run STATUS is SUCCESS but selected project failures exist")
+    if run_status == "FAILED" and not failures:
+        raise ValueError("run STATUS is FAILED but every selected project is successful")
+    return successes, failures
+
+
+def _verify_failure_policy(run_root: Path, selected_failures: int) -> None:
+    if not selected_failures:
+        return
+    resolved = yaml.safe_load((run_root / "config.resolved.yaml").read_text(encoding="utf-8"))
+    try:
+        count_as_miss = resolved["experiment"]["evaluation"]["failures_count_as_miss"]
+    except (KeyError, TypeError) as error:
+        raise ValueError("resolved failure-accounting policy is missing") from error
+    if count_as_miss is not True:
+        raise ValueError("selected failures are only valid when failures_count_as_miss is true")
+
+
+def _verify_metrics(
+    run_root: Path,
+    statuses: Sequence[Mapping[str, Any]],
+    analysis_successes: int,
+) -> None:
+    for name in ("metrics_project.jsonl", "metrics_aggregate.json"):
+        if not (run_root / name).is_file():
+            raise ValueError(f"missing evaluator output: {name}")
+    metrics = read_jsonl(run_root / "metrics_project.jsonl")
+    if len(metrics) != len(statuses):
+        raise ValueError("metric coverage does not match status coverage")
+    status_by_id = {str(row.get("project_id")): row.get("status") for row in statuses}
+    metric_by_id = {str(row.get("project_id")): row for row in metrics}
+    if len(metric_by_id) != len(metrics) or set(metric_by_id) != set(status_by_id):
+        raise ValueError("metric project IDs do not match status coverage")
+    if any(
+        metric_by_id[project_id].get("status") != status
+        for project_id, status in status_by_id.items()
+    ):
+        raise ValueError("metric statuses do not match project statuses")
+    failed_metrics = [
+        metric_by_id[project_id]
+        for project_id, status in status_by_id.items()
+        if status != "SUCCESS"
+    ]
+    if any(row.get("detected") or int(row.get("alerts", 0)) for row in failed_metrics):
+        raise ValueError("non-successful projects were not evaluated as misses")
+    aggregate = _json(run_root / "metrics_aggregate.json")
+    if int(aggregate.get("projects", -1)) != len(statuses):
+        raise ValueError("aggregate project coverage does not match status coverage")
+    if int(aggregate.get("analysis_successes", -1)) != analysis_successes:
+        raise ValueError("aggregate analysis-success count does not match project statuses")
+
+
 def validate(run_root: Path, *, require_metrics: bool) -> str:
     missing = sorted(name for name in REQUIRED_ANALYSIS_FILES if not (run_root / name).is_file())
     if missing:
         raise ValueError(f"missing required outputs: {', '.join(missing)}")
-    if (run_root / "STATUS").read_text(encoding="utf-8").strip() != "SUCCESS":
-        raise ValueError("run STATUS is not SUCCESS")
+    run_status = (run_root / "STATUS").read_text(encoding="utf-8").strip()
     manifest = _json(run_root / "manifest.json")
     if manifest.get("phase") != 5 or manifest.get("baseline_id") not in {"B3", "B4", "B5"}:
         raise ValueError("not a Phase 5 B3-B5 run")
     statuses = read_jsonl(run_root / "project_status.jsonl")
-    selected = set(manifest.get("selected_project_ids", []))
+    selected = {str(project_id) for project_id in manifest.get("selected_project_ids", [])}
     if not statuses or len({row.get("project_id") for row in statuses}) != len(statuses):
         raise ValueError("project status coverage is empty or duplicated")
     invalid = [row for row in statuses if row.get("status") not in FINAL_STATUSES]
     if invalid:
         raise ValueError("project statuses contain non-final values")
-    failed = [
-        row
-        for row in statuses
-        if row.get("project_id") in selected and row.get("status") != "SUCCESS"
-    ]
-    if failed:
-        raise ValueError(f"{len(failed)} selected projects are not successful")
+    selected_successes, selected_failures = _selected_outcomes(statuses, selected, run_status)
+    _verify_failure_policy(run_root, selected_failures)
     findings = read_jsonl(run_root / "findings.jsonl")
     if any(item.get("project_id") not in selected for item in findings):
         raise ValueError("finding belongs to a non-selected project")
@@ -119,12 +181,18 @@ def validate(run_root: Path, *, require_metrics: bool) -> str:
         if any(_provider_slug(row.get("provider")) != "akashml" for row in successful_calls):
             raise ValueError("OpenRouter returned a provider other than AkashML")
     if require_metrics:
-        for name in ("metrics_project.jsonl", "metrics_aggregate.json"):
-            if not (run_root / name).is_file():
-                raise ValueError(f"missing evaluator output: {name}")
-        if len(read_jsonl(run_root / "metrics_project.jsonl")) != len(statuses):
-            raise ValueError("metric coverage does not match status coverage")
+        _verify_metrics(
+            run_root,
+            statuses,
+            sum(row.get("status") == "SUCCESS" for row in statuses),
+        )
     _verify_checksums(run_root)
+    if selected_failures:
+        return (
+            f"PASS_WITH_ANALYSIS_FAILURES: {manifest['baseline_id']} "
+            f"({selected_successes}/{len(selected)} successful; "
+            f"{selected_failures} failure(s) counted as misses)"
+        )
     return f"PASS: {manifest['baseline_id']} ({len(selected)} selected projects)"
 
 

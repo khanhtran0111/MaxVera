@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from src.baselines.validate import validate
+from src.reproduction.common import read_jsonl
 
 
 def _resource_totals(path: Path) -> tuple[int, int, int, int, int, float]:
@@ -31,6 +32,11 @@ def row_for_run(run_root: Path) -> dict[str, Any]:
     validate(run_root, require_metrics=True)
     manifest = json.loads((run_root / "manifest.json").read_text(encoding="utf-8"))
     metrics = json.loads((run_root / "metrics_aggregate.json").read_text(encoding="utf-8"))
+    selected = {str(project_id) for project_id in manifest["selected_project_ids"]}
+    statuses = read_jsonl(run_root / "project_status.jsonl")
+    selected_successes = sum(
+        row.get("project_id") in selected and row.get("status") == "SUCCESS" for row in statuses
+    )
     (
         calls,
         input_tokens,
@@ -43,8 +49,13 @@ def row_for_run(run_root: Path) -> dict[str, Any]:
         "baseline_id": manifest["baseline_id"],
         "baseline_name": manifest["baseline_name"],
         "run_id": manifest["run_id"],
+        "run_status": (run_root / "STATUS").read_text(encoding="utf-8").strip(),
         "mode": manifest["mode"],
         "budget_mode": manifest["budget_mode"],
+        "failure_policy": "count_as_miss",
+        "selected_projects": len(selected),
+        "selected_successes": selected_successes,
+        "selected_failures": len(selected) - selected_successes,
         "projects": metrics["projects"],
         "analysis_successes": metrics["analysis_successes"],
         "detected_projects": metrics["detected_projects"],
