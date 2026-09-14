@@ -1,5 +1,5 @@
-name: maxvera/smoke-queries
-version: 0.0.1
+name: maxvera/static-analysis-queries
+version: 0.1.0
 library: false
 dependencies:
   codeql/java-all: 9.2.2

@@ -34,6 +34,12 @@ chép tay.
 | 2026-09-14 | Phase 6 static v1 full 001 | validated | 96/96 development projects; Recall@1/3/5/10 0.3333/0.4479/0.5208/0.5625, MRR 0.4020; candidate pool contains the correct CWE for 68/96; zero API calls |
 | 2026-09-14 | Phase 6 family-balanced ranking v2 gate4 001 | passed | 4/4 development projects; candidate-pool Recall@40 1.0, Top-10 Recall@10 1.0, MRR 0.875; zero API calls; v1 artifact preserved; protocol 1.3.1, D-018 |
 | 2026-09-14 | Phase 6 static v2 full 001 | selected/locked | 96/96 success; Recall@1/3/5/10 32/79/84/84 (0.3333/0.8229/0.8750/0.8750), MRR 0.5547; candidate-pool Recall@40 84/96 and MRR 0.5547; 30 Top-10 gains and zero regressions versus v1; 12 pool misses; zero API calls; D-019 |
+| 2026-09-14 | Phase 7 Program Graph implementation | implemented/pilot passed | CodeQL source-backed nodes and seven edge kinds; deterministic IDs/digests, database alias/builder, integrity validator and bounded neighborhood/slice query; protocol 1.4.0, D-020 |
+| 2026-09-14 | Phase 7 pilot 001 | failed/diagnosed | decoded node CSV used inconsistent column prefixes; stopped before graph finalization, zero API calls; schema corrected for pilot 002 |
+| 2026-09-14 | Phase 7 pilot 002 | failed/diagnosed | unbounded all-Expr/Stmt graph reached 1,008,798 nodes and 1,602,982 edges on one project, exceeding cap; extractor narrowed to security-relevant source-backed nodes for pilot 003; zero API calls |
+| 2026-09-14 | Phase 7 pilot 003 | failed/diagnosed | repository-wide security-relevant graph still reached 583,701 nodes and 913,250 edges; scope changed to locked Phase 6 hypothesis files plus one adjacent edge endpoint for pilot 004; zero API calls |
+| 2026-09-14 | Phase 7 pilots 004/005 | passed/deterministic | same development project produced 699 nodes, 868 edges across all seven edge kinds, 100% edge resolution and identical graph digest `14fb1a2...c346`; peak runner RSS about 89 MiB; neighborhood query passed; zero API calls |
+| 2026-09-14 | Phase 7 gate2 002 | passed with recorded failure | 2/2 final statuses: one expected missing-database miss and one successful 699-node/868-edge graph; validator reports 868/868 edge references (100%); zero API calls |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

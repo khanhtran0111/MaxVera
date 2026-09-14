@@ -1,0 +1,44 @@
+schema_version: 1
+protocol_version: "1.4.0"
+experiment_id: phase7_program_graph
+status: frozen_phase_7_development
+purpose: development_only_source_backed_program_graph_extraction
+dataset:
+  id: D_extended
+  analysis_manifest: data/processed/analysis_input/D_extended_projects.csv
+  development_split: data/processed/splits/development.csv
+  forbidden_test_split: data/processed/splits/test_locked.csv
+  source_root: data/interim/phase6_project_sources
+  database_root: data/interim/phase7_codeql_databases
+  database_preparation_manifest: data/interim/phase7_database_preparation.json
+  database_build_status: data/interim/phase7_database_build_status.jsonl
+phase6_lock:
+  run_root: results/hypotheses/static/p6_static_v2_dev_full_001
+  run_id: p6_static_v2_dev_full_001
+  ranking_version: phase6-family-balanced-v2
+  top_k: 10
+  manifest_sha256: 11380495eafffe02924beaf9409e7ed343111cc4b74806a4f869e5155b41d2c2
+  metrics_aggregate_sha256: 563b8ed230c3d3d9fbd7b6ba377f618b701e9f9fc047f274b5f8f5a05f7909ad
+extractor:
+  version: phase7-java-program-graph-v1
+  scope: phase6_hypothesis_files_plus_one_edge_endpoint
+  codeql_version: 2.26.2
+  java_library_pack: codeql/java-all@9.2.2
+  node_query: src/static_analysis/queries/phase7_nodes.ql
+  edge_query: src/static_analysis/queries/phase7_edges.ql
+  edge_kinds: [AST_PARENT, CALL, DEF_USE, DATA_FLOW, CONTROL_DEP, TYPE, TAINT_CANDIDATE]
+  threads: 2
+  ram_mb: 8192
+  timeout_seconds_per_query: 1800
+  max_nodes_per_project: 250000
+  max_edges_per_project: 1000000
+execution:
+  graph_build_workers: 1
+  atomic_finalization: true
+  full_result_overwrite: false
+  failures_count_as_miss: true
+validation:
+  minimum_edge_reference_ratio: 0.99
+  require_source_backed_locations: true
+  require_deterministic_ordering: true
+  neighborhood_regression_hops: 2

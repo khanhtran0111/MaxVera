@@ -11,6 +11,9 @@ immediately runnable Phase 5 context baselines B3-B5 are implemented.
 The Phase 6 development-only hypothesis generator is locked at static
 family-balanced v2 with Top-k=10; optional GPT-OSS reranking is exploratory; see
 [`docs/11_PHASE6_RUNBOOK.md`](docs/11_PHASE6_RUNBOOK.md).
+The Phase 7 CodeQL program-graph extractor, database preparation/build tools,
+integrity validator, and neighborhood/slice query CLI are implemented; see
+[`docs/12_PHASE7_RUNBOOK.md`](docs/12_PHASE7_RUNBOOK.md).
 The frozen 120-row release has 120 final build statuses and 104 successful
 CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw
 context, B4 text-RAG, and B5 static hypotheses; B6-B9 remain fail-closed until

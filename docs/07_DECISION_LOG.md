@@ -263,6 +263,36 @@ metrics SHA-256 là
 Quyết định này hoàn tất gate Phase 6 nhưng không đổi protocol `1.3.1`; dataset,
 split, metrics và locked-test firewall giữ nguyên.
 
+## D-020 — Phase 7 source-backed CodeQL Program Graph (2026-09-14)
+
+Phase 7 dùng khóa Phase 6 D-019 và chỉ chạy trên 96 opaque development IDs.
+Extractor v1 dùng CodeQL CLI 2.26.2 cùng `codeql/java-all@9.2.2` để trích node
+`EXPR/STMT/CALLABLE/TYPE` và bảy edge kind: AST parent, call, def-use, data-flow,
+control dependency, type và taint candidate. Node ID được hash từ project ID,
+kind, source span, symbol/type descriptor; edge ID được hash từ kind và hai
+endpoint. Raw code và
+label/advisory/fix metadata không được ghi vào graph. Để bounded trên repository
+lớn, graph giữ node trong các file được locked Top-10 hypothesis tham chiếu và
+một endpoint kề qua CodeQL edge; scope này dùng source evidence, không dùng
+evaluator label. Mỗi node/edge giữ query hash, extractor/tool version và
+source-backed provenance.
+
+Database preparation chỉ alias Phase 2 database khi repository revision giống
+hệt, ở boundary được phép đọc canonical manifest nhưng chỉ persist opaque
+availability. Snapshot hiện tái sử dụng 76/96 development databases; 20 database
+thiếu có builder riêng dùng analysis-only manifest và pinned toolchains. Database
+hoặc query failure được giữ `ANALYSIS_FAILED`, không thay bằng source-regex graph
+vì fallback đó sẽ làm sai semantics CodeQL. Full run vẫn phải có đủ 96 final
+statuses theo intention-to-analyze.
+
+Graph validator yêu cầu source location tồn tại, deterministic ordering/digest,
+provenance, checksum và edge-reference ratio tối thiểu 99%. Neighborhood,
+forward slice và backward slice là bounded-hop traversal deterministic, có unit
+test. Phase 7 không gọi LLM/API. Alternative materialize full AST bằng parser bị
+loại vì không cung cấp CodeQL def-use/data-flow; alternative truy cập locked-test
+để tăng coverage bị cấm. Contract mới tăng main protocol từ `1.3.1` lên `1.4.0`;
+khóa Phase 6 và artifact cũ giữ nguyên protocol lịch sử.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và
