@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 from src.reproduction.common import aggregate_metrics, evaluate_sarif
-from src.reproduction.iris_subprocess import _compatible_query_source
-from src.reproduction.runner import RUN_ID_PATTERN
+from src.reproduction.iris_subprocess import _compatible_query_source, _inject_codeql_ram
+from src.reproduction.runner import RUN_ID_PATTERN, _prepare_iris_workspace
 
 
 def _sarif(path: Path, file_name: str, line: int) -> None:
@@ -138,6 +138,46 @@ def test_iris_query_migration_is_workspace_local(tmp_path: Path) -> None:
     assert query.read_text(encoding="utf-8") == original
     assert "PathCreation" not in migrated
     assert "ActiveThreatModelSource" in migrated
+
+
+def test_iris_codeql_commands_receive_explicit_ram_limit(tmp_path: Path) -> None:
+    codeql = tmp_path / "codeql"
+    command = [str(codeql), "database", "analyze", "--rerun", "database"]
+    assert _inject_codeql_ram(command, codeql, 16384) == [
+        str(codeql),
+        "database",
+        "analyze",
+        "--ram=16384",
+        "--rerun",
+        "database",
+    ]
+    assert command == [str(codeql), "database", "analyze", "--rerun", "database"]
+
+
+def test_iris_workspace_adds_hapi_package_aliases_without_mutating_raw_data(
+    tmp_path: Path,
+) -> None:
+    source_name = "hapifhir__hapi-fhir_CVE-2023-24057_5.6.91.txt"
+    alias_name = "hapifhir__org.hl7.fhir.core_CVE-2023-24057_5.6.91.txt"
+    raw = tmp_path / "data/raw/cwe_bench_java_v1/package-names"
+    raw.mkdir(parents=True)
+    (raw / source_name).write_text("org.hl7.fhir\n", encoding="utf-8")
+    # The second configured alias must also have a valid source.
+    (raw / "hapifhir__hapi-fhir_CVE-2023-28465_5.6.105.txt").write_text(
+        "org.hl7.fhir\n", encoding="utf-8"
+    )
+    project_id = "proj_test"
+    slug = "hapifhir__org.hl7.fhir.core_CVE-2023-24057_5.6.91"
+    (tmp_path / "data/interim/project_sources" / project_id).mkdir(parents=True)
+    (tmp_path / "data/interim/codeql_databases" / project_id).mkdir(parents=True)
+    run_root = tmp_path / "results/reproduction/iris_gptoss20b/test_run"
+    workspace = _prepare_iris_workspace(
+        tmp_path, run_root, [{"project_id": project_id, "project_slug": slug}]
+    )
+    alias = workspace["package_root"] / alias_name
+    assert alias.is_symlink()
+    assert alias.read_text(encoding="utf-8") == "org.hl7.fhir\n"
+    assert not (raw / alias_name).exists()
 
 
 def test_analysis_runner_does_not_reference_evaluator_only_view() -> None:

@@ -58,6 +58,44 @@ class LLM:
         return GPTOSS20BProvider(model_name=model_name, logger=logger, **kwargs)
 
 
+def _inject_codeql_ram(command: Any, codeql_binary: Path, ram_mb: int) -> Any:
+    """Add a deterministic RAM ceiling to the two CodeQL commands used by IRIS."""
+    if not isinstance(command, (list, tuple)) or len(command) < 3:
+        return command
+    parts = list(command)
+    try:
+        is_codeql = Path(str(parts[0])).resolve() == codeql_binary.resolve()
+    except (OSError, ValueError):
+        return command
+    operation = tuple(str(part) for part in parts[1:3])
+    if (
+        is_codeql
+        and operation in {("query", "run"), ("database", "analyze")}
+        and not any(str(part).startswith("--ram") for part in parts[3:])
+    ):
+        parts.insert(3, f"--ram={ram_mb}")
+    return parts
+
+
+class _CodeQLRamSubprocessProxy:
+    """Delegate subprocess calls while constraining IRIS CodeQL heap sizing."""
+
+    def __init__(self, module: Any, codeql_binary: Path, ram_mb: int):
+        self._module = module
+        self._codeql_binary = codeql_binary
+        self._ram_mb = ram_mb
+
+    def run(self, command: Any, *args: Any, **kwargs: Any) -> Any:
+        return self._module.run(
+            _inject_codeql_ram(command, self._codeql_binary, self._ram_mb),
+            *args,
+            **kwargs,
+        )
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._module, name)
+
+
 def _install_model_stubs() -> None:
     llm_module = types.ModuleType("src.models.llm")
     llm_module.__dict__["LLM"] = LLM
@@ -81,6 +119,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--cwe", required=True)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--codeql-home", type=Path, required=True)
+    parser.add_argument("--codeql-ram-mb", type=int, required=True)
     parser.add_argument("--database-root", type=Path, required=True)
     parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument("--package-root", type=Path, required=True)
@@ -147,6 +186,9 @@ def main() -> int:
 
     codeql_home = args.codeql_home.resolve()
     codeql_binary = codeql_home / "codeql" if codeql_home.is_dir() else codeql_home
+    subprocess_proxy = _CodeQLRamSubprocessProxy(query_runner.sp, codeql_binary, args.codeql_ram_mb)
+    query_runner.sp = subprocess_proxy
+    iris_pipeline.sp = subprocess_proxy
     values = {
         "CODEQL_DIR": str(codeql_home),
         "CODEQL_DB_PATH": str(args.database_root.resolve()),

@@ -10,6 +10,7 @@ project_workers: 1
 graph_build_workers: 1
 codeql_threads: 4
 codeql_ram_mb: 16384
+iris_codeql_ram_mb: 24576
 llm_parallel_requests: 1
 canonical_gpu_layers: 0
 minimum_free_disk_gb: 25

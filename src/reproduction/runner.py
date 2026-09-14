@@ -24,6 +24,8 @@ IRIS_COMMIT = "67140e84e6a01da2b44803a6208be2ea7bd4bd51"
 DATASET_COMMIT = "698fb7248ae30cb7f7782d59c841f05ad70ea9cc"
 JAVA_QUERIES_VERSION = "1.11.7"
 JAVA_ALL_VERSION = "9.2.2"
+CODEQL_RAM_MB = 16384
+IRIS_CODEQL_RAM_MB = 24576
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 BASELINE_ROOTS = {
     "B0": "codeql_zero_hint",
@@ -35,6 +37,14 @@ ORACLE_QUERY_FOLDERS = {
     "CWE-78": "CWE-078",
     "CWE-79": "CWE-079",
     "CWE-94": "CWE-094",
+}
+IRIS_PACKAGE_ALIASES = {
+    (
+        "hapifhir__org.hl7.fhir.core_CVE-2023-24057_5.6.91.txt"
+    ): "hapifhir__hapi-fhir_CVE-2023-24057_5.6.91.txt",
+    (
+        "hapifhir__org.hl7.fhir.core_CVE-2023-28465_5.6.105.txt"
+    ): "hapifhir__hapi-fhir_CVE-2023-28465_5.6.105.txt",
 }
 
 
@@ -185,6 +195,7 @@ def _manifest(
             "version": _codeql_version(codeql),
             "java_queries": JAVA_QUERIES_VERSION,
             "java_all": JAVA_ALL_VERSION,
+            "ram_mb": IRIS_CODEQL_RAM_MB if baseline_id == "B2" else CODEQL_RAM_MB,
             "database_origin": "Phase 2 CodeQL 2.26.2 databases",
         },
         "toolchain_variance": {
@@ -262,7 +273,7 @@ def _analyze_codeql(
         "analyze",
         "--rerun",
         "--threads=4",
-        "--ram=16384",
+        f"--ram={CODEQL_RAM_MB}",
         "--format=sarif-latest",
         f"--output={sarif}",
         str(root / "data/interim/codeql_databases" / project_id),
@@ -281,8 +292,27 @@ def _prepare_iris_workspace(
     source_root = workspace / "project-sources"
     database_root = workspace / "codeql-dbs"
     query_pack = workspace / "query-pack"
-    for directory in (source_root, database_root, query_pack / "myqueries", query_pack / "ext"):
+    package_root = workspace / "package-names"
+    for directory in (
+        source_root,
+        database_root,
+        package_root,
+        query_pack / "myqueries",
+        query_pack / "ext",
+    ):
         directory.mkdir(parents=True, exist_ok=True)
+    raw_package_root = root / "data/raw/cwe_bench_java_v1/package-names"
+    for target in raw_package_root.glob("*.txt"):
+        link = package_root / target.name
+        if not link.exists():
+            link.symlink_to(target.resolve())
+    for alias_name, source_name in IRIS_PACKAGE_ALIASES.items():
+        alias = package_root / alias_name
+        source = raw_package_root / source_name
+        if not source.is_file():
+            raise FileNotFoundError(f"IRIS package alias source is missing: {source}")
+        if not alias.exists():
+            alias.symlink_to(source.resolve())
     for item in items:
         slug = item["project_slug"]
         project_id = item["project_id"]
@@ -312,6 +342,7 @@ def _prepare_iris_workspace(
         "workspace": workspace,
         "source_root": source_root,
         "database_root": database_root,
+        "package_root": package_root,
         "query_pack": query_pack,
     }
 
@@ -379,12 +410,14 @@ def _analyze_iris(
         adapter_run,
         "--codeql-home",
         str(codeql.parent),
+        "--codeql-ram-mb",
+        str(IRIS_CODEQL_RAM_MB),
         "--database-root",
         str(workspace["database_root"]),
         "--source-root",
         str(workspace["source_root"]),
         "--package-root",
-        str(root / "data/raw/cwe_bench_java_v1/package-names"),
+        str(workspace["package_root"]),
         "--output-root",
         str(upstream),
         "--query-pack",
@@ -473,6 +506,35 @@ def run_baseline(args: argparse.Namespace) -> int:
         if status_path.exists()
         else _initial_statuses(canonical, build, set(selected), args.mode)
     )
+    if args.resume and args.baseline_id == "B2":
+        retried = sorted(
+            str(row["project_id"])
+            for row in statuses
+            if row["status"] == "ANALYSIS_FAILED" and row["project_id"] in selected
+        )
+        if retried:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            resume_events = manifest.setdefault("resume_events", [])
+            event_id = f"codeql-ram-{IRIS_CODEQL_RAM_MB}-retry"
+            if not any(event.get("id") == event_id for event in resume_events):
+                resume_events.append(
+                    {
+                        "id": event_id,
+                        "created_at": utc_now(),
+                        "retried_project_ids": retried,
+                        "codeql_ram_mb": IRIS_CODEQL_RAM_MB,
+                        "run_local_package_aliases": IRIS_PACKAGE_ALIASES,
+                        "implementation_sha256": {
+                            "src/reproduction/runner.py": sha256_file(
+                                root / "src/reproduction/runner.py"
+                            ),
+                            "src/reproduction/iris_subprocess.py": sha256_file(
+                                root / "src/reproduction/iris_subprocess.py"
+                            ),
+                        },
+                    }
+                )
+                atomic_json(manifest_path, manifest)
     _save_statuses(run_root, statuses)
     if args.dry_run:
         atomic_json(
