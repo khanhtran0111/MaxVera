@@ -199,6 +199,30 @@ drop một project đã được protocol yêu cầu giữ. Đây là sửa impl
 khớp policy có sẵn, không đổi RQ, dataset, model, budget, metric hay protocol
 version `1.2.3`.
 
+## D-017 — Phase 6 development-only static-first hypothesis contract (2026-09-14)
+
+Phase 6 dùng `D_extended/development` gồm 96 opaque project; 24 project
+`test_locked` bị runner và validator cấm. Generator static v1 trích external
+input, public boundary, source/sink và sanitizer bằng versioned Java patterns,
+sau đó tạo Top-10 hypothesis có source/sink candidates, precondition, grounded
+location, score và rule/source provenance. Evidence literal dạng CVE/CWE trong
+source bị redacted và không tham gia matching/ranking.
+
+Hai frozen data releases dùng opaque ID khác nhau; 110 row có cùng
+project/revision và 10 row D_extended có corrected commit metadata.
+Data-preparation boundary tạo alias cho revision trùng, fetch/checkout đúng
+corrected revision cho 10 row còn lại và áp upstream build patch nếu có;
+analyzer chỉ thấy opaque target ID và không nhận mapping identity. Alternative
+clone/build lại toàn bộ release bị loại vì tốn tài nguyên; alternative để
+analyzer đọc canonical manifest bị loại vì phá label firewall.
+
+LLM là optional `hybrid` reranker: Structured Outputs chỉ cho phép permutation
+đúng tập static hypothesis ID, tối đa một successful call/project, route
+`openai/gpt-oss-20b`/AkashML và không fallback. Static là bước canonical đầu tiên
+và có zero API cost. Evaluation chỉ ở process có role evaluator, báo
+Recall@1/3/5/10 và MRR; failure tính là miss. Chi tiết này khóa protocol Phase 6
+ở `1.3.0`; Phase 5 artifacts/matrix tiếp tục giữ snapshot `1.2.3`.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

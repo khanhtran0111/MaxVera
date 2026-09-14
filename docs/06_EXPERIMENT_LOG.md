@@ -29,6 +29,8 @@ chép tay.
 | 2026-09-13 | Phase 5 full budget-matched B3 | scientifically complete with one miss | run `p5_akashml_bm_full_001_b3`: 119 success, 1 `ANALYSIS_FAILED` after six HTTP 429 attempts; evaluator covers 120/120; API cost `$0.02110620` |
 | 2026-09-13 | Phase 5 failure-accounting alignment | implemented | validator accepts fully recorded final failures as intention-to-analyze misses; suite continues B4/B5; D-016 |
 | 2026-09-14 | Phase 5 full budget-matched suite | validated | B3 119/120, B4 119/120, B5 120/120; two final failures counted as misses; leaderboard generated; B3+B4 API cost `$0.04568004` |
+| 2026-09-14 | Phase 6 implementation/pilot 003 | passed | development-only static/hybrid runner; static pilot analyzer/evaluator/validator 1/1, zero API calls; provenance signals compacted to referenced set; hybrid spend guard passed; protocol 1.3.0, D-017 |
+| 2026-09-14 | Phase 6 static gate4 001 | passed | 4/4 development projects including corrected-revision checkout; Recall@1 0.75, Recall@3/5/10 1.0, MRR 0.8333; zero API calls |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

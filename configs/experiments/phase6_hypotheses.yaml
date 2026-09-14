@@ -1,0 +1,40 @@
+schema_version: 1
+protocol_version: "1.3.0"
+experiment_id: phase6_zero_hint_hypotheses
+status: frozen_phase_6_development
+purpose: development_only_hypothesis_generation_and_top_k_selection
+paper_main_result: false
+dataset:
+  id: D_extended
+  analysis_manifest: data/processed/analysis_input/D_extended_projects.csv
+  development_split: data/processed/splits/development.csv
+  forbidden_test_split: data/processed/splits/test_locked.csv
+  source_root: data/interim/phase6_project_sources
+  source_preparation_manifest: data/interim/phase6_source_preparation.json
+generator:
+  pattern_version: phase6-java-signals-v1
+  top_k: 10
+  max_static_candidates: 40
+  max_file_bytes: 1048576
+  source_window_lines: 120
+  sanitizer_window_lines: 40
+  llm_rerank_candidates: 20
+llm:
+  model_config: configs/models/gpt_oss_20b_openrouter.yaml
+  model_id: openai/gpt-oss-20b
+  provider_route: akashml
+  allow_fallbacks: false
+  max_calls_per_project: 1
+  max_context_tokens_per_call: 8192
+  max_output_tokens_per_call: 1024
+  max_total_input_tokens_per_project: 8192
+execution:
+  project_workers: 1
+  llm_parallel_requests: 1
+  atomic_finalization: true
+  full_result_overwrite: false
+evaluation:
+  role_required: evaluator
+  primary_unit: vulnerability_project
+  failures_count_as_miss: true
+  top_k: [1, 3, 5, 10]

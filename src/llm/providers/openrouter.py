@@ -72,8 +72,7 @@ class OpenRouterSettings:
             raise ValueError(f"provider_route is missing from {config_path}")
         if provider != configured_provider:
             raise ValueError(
-                "MAXVERA_OPENROUTER_PROVIDER must match the pinned route "
-                f"{configured_provider}"
+                f"MAXVERA_OPENROUTER_PROVIDER must match the pinned route {configured_provider}"
             )
         if config.get("model_id") != CANONICAL_MODEL:
             raise ValueError(f"model_id must be {CANONICAL_MODEL}")
@@ -113,6 +112,7 @@ class OpenRouterClient:
         expect_json: bool,
         max_tokens: int | None = None,
         response_schema: Mapping[str, Any] | None = None,
+        response_schema_name: str = "phase5_hypotheses",
     ) -> dict[str, Any]:
         payload: dict[str, Any] = {
             "model": self.settings.model,
@@ -134,7 +134,7 @@ class OpenRouterClient:
             payload["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
-                    "name": "phase5_hypotheses",
+                    "name": response_schema_name,
                     "strict": True,
                     "schema": dict(response_schema),
                 },
@@ -180,12 +180,14 @@ class OpenRouterClient:
         expect_json: bool = False,
         max_tokens: int | None = None,
         response_schema: Mapping[str, Any] | None = None,
+        response_schema_name: str = "phase5_hypotheses",
     ) -> str:
         payload = self._payload(
             messages,
             expect_json=expect_json,
             max_tokens=max_tokens,
             response_schema=response_schema,
+            response_schema_name=response_schema_name,
         )
         encoded = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
         prompt_sha256 = hashlib.sha256(encoded).hexdigest()
