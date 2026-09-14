@@ -9,7 +9,7 @@ import pytest
 from src.hypotheses.budget import estimate
 from src.hypotheses.evaluation import aggregate
 from src.hypotheses.prepare import prepare_sources
-from src.hypotheses.signals import generate_candidates, scan_project, select_top_k
+from src.hypotheses.signals import RANKING_VERSION, generate_candidates, scan_project, select_top_k
 from src.hypotheses.validate import _selected_outcomes
 from src.llm.prompts.phase6 import parse_ranking, ranking_schema
 
@@ -52,7 +52,47 @@ def test_phase6_signals_are_grounded_deterministic_and_hint_redacted(tmp_path: P
     assert candidates[0]["source_candidates"]
     assert candidates[0]["sink_candidates"][0]["line"] == 3
     assert candidates[0]["provenance"]
+    assert candidates[0]["ranking_version"] == RANKING_VERSION
     assert select_top_k(candidates, 1)[0]["rank"] == 1
+
+
+def test_phase6_v2_ranking_interleaves_candidate_cwe_families() -> None:
+    signals = [
+        {
+            "signal_id": f"signal_22_{line}",
+            "role": "sink",
+            "candidate_cwes": ["CWE-22"],
+            "file": "Example.java",
+            "line": line,
+            "column": 1,
+            "rule_id": "path_sink",
+            "weight": 0.95 - line / 100,
+            "evidence": "new File(input)",
+        }
+        for line in range(1, 6)
+    ]
+    signals.append(
+        {
+            "signal_id": "signal_79_1",
+            "role": "sink",
+            "candidate_cwes": ["CWE-79"],
+            "file": "Example.java",
+            "line": 20,
+            "column": 1,
+            "rule_id": "xss_sink",
+            "weight": 0.50,
+            "evidence": "response.getWriter().write(input)",
+        }
+    )
+    candidates = generate_candidates(
+        signals,
+        project_id="proj_test",
+        source_window_lines=120,
+        sanitizer_window_lines=40,
+        max_candidates=4,
+    )
+    assert [item["candidate_cwe"] for item in candidates[:2]] == [["CWE-22"], ["CWE-79"]]
+    assert [item["rank"] for item in candidates] == [1, 2, 3, 4]
 
 
 def test_phase6_rerank_schema_and_parser_require_exact_permutation() -> None:
@@ -74,12 +114,16 @@ def test_phase6_failure_is_counted_as_zero_recall() -> None:
             "hypotheses": 2,
             "hypothesis_recall_at_10": True,
             "hypothesis_reciprocal_rank": 0.5,
+            "candidate_pool_recall_at_40": True,
+            "candidate_pool_reciprocal_rank": 0.25,
         },
         {
             "status": "ANALYSIS_FAILED",
             "hypotheses": 0,
             "hypothesis_recall_at_10": False,
             "hypothesis_reciprocal_rank": 0.0,
+            "candidate_pool_recall_at_40": False,
+            "candidate_pool_reciprocal_rank": 0.0,
         },
     ]
     result = aggregate(rows)
@@ -87,6 +131,8 @@ def test_phase6_failure_is_counted_as_zero_recall() -> None:
     assert result["analysis_successes"] == 1
     assert result["hypothesis_recall_at_10"] == 0.5
     assert result["hypothesis_mrr"] == 0.25
+    assert result["candidate_pool_recall_at_40"] == 0.5
+    assert result["candidate_pool_mrr"] == 0.125
     assert _selected_outcomes(rows, "FAILED") == (1, 1)
 
 

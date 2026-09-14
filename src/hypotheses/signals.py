@@ -13,6 +13,8 @@ from typing import Any
 from src.baselines.context import java_files
 
 PATTERN_VERSION = "phase6-java-signals-v1"
+RANKING_VERSION = "phase6-family-balanced-v2"
+LEGACY_RANKING_VERSION = "phase6-global-score-v1"
 HINT_LITERAL = re.compile(r"\b(?:CVE-\d{4}-\d+|CWE-\d+)\b", re.IGNORECASE)
 
 
@@ -307,6 +309,7 @@ def generate_candidates(
                     "preconditions": list(PRECONDITIONS.get(cwe, ())),
                     "locations": [_location(item) for item in [sink, *sources]],
                     "generator": "static_rules",
+                    "ranking_version": RANKING_VERSION,
                     "score": score,
                     "rank": 0,
                     "provenance": [
@@ -323,16 +326,27 @@ def generate_candidates(
                     ],
                 }
             )
-    ordered = sorted(
-        candidates,
-        key=lambda item: (
+
+    def order_key(item: Mapping[str, Any]) -> tuple[float, str, str, int, str]:
+        return (
             -float(item["score"]),
             str(item["candidate_cwe"][0]),
             str(item["sink_candidates"][0]["file"]),
             int(item["sink_candidates"][0]["line"]),
             str(item["hypothesis_id"]),
-        ),
-    )[:max_candidates]
+        )
+
+    by_family: dict[str, list[dict[str, Any]]] = {}
+    for item in sorted(candidates, key=order_key):
+        by_family.setdefault(str(item["candidate_cwe"][0]), []).append(item)
+    ordered: list[dict[str, Any]] = []
+    depth = 0
+    while len(ordered) < max_candidates:
+        layer = [items[depth] for items in by_family.values() if depth < len(items)]
+        if not layer:
+            break
+        ordered.extend(sorted(layer, key=order_key)[: max_candidates - len(ordered)])
+        depth += 1
     for rank, item in enumerate(ordered, start=1):
         item["rank"] = rank
     return ordered

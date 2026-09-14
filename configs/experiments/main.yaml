@@ -1,5 +1,5 @@
 schema_version: 1
-protocol_version: "1.3.0"
+protocol_version: "1.3.1"
 experiment_id: main_zero_hint
 status: draft
 draft_blockers:

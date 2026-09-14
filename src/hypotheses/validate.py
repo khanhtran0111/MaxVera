@@ -12,7 +12,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from src.common.provenance import sha256_file
-from src.hypotheses.signals import PATTERN_VERSION
+from src.hypotheses.signals import LEGACY_RANKING_VERSION, PATTERN_VERSION, RANKING_VERSION
 from src.reproduction.common import read_csv, read_jsonl
 
 REQUIRED_FILES = {
@@ -94,7 +94,12 @@ def _validate_location(location: object, source_root: Path) -> None:
         raise ValueError("hypothesis location line exceeds the source file")
 
 
-def _verify_metrics(run_root: Path, statuses: Sequence[Mapping[str, Any]], successes: int) -> None:
+def _verify_metrics(
+    run_root: Path,
+    statuses: Sequence[Mapping[str, Any]],
+    successes: int,
+    ranking_version: str,
+) -> None:
     for name in ("metrics_project.jsonl", "metrics_aggregate.json"):
         if not (run_root / name).is_file():
             raise ValueError(f"missing Phase 6 evaluator output: {name}")
@@ -112,11 +117,32 @@ def _verify_metrics(run_root: Path, statuses: Sequence[Mapping[str, Any]], succe
             or float(metric.get("hypothesis_reciprocal_rank", 0.0)) != 0.0
         ):
             raise ValueError("Phase 6 analysis failure was not evaluated as a miss")
+        if ranking_version == RANKING_VERSION:
+            required = {
+                "candidate_pool_size",
+                "candidate_pool_first_correct_rank",
+                "candidate_pool_recall_at_40",
+                "candidate_pool_reciprocal_rank",
+            }
+            if not required <= set(metric):
+                raise ValueError("Phase 6 v2 candidate-pool metrics are missing")
+            if status != "SUCCESS" and (
+                metric.get("candidate_pool_first_correct_rank") is not None
+                or float(metric.get("candidate_pool_reciprocal_rank", 0.0)) != 0.0
+                or bool(metric.get("candidate_pool_recall_at_40"))
+            ):
+                raise ValueError("Phase 6 analysis failure candidate pool was not a miss")
     aggregate = _json(run_root / "metrics_aggregate.json")
     if int(aggregate.get("projects", -1)) != len(statuses):
         raise ValueError("Phase 6 aggregate project coverage mismatch")
     if int(aggregate.get("analysis_successes", -1)) != successes:
         raise ValueError("Phase 6 aggregate success count mismatch")
+    if ranking_version == RANKING_VERSION and not {
+        "candidate_pool_recall_at_40",
+        "candidate_pool_mrr",
+        "candidate_pool_recall_at_40_successes",
+    } <= set(aggregate):
+        raise ValueError("Phase 6 v2 aggregate candidate-pool metrics are missing")
 
 
 def validate(run_root: Path, *, repo_root: Path, require_metrics: bool) -> str:
@@ -128,6 +154,9 @@ def validate(run_root: Path, *, repo_root: Path, require_metrics: bool) -> str:
         raise ValueError("not a Phase 6 D_extended run")
     if manifest.get("pattern_version") != PATTERN_VERSION or manifest.get("top_k") != 10:
         raise ValueError("Phase 6 pattern/top-k contract mismatch")
+    ranking_version = str(manifest.get("ranking_version", LEGACY_RANKING_VERSION))
+    if ranking_version not in {LEGACY_RANKING_VERSION, RANKING_VERSION}:
+        raise ValueError("Phase 6 ranking version is unsupported")
     development = {
         row["project_id"] for row in read_csv(repo_root / "data/processed/splits/development.csv")
     }
@@ -160,6 +189,8 @@ def validate(run_root: Path, *, repo_root: Path, require_metrics: bool) -> str:
         if hypothesis_id in hypothesis_ids:
             raise ValueError("Phase 6 hypothesis IDs are duplicated")
         hypothesis_ids.add(hypothesis_id)
+        if ranking_version == RANKING_VERSION and item.get("ranking_version") != ranking_version:
+            raise ValueError("Phase 6 hypothesis ranking version mismatch")
         cwes = item.get("candidate_cwe")
         if (
             not isinstance(cwes, list)
@@ -197,6 +228,10 @@ def validate(run_root: Path, *, repo_root: Path, require_metrics: bool) -> str:
         raise ValueError("Phase 6 signal/candidate IDs are duplicated")
     if not hypothesis_ids <= candidate_ids:
         raise ValueError("Phase 6 final hypothesis is absent from the static candidate pool")
+    if ranking_version == RANKING_VERSION and any(
+        item.get("ranking_version") != ranking_version for item in candidates
+    ):
+        raise ValueError("Phase 6 candidate ranking version mismatch")
     for item in hypotheses:
         referenced = {
             str(entry.get("signal_id"))
@@ -205,11 +240,13 @@ def validate(run_root: Path, *, repo_root: Path, require_metrics: bool) -> str:
         }
         if not referenced or not referenced <= signal_ids:
             raise ValueError("Phase 6 hypothesis provenance does not resolve to source signals")
-    candidates_by_project: dict[str, int] = defaultdict(int)
+    candidates_by_project: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for item in candidates:
-        candidates_by_project[str(item["project_id"])] += 1
-    if any(count > 40 for count in candidates_by_project.values()):
-        raise ValueError("Phase 6 static candidate cap was exceeded")
+        candidates_by_project[str(item["project_id"])].append(item)
+    for project_id, items in candidates_by_project.items():
+        ranks = sorted(int(item.get("rank", 0)) for item in items)
+        if ranks != list(range(1, len(items) + 1)) or len(items) > 40:
+            raise ValueError(f"Phase 6 candidate ranks are invalid for {project_id}")
     calls = read_jsonl(run_root / "llm_calls.jsonl")
     llm = manifest.get("model")
     if manifest.get("generator") == "hybrid":
@@ -232,7 +269,7 @@ def validate(run_root: Path, *, repo_root: Path, require_metrics: bool) -> str:
         ):
             raise ValueError("Phase 6 static resource row contains LLM usage")
     if require_metrics:
-        _verify_metrics(run_root, statuses, successes)
+        _verify_metrics(run_root, statuses, successes, ranking_version)
     _verify_checksums(run_root)
     if failures:
         return (

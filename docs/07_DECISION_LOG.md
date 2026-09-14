@@ -223,6 +223,26 @@ và có zero API cost. Evaluation chỉ ở process có role evaluator, báo
 Recall@1/3/5/10 và MRR; failure tính là miss. Chi tiết này khóa protocol Phase 6
 ở `1.3.0`; Phase 5 artifacts/matrix tiếp tục giữ snapshot `1.2.3`.
 
+## D-018 — Family-balanced static ranking và candidate-pool diagnostic (2026-09-14)
+
+Full development run static v1 `p6_static_dev_full_001` đã pass validator trên
+96/96 project, đạt Recall@1/3/5/10 lần lượt 0.3333/0.4479/0.5208/0.5625 và MRR
+0.4020. Audit zero-hint sau khi run kết thúc cho thấy candidate đúng xuất hiện
+trong pool Top-40 ở 68/96 project, nhưng Top-10 bị lệch về CWE-22: trong 42
+Top-10 miss có 14 candidate đúng ở rank 11–40 và 28 không có trong pool. Đây là
+vấn đề ordering/coverage có thể tách riêng trước khi dùng LLM reranker.
+
+Static ranking v2 giữ nguyên signal patterns, score và maximum 40 candidates,
+nhưng interleave theo depth giữa các CWE family: lấy candidate tốt nhất của mỗi
+family trước candidate thứ hai của mỗi family, với score và stable key làm
+tie-break trong từng layer. Evaluator bổ sung candidate-pool Recall@40 và MRR để
+phân biệt lỗi retrieval khỏi lỗi Top-10 ranking; primary Top-k metrics không đổi.
+Artifact v1 là immutable và validator tiếp tục hỗ trợ manifest v1 không có
+`ranking_version`; run v2 phải khai báo `phase6-family-balanced-v2` xuyên suốt
+manifest/candidates/hypotheses. Alternative gọi hybrid ngay bị hoãn vì chưa đo
+được phần lợi ích miễn phí của static reranking. Protocol tăng từ `1.3.0` lên
+`1.3.1`; dataset, split, signal patterns, Top-10, model route và budget không đổi.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

@@ -28,7 +28,13 @@ from src.common.provenance import (
     sha256_file,
     utc_now,
 )
-from src.hypotheses.signals import PATTERN_VERSION, generate_candidates, scan_project, select_top_k
+from src.hypotheses.signals import (
+    PATTERN_VERSION,
+    RANKING_VERSION,
+    generate_candidates,
+    scan_project,
+    select_top_k,
+)
 from src.llm.prompts.phase6 import (
     PROMPT_VERSION,
     SYSTEM_PROMPT,
@@ -157,6 +163,8 @@ def _validate_config(config: Mapping[str, Any]) -> None:
     generator = config.get("generator", {})
     if not isinstance(generator, Mapping) or generator.get("pattern_version") != PATTERN_VERSION:
         raise ValueError("Phase 6 signal-pattern version mismatch")
+    if generator.get("ranking_version") != RANKING_VERSION:
+        raise ValueError("Phase 6 ranking version mismatch")
     if int(generator.get("top_k", 0)) != 10:
         raise ValueError("Phase 6 development gate requires top_k=10")
     llm = config.get("llm", {})
@@ -248,6 +256,7 @@ def _manifest(
         "data_access": "opaque development IDs and vulnerable Java source only",
         "top_k": int(cast(Mapping[str, Any], config["generator"])["top_k"]),
         "pattern_version": PATTERN_VERSION,
+        "ranking_version": RANKING_VERSION,
         "experiment_config": {
             "path": config_path.relative_to(root).as_posix(),
             "sha256": sha256_file(config_path),

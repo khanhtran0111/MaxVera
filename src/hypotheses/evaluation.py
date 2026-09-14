@@ -31,6 +31,9 @@ def aggregate(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "hypothesis_recall_at_10": mean("hypothesis_recall_at_10", rows),
         "hypothesis_mrr": mean("hypothesis_reciprocal_rank", rows),
         "hypothesis_recall_at_10_successes": mean("hypothesis_recall_at_10", successful),
+        "candidate_pool_recall_at_40": mean("candidate_pool_recall_at_40", rows),
+        "candidate_pool_mrr": mean("candidate_pool_reciprocal_rank", rows),
+        "candidate_pool_recall_at_40_successes": mean("candidate_pool_recall_at_40", successful),
     }
 
 
@@ -45,6 +48,9 @@ def evaluate(run_root: Path, repo_root: Path) -> None:
     by_project: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for item in read_jsonl(run_root / "hypotheses.jsonl"):
         by_project[str(item["project_id"])].append(item)
+    candidates_by_project: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for item in read_jsonl(run_root / "candidates.jsonl"):
+        candidates_by_project[str(item["project_id"])].append(item)
     metrics: list[dict[str, Any]] = []
     for status in read_jsonl(run_root / "project_status.jsonl"):
         project_id = str(status["project_id"])
@@ -59,6 +65,16 @@ def evaluate(run_root: Path, repo_root: Path) -> None:
             if labels[project_id]["ground_truth_cwe"] in item.get("candidate_cwe", [])
         ]
         first_rank = min(matching_ranks) if matching_ranks else None
+        candidates = sorted(
+            candidates_by_project.get(project_id, []),
+            key=lambda item: int(item.get("rank", 999999)),
+        )
+        candidate_matching_ranks = [
+            int(item["rank"])
+            for item in candidates
+            if labels[project_id]["ground_truth_cwe"] in item.get("candidate_cwe", [])
+        ]
+        candidate_first_rank = min(candidate_matching_ranks) if candidate_matching_ranks else None
         success = status.get("status") == "SUCCESS"
         metrics.append(
             {
@@ -72,6 +88,14 @@ def evaluate(run_root: Path, repo_root: Path) -> None:
                 "hypothesis_recall_at_5": bool(success and first_rank and first_rank <= 5),
                 "hypothesis_recall_at_10": bool(success and first_rank and first_rank <= 10),
                 "hypothesis_reciprocal_rank": 1.0 / first_rank if success and first_rank else 0.0,
+                "candidate_pool_size": len(candidates) if success else 0,
+                "candidate_pool_first_correct_rank": candidate_first_rank if success else None,
+                "candidate_pool_recall_at_40": bool(
+                    success and candidate_first_rank and candidate_first_rank <= 40
+                ),
+                "candidate_pool_reciprocal_rank": (
+                    1.0 / candidate_first_rank if success and candidate_first_rank else 0.0
+                ),
             }
         )
     atomic_jsonl(run_root / "metrics_project.jsonl", metrics)

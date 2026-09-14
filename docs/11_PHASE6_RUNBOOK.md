@@ -9,12 +9,16 @@ chạm vào `test_locked`.
 - Dataset: `D_extended`, chỉ 96 opaque project trong `development.csv`.
 - `test_locked.csv` có 24 project và bị runner/validator cấm tuyệt đối.
 - `static`: quét Java source để tìm input boundary, source, sink, sanitizer và
-  public entry point; không gọi API.
+  public entry point; không gọi API. Ranking v2 lấy lần lượt candidate tốt nhất
+  của từng CWE family trước khi lấy candidate thứ hai của mỗi family.
 - `hybrid`: dùng đúng static candidates rồi cho GPT-OSS 20B/AkashML đổi thứ tự;
   model không được thêm candidate, CWE, file hoặc line.
 - Một hypothesis luôn có source/sink candidates, preconditions, locations,
   score và provenance về rule/source evidence.
-- Primary metrics: Recall@1/3/5/10 và MRR; analysis failure được tính là miss.
+- Primary metrics: Recall@1/3/5/10 và MRR; candidate-pool Recall@40/MRR là
+  diagnostic cho coverage trước Top-10; analysis failure được tính là miss.
+- Full static v1 `p6_static_dev_full_001` là artifact immutable. Mọi run theo
+  ranking v2 phải dùng run ID mới và không ghi đè/trộn với v1.
 
 ## 1. Chuẩn bị source và kiểm tra offline
 
@@ -41,11 +45,11 @@ Mỗi run ID là immutable, vì vậy dry-run và run thật phải dùng ID kh�
 ```bash
 bash scripts/tools/run_phase6_hypotheses.sh \
   --generator static --mode pilot --limit 1 --dry-run \
-  --run-id p6_static_dev_dry_002
+  --run-id p6_static_v2_dev_dry_001
 
 bash scripts/tools/run_phase6_hypotheses.sh \
   --generator static --mode pilot --limit 1 \
-  --run-id p6_static_dev_pilot_004
+  --run-id p6_static_v2_dev_pilot_001
 ```
 
 Evaluate và validate là bước riêng có quyền đọc label:
@@ -53,11 +57,11 @@ Evaluate và validate là bước riêng có quyền đọc label:
 ```bash
 export MAXVERA_DATA_ROLE=evaluator
 bash scripts/tools/evaluate_phase6.sh \
-  --run-root results/hypotheses/static/p6_static_dev_pilot_004
+  --run-root results/hypotheses/static/p6_static_v2_dev_pilot_001
 unset MAXVERA_DATA_ROLE
 
 bash scripts/tools/validate_phase6.sh \
-  --run-root results/hypotheses/static/p6_static_dev_pilot_004 \
+  --run-root results/hypotheses/static/p6_static_v2_dev_pilot_001 \
   --require-metrics
 ```
 
@@ -66,21 +70,21 @@ bash scripts/tools/validate_phase6.sh \
 Static mode không gọi API nhưng nên dùng tmux để tránh terminal disconnect:
 
 ```bash
-tmux new -s phase6_static
+tmux new -s phase6_static_v2
 cd ~/Documents/MaxVera
 bash scripts/tools/run_phase6_hypotheses.sh \
   --generator static --mode full \
-  --run-id p6_static_dev_full_001
+  --run-id p6_static_v2_dev_full_001
 ```
 
 Detach bằng `Ctrl+B`, rồi `D`; attach lại bằng:
 
 ```bash
-tmux attach -t phase6_static
+tmux attach -t phase6_static_v2
 ```
 
 Sau khi hoàn thành, evaluate/validate tương tự pilot nhưng thay run root bằng
-`results/hypotheses/static/p6_static_dev_full_001`.
+`results/hypotheses/static/p6_static_v2_dev_full_001`.
 
 ## 4. Optional hybrid pilot
 
@@ -90,7 +94,7 @@ Chỉ thực hiện sau khi static full pass và đã kiểm tra số dư API:
 bash scripts/tools/validate_openrouter.sh
 bash scripts/tools/run_phase6_hypotheses.sh \
   --generator hybrid --mode pilot --limit 1 \
-  --confirm-api-spend --run-id p6_hybrid_dev_pilot_001
+  --confirm-api-spend --run-id p6_hybrid_v2_dev_pilot_001
 ```
 
 Không có `--confirm-api-spend`, runner dừng trước request đầu tiên. Hybrid full
@@ -98,11 +102,11 @@ chỉ được chạy nếu pilot pass và metric/ranking contract được audi
 mới và tmux:
 
 ```bash
-tmux new -s phase6_hybrid
+tmux new -s phase6_hybrid_v2
 cd ~/Documents/MaxVera
 bash scripts/tools/run_phase6_hypotheses.sh \
   --generator hybrid --mode full --confirm-api-spend \
-  --run-id p6_hybrid_dev_full_001
+  --run-id p6_hybrid_v2_dev_full_001
 ```
 
 ## Gate Phase 6
@@ -112,6 +116,7 @@ bash scripts/tools/run_phase6_hypotheses.sh \
 - Mọi hypothesis có location tồn tại, canonical CWE list và provenance.
 - Static run có zero LLM call; hybrid tối đa một successful call/project và chỉ
   dùng `openai/gpt-oss-20b` qua AkashML, fallback tắt.
-- Recall@1/3/5/10 và MRR được evaluator tái tạo, checksum pass.
+- Recall@1/3/5/10, MRR và candidate-pool Recall@40/MRR được evaluator tái tạo;
+  checksum pass.
 - Không chạy test-locked; chỉ khóa generator/Top-k từ development metrics rồi
   chuyển sang Phase 7.

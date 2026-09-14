@@ -31,6 +31,8 @@ chép tay.
 | 2026-09-14 | Phase 5 full budget-matched suite | validated | B3 119/120, B4 119/120, B5 120/120; two final failures counted as misses; leaderboard generated; B3+B4 API cost `$0.04568004` |
 | 2026-09-14 | Phase 6 implementation/pilot 003 | passed | development-only static/hybrid runner; static pilot analyzer/evaluator/validator 1/1, zero API calls; provenance signals compacted to referenced set; hybrid spend guard passed; protocol 1.3.0, D-017 |
 | 2026-09-14 | Phase 6 static gate4 001 | passed | 4/4 development projects including corrected-revision checkout; Recall@1 0.75, Recall@3/5/10 1.0, MRR 0.8333; zero API calls |
+| 2026-09-14 | Phase 6 static v1 full 001 | validated | 96/96 development projects; Recall@1/3/5/10 0.3333/0.4479/0.5208/0.5625, MRR 0.4020; candidate pool contains the correct CWE for 68/96; zero API calls |
+| 2026-09-14 | Phase 6 family-balanced ranking v2 gate4 001 | passed | 4/4 development projects; candidate-pool Recall@40 1.0, Top-10 Recall@10 1.0, MRR 0.875; zero API calls; v1 artifact preserved; protocol 1.3.1, D-018 |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu
