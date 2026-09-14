@@ -19,6 +19,9 @@ chạm vào `test_locked`.
   diagnostic cho coverage trước Top-10; analysis failure được tính là miss.
 - Full static v1 `p6_static_dev_full_001` là artifact immutable. Mọi run theo
   ranking v2 phải dùng run ID mới và không ghi đè/trộn với v1.
+- Static v2 full `p6_static_v2_dev_full_001` đã pass 96/96 và được khóa làm
+  canonical development result với Top-k=10 theo D-019. Các lệnh dưới đây được
+  giữ cho reproduction; không dùng run ID canonical lần nữa.
 
 ## 1. Chuẩn bị source và kiểm tra offline
 
@@ -86,9 +89,10 @@ tmux attach -t phase6_static_v2
 Sau khi hoàn thành, evaluate/validate tương tự pilot nhưng thay run root bằng
 `results/hypotheses/static/p6_static_v2_dev_full_001`.
 
-## 4. Optional hybrid pilot
+## 4. Optional hybrid pilot (exploratory only)
 
-Chỉ thực hiện sau khi static full pass và đã kiểm tra số dư API:
+Static v2 đã được khóa. Hybrid chỉ được chạy như ranking ablation exploratory,
+không được thay canonical result, và chỉ sau khi kiểm tra số dư API:
 
 ```bash
 bash scripts/tools/validate_openrouter.sh

@@ -8,8 +8,8 @@ OpenRouter provider route for bounded, evidence-grounded reasoning.
 Phase 0 (protocol), Phase 1 (environment/provenance), Phase 2 (data/build),
 Phase 3 (disposable smoke harness), the Phase 4 reproduction runner, and the
 immediately runnable Phase 5 context baselines B3-B5 are implemented.
-The Phase 6 development-only hypothesis generator is implemented in static and
-optional evidence-preserving GPT-OSS rerank modes; see
+The Phase 6 development-only hypothesis generator is locked at static
+family-balanced v2 with Top-k=10; optional GPT-OSS reranking is exploratory; see
 [`docs/11_PHASE6_RUNBOOK.md`](docs/11_PHASE6_RUNBOOK.md).
 The frozen 120-row release has 120 final build statuses and 104 successful
 CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw

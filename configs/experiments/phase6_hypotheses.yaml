@@ -39,3 +39,13 @@ evaluation:
   primary_unit: vulnerability_project
   failures_count_as_miss: true
   top_k: [1, 3, 5, 10]
+selection_lock:
+  status: locked_for_downstream_development
+  locked_at: "2026-09-14"
+  canonical_run_id: p6_static_v2_dev_full_001
+  canonical_generator: static
+  ranking_version: phase6-family-balanced-v2
+  top_k: 10
+  hybrid_status: exploratory_not_selected
+  manifest_sha256: 11380495eafffe02924beaf9409e7ed343111cc4b74806a4f869e5155b41d2c2
+  metrics_aggregate_sha256: 563b8ed230c3d3d9fbd7b6ba377f618b701e9f9fc047f274b5f8f5a05f7909ad

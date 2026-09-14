@@ -33,6 +33,7 @@ chép tay.
 | 2026-09-14 | Phase 6 static gate4 001 | passed | 4/4 development projects including corrected-revision checkout; Recall@1 0.75, Recall@3/5/10 1.0, MRR 0.8333; zero API calls |
 | 2026-09-14 | Phase 6 static v1 full 001 | validated | 96/96 development projects; Recall@1/3/5/10 0.3333/0.4479/0.5208/0.5625, MRR 0.4020; candidate pool contains the correct CWE for 68/96; zero API calls |
 | 2026-09-14 | Phase 6 family-balanced ranking v2 gate4 001 | passed | 4/4 development projects; candidate-pool Recall@40 1.0, Top-10 Recall@10 1.0, MRR 0.875; zero API calls; v1 artifact preserved; protocol 1.3.1, D-018 |
+| 2026-09-14 | Phase 6 static v2 full 001 | selected/locked | 96/96 success; Recall@1/3/5/10 32/79/84/84 (0.3333/0.8229/0.8750/0.8750), MRR 0.5547; candidate-pool Recall@40 84/96 and MRR 0.5547; 30 Top-10 gains and zero regressions versus v1; 12 pool misses; zero API calls; D-019 |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

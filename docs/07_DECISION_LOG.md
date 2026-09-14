@@ -243,6 +243,26 @@ manifest/candidates/hypotheses. Alternative gọi hybrid ngay bị hoãn vì ch�
 được phần lợi ích miễn phí của static reranking. Protocol tăng từ `1.3.0` lên
 `1.3.1`; dataset, split, signal patterns, Top-10, model route và budget không đổi.
 
+## D-019 — Khóa Phase 6 static v2 và Top-k=10 (2026-09-14)
+
+Full development run `p6_static_v2_dev_full_001` tại commit
+`6483e10aaa59a63a0811900430dc16d8b174871c` pass validator với 96/96 analysis
+success và zero LLM/API call. Recall@1/3/5/10 là 32/79/84/84 trên 96
+(0.3333/0.8229/0.8750/0.8750), MRR 0.5546875; candidate-pool Recall@40 là
+84/96 và candidate-pool MRR cũng là 0.5546875. So với static v1, v2 chuyển 30
+project từ Top-10 miss thành hit, không gây Top-10 regression; 12 project còn
+lại không có candidate đúng trong pool Top-40.
+
+Từ đây `phase6-family-balanced-v2`, static generator và Top-k=10 được khóa cho
+các phase downstream. Hybrid không được chọn làm canonical vì strict reranker
+không thể tăng coverage cho 12 pool miss; nếu chạy sau này chỉ được ghi là
+exploratory ranking ablation và không thay khóa này. Manifest SHA-256 là
+`11380495eafffe02924beaf9409e7ed343111cc4b74806a4f869e5155b41d2c2`; aggregate
+metrics SHA-256 là
+`563b8ed230c3d3d9fbd7b6ba377f618b701e9f9fc047f274b5f8f5a05f7909ad`.
+Quyết định này hoàn tất gate Phase 6 nhưng không đổi protocol `1.3.1`; dataset,
+split, metrics và locked-test firewall giữ nguyên.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và
