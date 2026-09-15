@@ -40,6 +40,9 @@ chép tay.
 | 2026-09-14 | Phase 7 pilot 003 | failed/diagnosed | repository-wide security-relevant graph still reached 583,701 nodes and 913,250 edges; scope changed to locked Phase 6 hypothesis files plus one adjacent edge endpoint for pilot 004; zero API calls |
 | 2026-09-14 | Phase 7 pilots 004/005 | passed/deterministic | same development project produced 699 nodes, 868 edges across all seven edge kinds, 100% edge resolution and identical graph digest `14fb1a2...c346`; peak runner RSS about 89 MiB; neighborhood query passed; zero API calls |
 | 2026-09-14 | Phase 7 gate2 002 | passed with recorded failure | 2/2 final statuses: one expected missing-database miss and one successful 699-node/868-edge graph; validator reports 868/868 edge references (100%); zero API calls |
+| 2026-09-15 | Phase 7 full 001 | completed/not lockable | 96/96 final statuses and checksums valid; 14 missing-database failures, one edge-query timeout, 80 non-empty valid graphs, and one empty graph incorrectly classified as `SUCCESS`; validator correctly rejected the run; zero API calls |
+| 2026-09-15 | Phase 7 full 002 | completed/not lockable | substantive graph/status counts repeat full 001 because the empty-graph runner bug was not patched before rerun; the formerly timed-out database instead failed from an overlapping CodeQL cache lock left by an orphan query process; checksums pass, validator rejects the same zero-node `SUCCESS`; zero API calls |
+| 2026-09-15 | Phase 7 failure hardening/pilot | implemented/passed | zero-node graph becomes recorded `ANALYSIS_FAILED`; timed-out CodeQL commands terminate their process group and persist timeout logs; active database cache locks fail early; orphan from full 001 stopped and lock released; regression pilot validates as `PASS_WITH_ANALYSIS_FAILURES`; D-021 |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu
@@ -47,3 +50,52 @@ legacy nào được dùng.
 Pilot 002 là kiểm tra kỹ thuật một database, không phải scientific result. Full
 GPT-OSS 20B run 001 đã có metrics intention-to-analyze trên đủ 120 status; 5/104
 B2 analysis failures được tính là miss nên strict all-success gate chưa pass.
+
+## Phase 7 full 001 failure analysis
+
+Run `p7_pg_dev_full_001` hoàn tất đủ 96 project và artifact checksum pass, nhưng
+không được chọn hoặc khóa làm kết quả Phase 7 vì validator phát hiện
+`proj_2b679a12fa55f6c07bae` có `nodes=0`, `edges=0` nhưng runner lại ghi
+`SUCCESS`. Đây là lỗi phân loại trạng thái của implementation, không phải bằng
+chứng rằng project không có lỗ hổng. Runner phải chuyển mọi graph không có node
+thành `ANALYSIS_FAILED`, sau đó full run phải dùng run ID mới; không sửa hậu kỳ
+artifact immutable này.
+
+Các failure mode quan sát được trong run:
+
+- 14 project không có CodeQL database sau các build attempt đã pin. Log cho thấy
+  các nguyên nhân gồm snapshot/parent artifact không còn tồn tại, repository cũ
+  không phân giải hoặc bị Maven HTTP blocker, dependency/cache JAR lỗi, frontend
+  hoặc code-generation task thất bại, và Maven/Gradle/JDK không tương thích.
+- `proj_885aa60aedd0b17be65a` vượt timeout 1.800 giây khi chạy edge query. Đây là
+  analysis failure hợp lệ và phải được giữ làm intention-to-analyze miss.
+- `proj_2b679a12fa55f6c07bae` có bảy seed files nhưng node và edge query đều trả
+  kết quả rỗng. Khả năng kỹ thuật gồm database chỉ compile một phần module,
+  source path trong database không khớp seed path, hoặc query không nhận diện
+  source entity tương ứng. Trường hợp này cũng phải là intention-to-analyze miss.
+
+Do đó, cách đọc đúng run này là 80 graph không rỗng và 16 analysis misses về mặt
+ngữ nghĩa, dù `status_summary.json` cũ ghi 81 `SUCCESS` và 15
+`ANALYSIS_FAILED`. Failure không được loại khỏi mẫu, không được coi là negative
+finding, và không được dùng để suy luận rằng repository không có vulnerability.
+Artifact nguồn gồm `project_status.jsonl`, `graph_summary.json`, các per-project
+query log và `data/interim/phase7_database_build_status.jsonl`.
+
+Run `p7_pg_dev_full_002` không khắc phục lỗi trên vì code runner vẫn chưa có
+zero-node guard. Run tạo cùng 274.547 nodes, 441.719 edges và cùng phân bố trạng
+thái/node/edge theo project như full 001, nên cũng không được chọn hoặc khóa.
+Ngoài ra, `proj_885aa60aedd0b17be65a` đổi từ edge-query timeout ở full 001 sang
+nodes-query exit 2: CodeQL báo IMB disk cache đang bị khóa bởi process khác tại
+database này. Kiểm tra process cho thấy query Java con của lần timeout trước vẫn
+chạy với parent PID 1. Đây là failure mode vận hành riêng: timeout handler phải
+chấm dứt cả process group, và preflight trước rerun phải phát hiện query mồ côi
+hoặc database cache lock đang được giữ. Không được xóa lock file khi process vẫn
+còn sống.
+
+Sau D-021, regression pilot `p7_pg_zero_guard_pilot_001` chạy trực tiếp trên
+`proj_2b679a12fa55f6c07bae`, ghi đúng một final `ANALYSIS_FAILED` với reason
+`Phase 7 graph has no nodes after seed filtering`, và validator trả
+`PASS_WITH_ANALYSIS_FAILURES`. Pilot dương
+`p7_pg_failure_hardening_pilot_001` vẫn tạo đúng 699 nodes/868 edges với 100%
+edge reference và validator `PASS`. Đây chỉ là implementation regression pilot,
+không run nào được nhập vào full-run metrics.

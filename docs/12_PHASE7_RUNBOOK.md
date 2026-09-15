@@ -72,32 +72,32 @@ bash scripts/tools/validate_phase7.sh \
 ## 3. Full development run bằng tmux
 
 ```bash
-tmux new -s phase7_graph
+tmux new -s phase7_graph_v3
 cd ~/Documents/MaxVera
 bash scripts/tools/run_phase7_program_graph.sh \
-  --mode full --run-id p7_pg_dev_full_001
+  --mode full --run-id p7_pg_dev_full_003
 ```
 
 Attach lại bằng:
 
 ```bash
-tmux attach -t phase7_graph
+tmux attach -t phase7_graph_v3
 ```
 
 Nếu process bị dừng trước khi atomic finalization, resume đúng in-progress run:
 
 ```bash
 bash scripts/tools/run_phase7_program_graph.sh \
-  --mode full --run-id p7_pg_dev_full_001 --resume
+  --mode full --run-id p7_pg_dev_full_003 --resume
 ```
 
 Sau khi hoàn thành, validate và xem aggregate:
 
 ```bash
 bash scripts/tools/validate_phase7.sh \
-  --run-root results/graphs/program/p7_pg_dev_full_001
+  --run-root results/graphs/program/p7_pg_dev_full_003
 
-jq . results/graphs/program/p7_pg_dev_full_001/graph_summary.json
+jq . results/graphs/program/p7_pg_dev_full_003/graph_summary.json
 ```
 
 `PASS_WITH_ANALYSIS_FAILURES` vẫn là artifact hợp lệ khi đủ 96 final statuses;
@@ -109,7 +109,7 @@ Chọn seed bằng source file/line và lấy neighborhood hai hop:
 
 ```bash
 bash scripts/tools/query_phase7_graph.sh \
-  --run-root results/graphs/program/p7_pg_dev_full_001 \
+  --run-root results/graphs/program/p7_pg_dev_full_003 \
   --project-id PROJECT_ID \
   --file src/main/java/example/Example.java --line 42 \
   --hops 2 --direction both \
@@ -120,7 +120,7 @@ Forward slice chỉ trên data/taint edges:
 
 ```bash
 bash scripts/tools/query_phase7_graph.sh \
-  --run-root results/graphs/program/p7_pg_dev_full_001 \
+  --run-root results/graphs/program/p7_pg_dev_full_003 \
   --project-id PROJECT_ID --node-id NODE_ID \
   --hops 4 --direction out \
   --edge-kind DATA_FLOW --edge-kind TAINT_CANDIDATE

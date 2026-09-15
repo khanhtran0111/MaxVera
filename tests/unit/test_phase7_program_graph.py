@@ -2,13 +2,21 @@ from __future__ import annotations
 
 import csv
 import json
+import os
+import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 from src.graphs.program.model import EDGE_KINDS, graph_digest, normalize_graph
 from src.graphs.program.prepare import prepare_databases
 from src.graphs.program.query import query_graph, select_seed
+from src.graphs.program.runner import (
+    _assert_database_cache_unlocked,
+    _run_command,
+    _validate_extracted_graph,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -189,3 +197,43 @@ def test_phase7_protocol_and_locked_phase6_dependency_are_explicit() -> None:
     assert config["phase6_lock"]["top_k"] == 10
     assert config["extractor"]["scope"] == "phase6_hypothesis_files_plus_one_edge_endpoint"
     assert set(config["extractor"]["edge_kinds"]) == EDGE_KINDS
+
+
+def test_phase7_empty_graph_is_an_analysis_failure() -> None:
+    with pytest.raises(ValueError, match="graph has no nodes"):
+        _validate_extracted_graph([], [], max_nodes=10, max_edges=10)
+
+
+def test_phase7_command_timeout_terminates_process_group(tmp_path: Path) -> None:
+    child_pid_path = tmp_path / "child.pid"
+    program = (
+        "import os, pathlib, signal, subprocess, sys, time; "
+        "signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+        "child=subprocess.Popen([sys.executable, '-c', "
+        "'import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(60)']); "
+        "pathlib.Path(sys.argv[1]).write_text(str(child.pid)); "
+        "time.sleep(60)"
+    )
+    with pytest.raises(subprocess.TimeoutExpired):
+        _run_command(
+            [os.fspath(Path(os.sys.executable)), "-c", program, os.fspath(child_pid_path)],
+            timeout=1,
+        )
+    child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+    with pytest.raises(ProcessLookupError):
+        os.kill(child_pid, 0)
+
+
+def test_phase7_database_cache_lock_is_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    lock_path = tmp_path / "db-java/default/cache/.lock"
+    lock_path.parent.mkdir(parents=True)
+    lock_path.touch()
+
+    def reject_lock(*_args: object) -> None:
+        raise BlockingIOError
+
+    monkeypatch.setattr("src.graphs.program.runner.fcntl.lockf", reject_lock)
+    with pytest.raises(RuntimeError, match="database cache is locked"):
+        _assert_database_cache_unlocked(tmp_path)

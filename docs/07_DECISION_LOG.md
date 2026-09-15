@@ -293,6 +293,29 @@ loại vì không cung cấp CodeQL def-use/data-flow; alternative truy cập lo
 để tăng coverage bị cấm. Contract mới tăng main protocol từ `1.3.1` lên `1.4.0`;
 khóa Phase 6 và artifact cũ giữ nguyên protocol lịch sử.
 
+## D-021 — Phase 7 failure-state and timeout hardening (2026-09-15)
+
+Hai full attempt đầu tiên làm lộ hai implementation defects ở failure boundary.
+Full 001 có một CodeQL query trả graph rỗng nhưng runner ghi `SUCCESS`, trái với
+validator và gate D-020 yêu cầu successful graph phải có source-backed node.
+Query timeout của cùng run chỉ dừng wrapper process, để lại query Java mồ côi giữ
+IMB database-cache lock; do đó full 002 thất bại sớm trên database đó. Cả hai run
+đủ 96 final statuses và checksum hợp lệ nhưng không được chọn làm canonical vì
+validator từ chối zero-node success.
+
+Runner nay coi graph không có node sau seed filtering là `ANALYSIS_FAILED`, chạy
+mỗi CodeQL command trong process group riêng, gửi TERM rồi KILL toàn group khi
+timeout, persist timeout log, và kiểm tra active cache lock trước query. Không
+xóa lock file trong lúc owner process còn sống. Unit test bao phủ zero-node
+classification, descendant cleanup và cache-lock rejection; regression pilot
+trên chính zero-node project được validator chấp nhận dưới intention-to-analyze.
+
+Đây là conformance fix cho contract D-020, không đổi dataset, split, extractor
+semantics, timeout, graph schema, metric hoặc failure-as-miss rule, nên protocol
+giữ `1.4.0`. Manifest implementation hash sẽ phân biệt full run mới với 001/002.
+Full 001/002 vẫn immutable và chỉ được giữ làm diagnosed attempts; candidate
+canonical tiếp theo phải dùng run ID mới.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import csv
+import fcntl
 import json
 import os
 import re
 import resource
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -29,6 +32,7 @@ from src.reproduction.common import atomic_json, atomic_jsonl, read_csv, read_js
 
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 FINAL_STATUSES = {"SUCCESS", "ANALYSIS_FAILED"}
+PROCESS_TERMINATION_GRACE_SECONDS = 5.0
 
 
 def _mapping(path: Path) -> dict[str, Any]:
@@ -50,12 +54,71 @@ def _codeql_binary(root: Path) -> Path:
     return binary
 
 
-def _codeql_version(binary: Path) -> str:
-    process = subprocess.run(
-        [str(binary), "version", "--format=terse"],
-        check=False,
-        capture_output=True,
+def _terminate_process_group(
+    process: subprocess.Popen[str], *, grace_seconds: float = PROCESS_TERMINATION_GRACE_SECONDS
+) -> tuple[str, str]:
+    """Terminate a timed-out command and every descendant in its process group."""
+
+    with contextlib.suppress(ProcessLookupError):
+        os.killpg(process.pid, signal.SIGTERM)
+    try:
+        stdout, stderr = process.communicate(timeout=grace_seconds)
+    except subprocess.TimeoutExpired:
+        with contextlib.suppress(ProcessLookupError):
+            os.killpg(process.pid, signal.SIGKILL)
+        stdout, stderr = process.communicate()
+    else:
+        # The group leader can exit before a query-server descendant. Ensure a
+        # descendant cannot survive with an inherited database-cache lock.
+        try:
+            os.killpg(process.pid, 0)
+        except ProcessLookupError:
+            pass
+        else:
+            os.killpg(process.pid, signal.SIGKILL)
+    return stdout, stderr
+
+
+def _run_command(command: Sequence[str], *, timeout: int) -> subprocess.CompletedProcess[str]:
+    process = subprocess.Popen(
+        list(command),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         text=True,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        stdout, stderr = _terminate_process_group(process)
+        raise subprocess.TimeoutExpired(
+            command,
+            timeout,
+            output=stdout,
+            stderr=stderr,
+        ) from error
+    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+
+
+def _assert_database_cache_unlocked(database: Path) -> None:
+    lock_path = database / "db-java/default/cache/.lock"
+    if not lock_path.is_file():
+        return
+    with lock_path.open("r+") as handle:
+        try:
+            fcntl.lockf(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise RuntimeError(
+                "CodeQL database cache is locked by another process; "
+                "check for an orphaned query before retrying"
+            ) from error
+        else:
+            fcntl.lockf(handle, fcntl.LOCK_UN)
+
+
+def _codeql_version(binary: Path) -> str:
+    process = _run_command(
+        [str(binary), "version", "--format=terse"],
         timeout=30,
     )
     if process.returncode != 0:
@@ -169,14 +232,19 @@ def _run_query(
         f"--output={bqrs}",
         str(query),
     ]
-    process = subprocess.run(
-        command,
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-    )
     log_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        process = _run_command(command, timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        stdout = error.stdout if isinstance(error.stdout, str) else ""
+        stderr = error.stderr if isinstance(error.stderr, str) else ""
+        log_path.write_text(
+            f"command={shlex.join(command)}\nexit_code=TIMEOUT\n"
+            f"timeout_seconds={timeout}\nstdout:\n{stdout}\nstderr:\n{stderr}",
+            encoding="utf-8",
+            newline="\n",
+        )
+        raise
     log_path.write_text(
         f"command={shlex.join(command)}\nexit_code={process.returncode}\n"
         f"stdout:\n{process.stdout}\nstderr:\n{process.stderr}",
@@ -185,11 +253,8 @@ def _run_query(
     )
     if process.returncode != 0:
         raise RuntimeError(f"CodeQL {output_name} query failed with exit {process.returncode}")
-    decode = subprocess.run(
+    decode = _run_command(
         [str(codeql), "bqrs", "decode", "--format=csv", f"--output={decoded}", str(bqrs)],
-        check=False,
-        capture_output=True,
-        text=True,
         timeout=300,
     )
     if decode.returncode != 0:
@@ -217,6 +282,21 @@ def _write_resources(path: Path, rows: Sequence[Mapping[str, str]]) -> None:
         writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
+
+
+def _validate_extracted_graph(
+    nodes: Sequence[Mapping[str, Any]],
+    edges: Sequence[Mapping[str, Any]],
+    *,
+    max_nodes: int,
+    max_edges: int,
+) -> None:
+    if not nodes:
+        raise ValueError("Phase 7 graph has no nodes after seed filtering")
+    if len(nodes) > max_nodes:
+        raise RuntimeError("Phase 7 node cap exceeded")
+    if len(edges) > max_edges:
+        raise RuntimeError("Phase 7 edge cap exceeded")
 
 
 def _save_statuses(work: Path, statuses: Sequence[Mapping[str, Any]]) -> None:
@@ -437,6 +517,7 @@ def run(args: argparse.Namespace) -> int:
             database = database_root / project_id
             if not (database / "codeql-database.yml").is_file():
                 raise FileNotFoundError("opaque Phase 7 CodeQL database is unavailable")
+            _assert_database_cache_unlocked(database)
             source_root = root / str(dataset["source_root"]) / project_id
             if not source_root.is_dir():
                 raise FileNotFoundError("opaque Phase 7 source tree is unavailable")
@@ -491,10 +572,12 @@ def run(args: argparse.Namespace) -> int:
             )
             node_count = len(nodes)
             edge_count = len(edges)
-            if node_count > int(extractor["max_nodes_per_project"]):
-                raise RuntimeError("Phase 7 node cap exceeded")
-            if edge_count > int(extractor["max_edges_per_project"]):
-                raise RuntimeError("Phase 7 edge cap exceeded")
+            _validate_extracted_graph(
+                nodes,
+                edges,
+                max_nodes=int(extractor["max_nodes_per_project"]),
+                max_edges=int(extractor["max_edges_per_project"]),
+            )
             if project_output.exists():
                 raise FileExistsError("Phase 7 project graph output already exists")
             project_output.mkdir(parents=True)
