@@ -341,6 +341,35 @@ dataset, split, graph schema, edge kinds, thresholds hoặc failure-as-miss rule
 protocol giữ `1.4.0`. Query và implementation hashes trong manifest phân biệt
 candidate full mới. Full 003 giữ immutable, không được sửa hoặc chọn canonical.
 
+## D-023 — Khóa Phase 7 Program Graph full 004 (2026-09-16)
+
+Full development run `p7_pg_dev_full_004` tại clean commit
+`13a60162949b0a297b51050cccf6ed5cd4fbd241` pass validator với đủ 96/96 final
+statuses. Có 81 graph success; 15 intention-to-analyze misses gồm 14 project
+không có CodeQL database và một project có graph rỗng sau seed filtering. Run
+tạo 275.674 nodes, 442.786 edges và resolve 442.786/442.786 edge references
+(100%). Project từng timeout ở full 001 đã thành công trong full 004 với 1.253
+nodes và 1.961 edges. Phase 7 không gọi LLM/API.
+
+`p7_pg_dev_full_004` được khóa làm canonical development Program Graph cho các
+phase downstream. `STATUS=FAILED` phản ánh sự tồn tại của 15 recorded misses,
+không phủ định scientific validity; gate authoritative là checksum pass, đủ 96
+final statuses và validator `PASS_WITH_ANALYSIS_FAILURES`. Không được loại các
+failure khỏi mẫu, sửa hậu kỳ artifact hoặc thay canonical bằng conditional
+rerun. Các full 001–003 chỉ là immutable diagnosed attempts.
+
+Canonical checksums:
+
+- manifest: `ce5f1d61616f6b990d863f75f94cfca35926a0973a08d5051655d9f35ce2c832`;
+- graph summary: `a70bc3bbea0b4e8387ceeff1e804ff259db9152f925de0812f94fd6aa73462b7`;
+- project statuses: `bf297df86ad82ab692ddc802fad087846e2f3e05f1ee3a6df4dec35de131080a`;
+- checksum index: `f01e903cc4cbcdd6b8575faefbfded00733269f51bb025c20c044023a1fa9ee4`.
+
+Khóa này hoàn tất gate Phase 7 nhưng không đổi protocol `1.4.0`: dataset, split,
+extractor semantics, graph schema, edge threshold và failure-as-miss policy giữ
+nguyên. Mọi thay đổi Phase 8 phải dùng đúng canonical run/checksum này làm input
+development và tiếp tục giữ `test_locked` đóng.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

@@ -199,6 +199,10 @@ def test_phase7_protocol_and_locked_phase6_dependency_are_explicit() -> None:
     assert config["phase6_lock"]["top_k"] == 10
     assert config["extractor"]["scope"] == "phase6_hypothesis_files_plus_one_edge_endpoint"
     assert set(config["extractor"]["edge_kinds"]) == EDGE_KINDS
+    assert config["selection_lock"]["canonical_run_id"] == "p7_pg_dev_full_004"
+    assert config["selection_lock"]["analysis_successes"] == 81
+    assert config["selection_lock"]["analysis_failures"] == 15
+    assert config["selection_lock"]["edge_reference_ratio"] == 1.0
 
 
 def test_phase7_empty_graph_is_an_analysis_failure() -> None:

@@ -18,6 +18,9 @@ không đọc hoặc chạy `test_locked`.
   endpoint CodeQL kề; không dùng ground-truth label để chọn graph.
 - Static/CodeQL only; Phase 7 không gọi LLM hoặc API.
 - Analysis/database failure giữ trạng thái cuối và được downstream tính là miss.
+- Full development run `p7_pg_dev_full_004` đã được khóa làm canonical theo
+  D-023: 81/96 graph success, 15 recorded misses, 275.674 nodes, 442.786 edges
+  và 100% edge references resolved. Không chạy lại hoặc ghi đè run ID này.
 
 ## 1. Preflight và chuẩn bị database
 
@@ -69,7 +72,11 @@ bash scripts/tools/validate_phase7.sh \
   --run-root results/graphs/program/p7_pg_dev_pilot_006
 ```
 
-## 3. Full development run bằng tmux
+## 3. Canonical full development run (locked)
+
+Các lệnh dưới đây ghi lại cách canonical run được tạo. Vì run ID immutable đã
+tồn tại, reproduction mới phải dùng một run ID khác và không được thay khóa nếu
+không có protocol decision mới.
 
 ```bash
 tmux new -s phase7_graph_v4

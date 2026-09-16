@@ -42,3 +42,19 @@ validation:
   require_source_backed_locations: true
   require_deterministic_ordering: true
   neighborhood_regression_hops: 2
+selection_lock:
+  status: locked_for_downstream_development
+  locked_at: "2026-09-16"
+  canonical_run_id: p7_pg_dev_full_004
+  protocol_version: "1.4.0"
+  extractor_version: phase7-java-program-graph-v1
+  selected_projects: 96
+  analysis_successes: 81
+  analysis_failures: 15
+  nodes: 275674
+  edges: 442786
+  edge_reference_ratio: 1.0
+  manifest_sha256: ce5f1d61616f6b990d863f75f94cfca35926a0973a08d5051655d9f35ce2c832
+  graph_summary_sha256: a70bc3bbea0b4e8387ceeff1e804ff259db9152f925de0812f94fd6aa73462b7
+  project_status_sha256: bf297df86ad82ab692ddc802fad087846e2f3e05f1ee3a6df4dec35de131080a
+  checksums_index_sha256: f01e903cc4cbcdd6b8575faefbfded00733269f51bb025c20c044023a1fa9ee4

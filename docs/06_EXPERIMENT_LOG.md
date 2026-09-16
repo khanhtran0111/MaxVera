@@ -45,6 +45,7 @@ chép tay.
 | 2026-09-15 | Phase 7 failure hardening/pilot | implemented/passed | zero-node graph becomes recorded `ANALYSIS_FAILED`; timed-out CodeQL commands terminate their process group and persist timeout logs; active database cache locks fail early; orphan from full 001 stopped and lock released; regression pilot validates as `PASS_WITH_ANALYSIS_FAILURES`; D-021 |
 | 2026-09-16 | Phase 7 full 003 | completed/not lockable | intended 80 success/16 recorded failures and checksums pass, but validator found 52 invalid node spans across five successful projects: 38 reversed ranges and 14 ranges beyond their persisted source file; diagnosed as independent multi-location getter bindings in QL; zero API calls |
 | 2026-09-16 | Phase 7 location-binding repair/pilots | implemented/passed | node/edge QL binds one `Location` per descriptor; runner validates each project graph before `SUCCESS`; all five formerly affected projects pass validator, totaling 22,400 nodes/35,354 edges with 100% edge resolution; D-022 |
+| 2026-09-16 | Phase 7 full 004 | selected/locked | 96/96 final statuses; 81 graph successes, 14 missing-database misses and one zero-node miss; 275,674 nodes, 442,786 edges, 100% resolved references; checksums and validator pass; clean commit `13a6016`; zero API calls; D-023 |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

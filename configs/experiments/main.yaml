@@ -11,6 +11,15 @@ development_locks:
     ranking_version: phase6-family-balanced-v2
     top_k: 10
     protocol_version: "1.3.1"
+  phase7_program_graph:
+    run_id: p7_pg_dev_full_004
+    extractor_version: phase7-java-program-graph-v1
+    protocol_version: "1.4.0"
+    selected_projects: 96
+    analysis_successes: 81
+    analysis_failures: 15
+    manifest_sha256: ce5f1d61616f6b990d863f75f94cfca35926a0973a08d5051655d9f35ce2c832
+    graph_summary_sha256: a70bc3bbea0b4e8387ceeff1e804ff259db9152f925de0812f94fd6aa73462b7
 scope:
   language: Java
   static_analyzer: CodeQL
