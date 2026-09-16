@@ -316,6 +316,31 @@ giữ `1.4.0`. Manifest implementation hash sẽ phân biệt full run mới v�
 Full 001/002 vẫn immutable và chỉ được giữ làm diagnosed attempts; candidate
 canonical tiếp theo phải dùng run ID mới.
 
+## D-022 — Phase 7 cohesive CodeQL location binding (2026-09-16)
+
+Full 003 có đúng 80 graph success và 16 recorded analysis failures, nhưng
+validator tìm thấy 52 node span không hợp lệ trên năm successful projects: 38
+range bị đảo và 14 range vượt quá file nguồn. Checksums pass, vì vậy đây không
+phải artifact corruption. Điều tra cho thấy một CodeQL element có thể trả nhiều
+`Location`; node/edge query gọi độc lập `getFile()` và `getLocation()` cho từng
+column, cho phép QL tạo Cartesian combinations giữa file, start và end của các
+location khác nhau. Duplicate classes giữa module làm lỗi xuất hiện rõ hơn.
+
+Node query nay bind `Location nodeLocation = node.getLocation()` và lấy toàn bộ
+file/span từ đúng binding đó. Edge query làm tương tự với source và target. Runner
+gọi per-project integrity validator trước khi ghi `SUCCESS`, khiến mọi location
+không hợp lệ còn sót lại trở thành intention-to-analyze miss thay vì chỉ bị phát
+hiện sau atomic finalization. Regression test khóa query binding và malformed
+span rejection; pilot trên project từng lỗi pass validator với 1.653 nodes,
+2.498 edges và 100% resolved references. Sau đó cả năm project từng có invalid
+span đều được chạy regression pilot và pass validator, tổng cộng 22.400 nodes,
+35.354 edges và 100% resolved references.
+
+Đây là correction để thực thi source-backed location contract D-020, không đổi
+dataset, split, graph schema, edge kinds, thresholds hoặc failure-as-miss rule;
+protocol giữ `1.4.0`. Query và implementation hashes trong manifest phân biệt
+candidate full mới. Full 003 giữ immutable, không được sửa hoặc chọn canonical.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

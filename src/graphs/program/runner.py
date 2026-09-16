@@ -599,6 +599,9 @@ def run(args: argparse.Namespace) -> int:
                     "graph_sha256": graph_digest(nodes, edges),
                 },
             )
+            from src.graphs.program.validate import validate_project_graph
+
+            validate_project_graph(project_output, project_id, source_root)
             status.update(
                 {
                     "status": "SUCCESS",

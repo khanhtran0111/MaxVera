@@ -41,25 +41,29 @@ predicate phase7Edge(string edgeKind, Phase7ProgramNode source, Phase7ProgramNod
   )
 }
 
-from string edgeKind, Phase7ProgramNode source, Phase7ProgramNode target
-where phase7Edge(edgeKind, source, target)
+from string edgeKind, Phase7ProgramNode source, Phase7ProgramNode target,
+  Location sourceLocation, Location targetLocation
+where
+  phase7Edge(edgeKind, source, target) and
+  sourceLocation = source.getLocation() and
+  targetLocation = target.getLocation()
 select
   edgeKind as edge_kind,
   source.getNodeKind() as source_kind,
   source.getSubkind() as source_subkind,
-  source.getFile().getRelativePath() as source_file,
-  source.getLocation().getStartLine() as source_start_line,
-  source.getLocation().getStartColumn() as source_start_column,
-  source.getLocation().getEndLine() as source_end_line,
-  source.getLocation().getEndColumn() as source_end_column,
+  sourceLocation.getFile().getRelativePath() as source_file,
+  sourceLocation.getStartLine() as source_start_line,
+  sourceLocation.getStartColumn() as source_start_column,
+  sourceLocation.getEndLine() as source_end_line,
+  sourceLocation.getEndColumn() as source_end_column,
   source.getSymbol() as source_symbol,
   source.getTypeName() as source_type_name,
   target.getNodeKind() as target_kind,
   target.getSubkind() as target_subkind,
-  target.getFile().getRelativePath() as target_file,
-  target.getLocation().getStartLine() as target_start_line,
-  target.getLocation().getStartColumn() as target_start_column,
-  target.getLocation().getEndLine() as target_end_line,
-  target.getLocation().getEndColumn() as target_end_column,
+  targetLocation.getFile().getRelativePath() as target_file,
+  targetLocation.getStartLine() as target_start_line,
+  targetLocation.getStartColumn() as target_start_column,
+  targetLocation.getEndLine() as target_end_line,
+  targetLocation.getEndColumn() as target_end_column,
   target.getSymbol() as target_symbol,
   target.getTypeName() as target_type_name

@@ -43,6 +43,8 @@ chép tay.
 | 2026-09-15 | Phase 7 full 001 | completed/not lockable | 96/96 final statuses and checksums valid; 14 missing-database failures, one edge-query timeout, 80 non-empty valid graphs, and one empty graph incorrectly classified as `SUCCESS`; validator correctly rejected the run; zero API calls |
 | 2026-09-15 | Phase 7 full 002 | completed/not lockable | substantive graph/status counts repeat full 001 because the empty-graph runner bug was not patched before rerun; the formerly timed-out database instead failed from an overlapping CodeQL cache lock left by an orphan query process; checksums pass, validator rejects the same zero-node `SUCCESS`; zero API calls |
 | 2026-09-15 | Phase 7 failure hardening/pilot | implemented/passed | zero-node graph becomes recorded `ANALYSIS_FAILED`; timed-out CodeQL commands terminate their process group and persist timeout logs; active database cache locks fail early; orphan from full 001 stopped and lock released; regression pilot validates as `PASS_WITH_ANALYSIS_FAILURES`; D-021 |
+| 2026-09-16 | Phase 7 full 003 | completed/not lockable | intended 80 success/16 recorded failures and checksums pass, but validator found 52 invalid node spans across five successful projects: 38 reversed ranges and 14 ranges beyond their persisted source file; diagnosed as independent multi-location getter bindings in QL; zero API calls |
+| 2026-09-16 | Phase 7 location-binding repair/pilots | implemented/passed | node/edge QL binds one `Location` per descriptor; runner validates each project graph before `SUCCESS`; all five formerly affected projects pass validator, totaling 22,400 nodes/35,354 edges with 100% edge resolution; D-022 |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu
@@ -99,3 +101,20 @@ Sau D-021, regression pilot `p7_pg_zero_guard_pilot_001` chạy trực tiếp tr
 `p7_pg_failure_hardening_pilot_001` vẫn tạo đúng 699 nodes/868 edges với 100%
 edge reference và validator `PASS`. Đây chỉ là implementation regression pilot,
 không run nào được nhập vào full-run metrics.
+
+Full 003 `p7_pg_dev_full_003` đạt đúng 80 `SUCCESS` và 16
+`ANALYSIS_FAILED`, nhưng chưa hợp lệ để khóa. Validator phát hiện 52 node location
+không hợp lệ trên năm project: 38 span có end line nhỏ hơn start line và 14 span
+vượt quá số dòng của file được ghi trong node. Root cause là một CodeQL element
+có thể có nhiều `Location`, trong khi query cũ gọi độc lập `getFile()` và nhiều
+lần `getLocation()` trong cùng select tuple; QL vì vậy ghép chéo file/start/end
+từ các location khác nhau của cùng element, đặc biệt ở repository có duplicate
+class giữa nhiều module. Artifact full 003 giữ immutable làm diagnosed attempt.
+
+Sau D-022, node và hai edge endpoint đều bind một biến `Location` duy nhất trước
+khi đọc file/start/end. Runner cũng gọi per-project integrity validator trước khi
+ghi `SUCCESS`, nên location lỗi tương lai trở thành recorded
+`ANALYSIS_FAILED` thay vì làm full artifact không validate được. Regression
+pilots trên cả năm project từng có invalid nodes đều validator `PASS`, tổng cộng
+22.400 nodes/35.354 edges hợp lệ với 100% edge resolution; các pilot không được
+nhập vào full-run metrics.

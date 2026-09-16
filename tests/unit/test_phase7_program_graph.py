@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from src.graphs.program.model import EDGE_KINDS, graph_digest, normalize_graph
+from src.graphs.program.model import EDGE_KINDS, graph_digest, node_id, normalize_graph
 from src.graphs.program.prepare import prepare_databases
 from src.graphs.program.query import query_graph, select_seed
 from src.graphs.program.runner import (
@@ -17,6 +17,8 @@ from src.graphs.program.runner import (
     _run_command,
     _validate_extracted_graph,
 )
+from src.graphs.program.validate import validate_project_graph
+from src.reproduction.common import atomic_json, atomic_jsonl
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -237,3 +239,69 @@ def test_phase7_database_cache_lock_is_rejected(
     monkeypatch.setattr("src.graphs.program.runner.fcntl.lockf", reject_lock)
     with pytest.raises(RuntimeError, match="database cache is locked"):
         _assert_database_cache_unlocked(tmp_path)
+
+
+def test_phase7_project_graph_rejects_crossed_location_range(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source = source_root / "src/Example.java"
+    source.parent.mkdir(parents=True)
+    source.write_text("class Example {}\n", encoding="utf-8")
+    descriptor = {
+        "kind": "CALLABLE",
+        "subkind": "Method",
+        "file": "src/Example.java",
+        "start_line": 2,
+        "start_column": 1,
+        "end_line": 1,
+        "end_column": 16,
+        "symbol": "example",
+        "type_name": "void",
+    }
+    project_id = "proj_test"
+    node = {
+        "schema_version": 1,
+        "project_id": project_id,
+        "node_id": node_id(project_id, descriptor),
+        "kind": descriptor["kind"],
+        "subkind": descriptor["subkind"],
+        "symbol": descriptor["symbol"],
+        "type_name": descriptor["type_name"],
+        "location": {
+            key: descriptor[key]
+            for key in ("file", "start_line", "start_column", "end_line", "end_column")
+        },
+        "provenance": {"tool": "CodeQL"},
+    }
+    project_root = tmp_path / "graph"
+    project_root.mkdir()
+    atomic_jsonl(project_root / "nodes.jsonl", [node])
+    atomic_jsonl(project_root / "edges.jsonl", [])
+    atomic_json(
+        project_root / "graph_summary.json",
+        {
+            "nodes": 1,
+            "edges": 0,
+            "edge_references_resolved": 0,
+            "edge_reference_ratio": 1.0,
+            "edge_kinds": {},
+            "graph_sha256": graph_digest([node], []),
+        },
+    )
+    with pytest.raises(ValueError, match="line range is invalid"):
+        validate_project_graph(project_root, project_id, source_root)
+
+
+def test_phase7_queries_bind_one_location_per_node_descriptor() -> None:
+    node_query = (REPO_ROOT / "src/static_analysis/queries/phase7_nodes.ql").read_text(
+        encoding="utf-8"
+    )
+    edge_query = (REPO_ROOT / "src/static_analysis/queries/phase7_edges.ql").read_text(
+        encoding="utf-8"
+    )
+    assert "nodeLocation = node.getLocation()" in node_query
+    assert "nodeLocation.getFile().getRelativePath()" in node_query
+    assert node_query.count("node.getLocation()") == 1
+    assert "sourceLocation = source.getLocation()" in edge_query
+    assert "targetLocation = target.getLocation()" in edge_query
+    assert edge_query.count("source.getLocation()") == 1
+    assert edge_query.count("target.getLocation()") == 1

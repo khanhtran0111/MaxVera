@@ -96,7 +96,9 @@ def _validate_location(location: Mapping[str, Any], source_root: Path) -> None:
         raise ValueError("Phase 7 node line range exceeds the source file")
 
 
-def _validate_graph(project_root: Path, project_id: str, source_root: Path) -> tuple[int, int, int]:
+def validate_project_graph(
+    project_root: Path, project_id: str, source_root: Path
+) -> tuple[int, int, int]:
     nodes = read_jsonl(project_root / "nodes.jsonl")
     edges = read_jsonl(project_root / "edges.jsonl")
     if not nodes:
@@ -203,7 +205,7 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
     total_resolved = 0
     source_base = repo_root / "data/interim/phase6_project_sources"
     for project_id in sorted(successes):
-        nodes, edges, resolved = _validate_graph(
+        nodes, edges, resolved = validate_project_graph(
             graphs_root / project_id, project_id, source_base / project_id
         )
         total_nodes += nodes
