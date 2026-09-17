@@ -1,12 +1,12 @@
 schema_version: 1
 baseline_id: B7
 name: security_kg_only
-status: scheduled_phase_10
+status: implemented_phase_10
 hint_condition: zero_hint
 llm_enabled: true
 model_config: configs/models/gpt_oss_20b_openrouter.yaml
 provider_route: akashml
 retrieval: security_knowledge_graph_only
 role: fair_baseline
-blocked_by:
-  - phase_10_graph_retrieval
+experiment_config: configs/experiments/phase10_retrieval_specification.yaml
+phase10_scope: retrieval_and_unverified_specification_synthesis

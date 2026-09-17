@@ -1,7 +1,7 @@
 schema_version: 1
 baseline_id: B9
 name: full_useg
-status: scheduled_phase_10
+status: implemented_phase_10_synthesis_only
 hint_condition: zero_hint
 llm_enabled: true
 model_config: configs/models/gpt_oss_20b_openrouter.yaml
@@ -10,7 +10,8 @@ retrieval: unified_graph_pruned
 static_verification: true
 calibration: true
 role: proposed_method
+experiment_config: configs/experiments/phase10_retrieval_specification.yaml
+phase10_scope: retrieval_and_unverified_specification_synthesis
 blocked_by:
-  - phase_10_specification_synthesis
   - phase_11_static_verification
   - phase_12_calibration

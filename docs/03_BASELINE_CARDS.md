@@ -16,10 +16,10 @@ nhất, B9 là proposed method chứ không phải external baseline.
 | B3 | Java chunks breadth-first | GPT-OSS 20B | Phase 5 runnable | Không security-aware retrieval |
 | B4 | Java chunks xếp hạng bằng security terms | GPT-OSS 20B | Phase 5 runnable | Text retrieval, không program graph |
 | B5 | Regex/static API signals trên toàn source Java | Không | Phase 5 runnable | Hypothesis, chưa static verification |
-| B6 | Program Graph | GPT-OSS 20B | Blocked đến Phase 10 | Phase 7 graph có sẵn; chưa có retriever |
-| B7 | Security KG | GPT-OSS 20B | Blocked đến Phase 10 | Phase 8 KG có sẵn; chưa có retriever |
-| B8 | USEG không pruning | GPT-OSS 20B | Blocked đến Phase 10 | Phase 9 USEG có sẵn; chưa có retriever |
-| B9 | USEG pruned + verification/calibration | GPT-OSS 20B | Blocked đến Phase 10-12 | USEG có sẵn; thiếu pruning/spec, verification và calibration |
+| B6 | Evidence anchors + Program Graph | GPT-OSS 20B | Phase 10 implemented; chờ API pilot/full | Compile-only spec, chưa static verification |
+| B7 | Evidence anchors + Security KG | GPT-OSS 20B | Phase 10 implemented; chờ API pilot/full | Knowledge-only ablation, compile-only spec |
+| B8 | USEG connected component không pruning | GPT-OSS 20B | Phase 10 implemented; chờ API pilot/full | Đo structural pruning; vẫn chịu token cap |
+| B9 | USEG pruned + verification/calibration | GPT-OSS 20B | Synthesis implemented; Phase 11/12 còn blocked | Chưa có verified finding hoặc calibrated decision |
 
 ## Hợp đồng công bằng B3/B4
 
@@ -51,5 +51,6 @@ thành success. Evaluator-only tạo metric sau analysis; analyzer không import
 hay mở label view.
 
 Run Phase 5 hiện là implementation-validation trên `D_repro_v1`, không phải
-main locked-test claim. B0-B9 trên `D_extended/test_locked` chỉ được chạy sau
-khi B6-B9 và calibration của Phase 6-12 hoàn tất.
+main locked-test claim. Phase 10 B6-B9 chỉ chạy development; B0-B9 trên
+`D_extended/test_locked` chỉ được chạy sau verification/calibration Phase 11-12
+và sau khi main protocol được khóa.

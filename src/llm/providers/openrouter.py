@@ -155,8 +155,13 @@ class OpenRouterClient:
     def _error_detail(error: urllib.error.HTTPError) -> str:
         try:
             loaded = json.loads(error.read().decode("utf-8", errors="replace"))
-            message = loaded.get("error", {}).get("message") if isinstance(loaded, dict) else None
-            return str(message)[:500] if message else f"HTTP {error.code}"
+            error_record = loaded.get("error", {}) if isinstance(loaded, dict) else {}
+            message = error_record.get("message") if isinstance(error_record, dict) else None
+            metadata = error_record.get("metadata") if isinstance(error_record, dict) else None
+            provider = metadata.get("provider_name") if isinstance(metadata, dict) else None
+            raw = metadata.get("raw") if isinstance(metadata, dict) else None
+            parts = [str(value) for value in (message, provider, raw) if value]
+            return " | ".join(parts)[:500] if parts else f"HTTP {error.code}"
         except (OSError, ValueError, AttributeError):
             return f"HTTP {error.code}"
 
@@ -275,6 +280,7 @@ class OpenRouterClient:
                         "http_status": error.code,
                         "seconds": round(time.monotonic() - started, 3),
                         "error_type": "HTTPError",
+                        "error": last_error,
                         "retry_delay_seconds": retry_delay,
                     }
                 )

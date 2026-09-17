@@ -517,6 +517,56 @@ hoàn tất Phase 9 mà không đổi protocol `1.6.0`, schema, mapping, confide
 failure-as-miss hoặc leakage policy. Phase 10 phải pin exact run/checksum trên,
 tiếp tục development-only và không mở `test_locked`.
 
+## D-028 — Phase 10 grounded retrieval và compile-only specification (2026-09-17)
+
+Phase 10 pin exact canonical USEG `p9_useg_dev_full_003` và triển khai bốn
+strategy dưới cùng prompt/schema/model/provider/budget: B6 giữ Evidence anchors
+cùng Program layer; B7 giữ Evidence anchors cùng Security layer; B8 lấy toàn bộ
+connected component của hypothesis mà không giới hạn hop/node; B9 dùng traversal
+bốn hop, tối đa 80 node. Traversal là undirected trên dependency edges vì Phase 9
+assertion/finding provenance hướng về hypothesis trong khi knowledge match hướng
+ra ngoài. Mọi edge vẫn bị project-isolated, nên global Security node không được
+dùng để kéo evidence từ repository khác.
+
+Compact serializer giữ stable node/edge IDs và các thuộc tính cần cho synthesis,
+ghi riêng structural pruning với serialization truncation. Context budget được
+tính bảo thủ bằng UTF-8 byte estimate, có 3.072-token prompt/schema reserve và không
+được vượt 8.192 input tokens/call. Mỗi project giữ tối đa 10 hypothesis; mỗi
+hypothesis có một initial call và nhiều nhất hai repair, vừa đúng hard cap 30
+calls/project. Runner kiểm actual provider usage với giới hạn 160.000 input
+tokens/project; transport retries và mọi repair đều được log.
+
+Strict Structured Output chỉ cho model chọn node ID có trong serialized context.
+Program node, exact-role Security node hoặc Phase 6/9 location assertion đều có
+thể làm grounded endpoint; Security fact sai role bị local validator từ chối.
+Source và sink là bắt buộc. Nếu context không có candidate cho một role, runner
+fail-closed trước API thay vì yêu cầu model bịa fact. Sanitizer/propagator chỉ
+được ghi khi có node tương ứng; precondition phải cite context node.
+
+Spec hợp lệ được render thành deterministic Java CodeQL query constraint và chạy
+`codeql query compile --check-only` với CLI 2.26.2/`java-all@9.2.2`. Compile
+success chỉ chứng minh query có cú pháp/type hợp lệ, không phải taint path hay
+vulnerability verification. Tất cả output Phase 10 mang trạng thái
+`SYNTHESIZED_UNVERIFIED`, zero final finding; B9 vẫn bị chặn bởi Phase 11 static
+verification và Phase 12 calibration. Alternatives cho LLM tự trả file/symbol tự
+do, dùng compile success làm verdict, hoặc dùng patch/advisory để repair đều bị
+loại.
+
+Contract này tăng main protocol từ `1.6.0` lên `1.7.0`; không đổi dataset,
+split, model, provider route, token/call budget, evaluation metric hoặc khóa
+Phase 6–9. Dry-run B6–B9 phải chạy trước API pilot, không gọi mạng; mọi API run
+yêu cầu `--confirm-api-spend`, tuần tự một request và development-only. Full run
+chỉ được khóa sau clean implementation commit, successful pilot, complete
+project statuses, grounding/budget audit và final-query compile report.
+
+Full-coverage dry 001 sau các one-project pilots cho thấy fixed context reserve
+chưa đủ cho mọi strict-schema enum: conservative whole-request estimate vượt cap
+ở một số context dù graph text riêng nằm trong cap. D-028 do đó yêu cầu adaptive
+serialization deterministic: giảm budget chỉ cho context bị overflow, serialize
+lại, dựng lại schema và lặp preflight với 128-token margin. Metadata lưu
+`initial_token_budget`, final `token_budget` và `request_budget_adapted`; nếu
+grounded role mất đi hoặc request vẫn quá lớn thì hypothesis fail trước API.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

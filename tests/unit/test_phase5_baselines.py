@@ -119,15 +119,24 @@ def test_valid_schema_converts_to_sarif(tmp_path: Path) -> None:
     assert sarif["runs"][0]["results"][0]["ruleId"] == "CWE-94"  # type: ignore[index]
 
 
-def test_phase5_configs_mark_only_immediately_runnable_entries() -> None:
+def test_baseline_configs_mark_implemented_phase_boundaries() -> None:
     for baseline_id in ("b3", "b4", "b5"):
         path = next((REPO_ROOT / "configs/baselines").glob(f"{baseline_id}_*.yaml"))
         config = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert config["status"] == "implemented_phase_5"
-    for baseline_id in ("b6", "b7", "b8", "b9"):
+    for baseline_id in ("b6", "b7", "b8"):
         path = next((REPO_ROOT / "configs/baselines").glob(f"{baseline_id}_*.yaml"))
         config = yaml.safe_load(path.read_text(encoding="utf-8"))
-        assert config["blocked_by"]
+        assert config["status"] == "implemented_phase_10"
+        assert config["phase10_scope"] == "retrieval_and_unverified_specification_synthesis"
+    b9 = yaml.safe_load(
+        (REPO_ROOT / "configs/baselines/b9_full_useg.yaml").read_text(encoding="utf-8")
+    )
+    assert b9["status"] == "implemented_phase_10_synthesis_only"
+    assert b9["blocked_by"] == [
+        "phase_11_static_verification",
+        "phase_12_calibration",
+    ]
 
 
 def test_phase5_llm_route_is_pinned_to_akashml() -> None:

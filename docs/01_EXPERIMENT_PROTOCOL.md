@@ -1,4 +1,4 @@
-# Experimental Protocol 1.6.0
+# Experimental Protocol 1.7.0
 
 **Mục đích:** định nghĩa dataset view, baseline, evaluation unit, metric, budget,
 failure policy và kiểm định thống kê áp dụng cho mọi kết quả chính. Protocol này
@@ -145,3 +145,33 @@ không gộp thành scalar. Mọi record mang analysis iteration và provenance 
 Đồ thị dependency phải acyclic, JSONL round-trip lossless, và mọi candidate path
 phải truy được tới Program location lẫn Security fact. 15 Phase 7 failures tiếp
 tục là intention-to-analyze miss.
+
+## Graph retrieval và specification synthesis contract
+
+Phase 10 chỉ dùng canonical development USEG `p9_useg_dev_full_003`. B6 giữ
+Evidence anchors và Program layer; B7 giữ Evidence anchors và Security layer;
+B8 lấy connected component USEG không giới hạn hop/node; B9 lấy subgraph bốn hop
+tối đa 80 nodes. Mọi strategy dùng cùng compact JSONL serializer, prompt, strict
+JSON Schema, model/provider và budget. Structural pruning và truncation do token
+cap phải được ghi riêng, không được gọi lẫn là cùng một thao tác.
+
+Mỗi specification phải tham chiếu source/sink/sanitizer/propagator bằng node ID
+có trong serialized context. Location assertion từ Phase 6/9 được phép làm
+endpoint evidence; Security node chỉ được dùng đúng semantic role. Source và sink
+bắt buộc có grounded candidate trước khi gọi LLM; context thiếu một role phải
+fail-closed mà không tốn API. Một hypothesis có tối đa một initial call và hai
+schema/semantic/compile repairs; tổng vẫn không vượt 30 calls và 160.000 input
+tokens/project.
+
+Input-token gate áp dụng cho toàn request gồm compact context, prompt và strict
+schema, không chỉ riêng graph serialization. Nếu conservative preflight vượt
+cap, serializer phải giảm context budget deterministic, dựng lại candidate enum
+và kiểm tra lại; nếu không còn grounded source/sink hoặc vẫn vượt cap thì fail
+trước API. Artifact phải ghi initial/final context budget và adaptation flag.
+
+Phase 10 sinh strict JSON và deterministic CodeQL query template, sau đó chạy
+`codeql query compile --check-only`. Compile success chỉ xác nhận cú pháp/type
+QLL, không phải static verification. Mọi spec giữ trạng thái
+`SYNTHESIZED_UNVERIFIED`; final finding, verified path và vulnerable/fixed verdict
+chỉ được materialize từ Phase 11. Analyzer tiếp tục cấm evaluator-only, advisory,
+patch và `test_locked`.

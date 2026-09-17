@@ -1,5 +1,5 @@
 schema_version: 1
-protocol_version: "1.6.0"
+protocol_version: "1.7.0"
 experiment_id: main_zero_hint
 status: draft
 draft_blockers:
@@ -61,6 +61,20 @@ development_locks:
     project_status_sha256: 37feda20d9f712d4343607b1f851cd00a83bb74b381bb1cf5de0310259645638
     project_summary_sha256: 755263d55a7da26dfae76151912be5039dd4169a3d0afab5bc9ef0d7e87e92bf
     checksums_index_sha256: 45d1ed92e1a8f7adb365aa0bced3872f21e5815fe574a4d62838cb7747784235
+development_stages:
+  phase10_graph_retrieval_specification:
+    status: full_dry_validated_pending_adaptive_path_pilot
+    protocol_version: "1.7.0"
+    dependency_run_id: p9_useg_dev_full_003
+    retrieval_version: phase10-retrieval-v1
+    specification_version: phase10-spec-v1
+    strategies:
+      B6: program_graph_only
+      B7: security_knowledge_graph_only
+      B8: unified_graph_unpruned
+      B9: unified_graph_pruned
+    final_findings_allowed: false
+    next_gate: api_pilot_and_codeql_compile_validation
 scope:
   language: Java
   static_analyzer: CodeQL

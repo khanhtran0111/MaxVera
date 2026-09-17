@@ -1,0 +1,105 @@
+schema_version: 1
+protocol_version: "1.7.0"
+experiment_id: phase10_graph_retrieval_specification
+status: frozen_phase_10_development
+purpose: development_only_retrieval_and_unverified_specification_synthesis
+
+development_dependency:
+  phase9:
+    run_root: results/graphs/useg/p9_useg_dev_full_003
+    run_id: p9_useg_dev_full_003
+    manifest_sha256: 83dce921c979db710762bd205588c667033bc10fb6c64c4581fce9a8c84810c7
+    useg_summary_sha256: 06c33ace27422141494a1287b612c59ceb3cdc0fd5ee4d2d2e1eddfb59300ff7
+    trace_audit_sha256: 838b8735d0c2cf8e9b2fa3100dc6d053bac72db8e03ef48837fc7d50a1420480
+    project_status_sha256: 37feda20d9f712d4343607b1f851cd00a83bb74b381bb1cf5de0310259645638
+    nodes_sha256: fe4cf6f41ca45916c4610f0b241277b61eaf90ba5ce7785e7492c106ebffc0aa
+    edges_sha256: 4c3fc49f59357d8ebe120ef2f75d35a1ba8adb41038dbf2a6e4061c62d5b44aa
+    checksums_index_sha256: 45d1ed92e1a8f7adb365aa0bced3872f21e5815fe574a4d62838cb7747784235
+
+dataset:
+  id: D_extended
+  source_root: data/interim/phase6_project_sources
+  forbidden_test_split: data/processed/splits/test_locked.csv
+
+retrieval:
+  version: phase10-retrieval-v1
+  hypothesis_limit_per_project: 10
+  max_hops: 4
+  max_nodes_pruned: 80
+  max_nodes_layer_only: 120
+  serializer: compact-jsonl-v1
+  prompt_reserve_tokens: 3072
+  strategies:
+    B6: program_graph_only
+    B7: security_knowledge_graph_only
+    B8: unified_graph_unpruned
+    B9: unified_graph_pruned
+
+specification:
+  version: phase10-spec-v1
+  prompt_version: phase10-graph-spec-v1
+  max_role_items: 8
+  max_preconditions: 8
+  require_grounded_source: true
+  require_grounded_sink: true
+  allow_final_finding: false
+  max_repair_attempts: 2
+
+compilation:
+  template_version: phase10-codeql-template-v1
+  codeql_cli_version: "2.26.2"
+  query_pack: codeql/java-all@9.2.2
+  check_only: true
+  threads: 1
+  ram_mb: 4096
+  timeout_seconds: 120
+
+llm:
+  model_config: configs/models/gpt_oss_20b_openrouter.yaml
+  model_id: openai/gpt-oss-20b
+  provider_route: akashml
+  allow_fallbacks: false
+
+budget:
+  comparison_modes: [budget_matched, best_effort]
+  budget_matched:
+    max_context_tokens_per_call: 8192
+    max_output_tokens_per_call: 2048
+    max_calls_per_project: 30
+    max_total_input_tokens_per_project: 160000
+  best_effort:
+    max_context_tokens_per_call: 8192
+    max_output_tokens_per_call: 2048
+    max_calls_per_project: 30
+    max_total_input_tokens_per_project: 160000
+
+coverage:
+  expected_full_projects: 96
+  expected_phase9_successes: 81
+  expected_phase9_failures: 15
+  failures_count_as_miss: true
+
+execution:
+  project_workers: 1
+  llm_parallel_requests: 1
+  concurrent_codeql_and_llm: false
+  atomic_finalization: true
+  full_result_overwrite: false
+
+validation:
+  require_exact_phase9_lock: true
+  require_context_within_budget: true
+  require_node_grounded_specifications: true
+  require_every_llm_call_logged: true
+  require_compile_result_per_specification: true
+  forbid_verified_claims: true
+  forbidden_output_substrings:
+    - CVE-
+    - ground_truth_cwe
+    - advisory_text
+    - patch_commit
+    - fix_commit
+    - fixed_method
+    - fixed_line
+    - vulnerable_description
+    - test_locked

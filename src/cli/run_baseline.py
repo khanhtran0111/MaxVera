@@ -9,6 +9,7 @@ import yaml
 
 from src.baselines.runner import main as phase5_main
 from src.reproduction.runner import main as reproduction_main
+from src.specification.runner import main as phase10_main
 
 
 def main() -> int:
@@ -31,6 +32,19 @@ def main() -> int:
         if forwarded[:1] == ["--"]:
             forwarded = forwarded[1:]
         return phase5_main(
+            [
+                "--baseline-id",
+                args.baseline_id,
+                "--config",
+                str(args.config),
+                *forwarded,
+            ]
+        )
+    if args.baseline_id in {"B6", "B7", "B8", "B9"}:
+        forwarded = list(args.baseline_args)
+        if forwarded[:1] == ["--"]:
+            forwarded = forwarded[1:]
+        return phase10_main(
             [
                 "--baseline-id",
                 args.baseline_id,

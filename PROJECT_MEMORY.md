@@ -1,10 +1,10 @@
 # MaxVera — Project Memory
 
 > Cập nhật: 2026-09-17 (Asia/Bangkok)
-> Phase 9 implementation/run commit:
+> Phase 9 canonical implementation/run commit:
 > `2395d219789ad5401e1fecdb26cee9030208c19b`
-> Hiện trạng: Phase 0–9 hoàn tất và khóa canonical; Phase 10 chưa triển khai;
-> `test_locked` chưa mở/chạy.
+> Hiện trạng: Phase 0–9 đã khóa; Phase 10 đã implemented, dry-run và B6–B9 API
+> pilots validated; chưa full lock; `test_locked` chưa mở/chạy.
 
 ## Mục đích và cách dùng
 
@@ -41,7 +41,7 @@ evaluator-only.
 |---|---|
 | Bài toán | Zero-hint, repository-level vulnerability research |
 | Ngôn ngữ / static engine | Java / CodeQL |
-| Protocol hiện hành | `1.6.0` |
+| Protocol hiện hành | `1.7.0` |
 | Dataset chính | `D_extended`: 120 rows, 77 repository groups, 4 CWE |
 | Development | 96 opaque projects |
 | Locked test | 24 opaque projects, chưa được analyzer truy cập |
@@ -49,14 +49,15 @@ evaluator-only.
 | Phase 7 lock | `p7_pg_dev_full_004`, 81/96 graph success |
 | Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
 | Phase 9 lock | `p9_useg_dev_full_003`, 81/96 graph success |
+| Phase 10 | Implemented; B6–B9 dry-run/API pilots validated |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase tiếp theo | Phase 10 — Graph retrieval/spec synthesis |
+| Phase tiếp theo | Clean Phase 10 full runs → annotated spec gate/lock |
 
 `configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 khóa
 calibration thresholds. Header của `docs/00_RESEARCH_SCOPE.md`,
-`docs/01_EXPERIMENT_PROTOCOL.md`, main config và D-026/D-027 cùng dùng contract `1.6.0`
-hiện hành.
+`docs/01_EXPERIMENT_PROTOCOL.md`, main config và D-028 cùng dùng contract `1.7.0`;
+Phase 9 artifact tiếp tục giữ historical contract `1.6.0`.
 
 ## Invariant không được phá
 
@@ -100,7 +101,7 @@ Phase 2 đã tạo final build status cho 120/120: 104 CodeQL DB thành công, 1
 - Phase 4 dùng Groq lịch sử; Phase 5+ dùng AkashML, nên không coi chênh lệch
   giữa hai phase là tác động retrieval thuần túy.
 
-## Các mốc Phase 0–9
+## Các mốc Phase 0–10
 
 ### Phase 0–3 — Nền tảng
 
@@ -249,6 +250,56 @@ Canonical full run `p9_useg_dev_full_003` tại clean commit
 - checksum index
   `45d1ed92e1a8f7adb365aa0bced3872f21e5815fe574a4d62838cb7747784235`.
 
+### Phase 10 — Graph retrieval và specification synthesis
+
+D-028 pin exact Phase 9 full 003 và triển khai chung runner cho B6/B7/B8 cùng
+phần synthesis-only của B9. B6 giữ Evidence anchors + Program, B7 giữ Evidence
+anchors + Security, B8 lấy unpruned connected component, B9 lấy tối đa 4 hop/80
+node. Compact JSONL phân biệt structural pruning với token truncation và giữ
+context dưới 8.192 input tokens/call.
+
+GPT-OSS 20B/AkashML dùng strict schema chỉ cho chọn node ID trong context.
+Source/sink phải có grounded Program, exact-role Security hoặc Phase 6/9 location
+assertion; thiếu role thì fail trước API. Mỗi hypothesis tối đa 3 calls, mỗi
+project tối đa 30 calls/160.000 input tokens. Spec được render thành deterministic
+CodeQL template và `query compile --check-only`; trạng thái luôn
+`SYNTHESIZED_UNVERIFIED`, zero final finding trước Phase 11.
+
+Implementation có offline estimator, atomic/resumable runner, exact-dependency
+validator, numbered B6–B9 dispatch, dry-run/suite scripts và runbook. Bốn
+one-project dry-run 007 pass với zero API/network call; endpoint/token preflight
+ghi B6/B7 8/10 context API-eligible, B8/B9 10/10 và request estimate cao nhất
+7.469/8.192 tokens. **Chưa canonical/locked**: cần
+API pilot, annotated-subset spec evaluation, clean implementation commit và full
+development runs mới.
+
+B9 API pilot 001 là diagnostic immutable: 7/10 grounded specs compile thành
+công, chi phí `$0.00092432`; ba CWE-78 request bị HTTP 400 do optional role không
+có candidate tạo `enum: []`. Schema đã được sửa fail-closed bằng `maxItems: 0`
+với non-empty fallback enum; phải chạy pilot ID mới, không sửa artifact 001.
+
+B9 API pilot 002 pass: 1/1 project, 10/10 grounded specs và 10/10 final query
+compile; 49.540 input tokens, 3.892 billed output tokens, chi phí `$0.00138`.
+Ba retry đều là HTTP 429 tạm thời từ AkashML và sau đó thành công; zero failed
+call, zero fallback, max prompt thực tế 6.167/8.192 tokens. Artifact vẫn mang
+dirty manifest nên chỉ là implementation pilot, không phải canonical full run.
+
+B6/B7/B8 pilot 001 cũng được validator chấp nhận. B6 và B7 mỗi baseline sinh
+8/10 grounded specs, compile 8/8; hai hypothesis còn lại fail trước API vì
+layer ablation không có grounded source, đúng như dry-run preflight. B8 sinh
+10/10 grounded specs và compile 10/10. Chi phí lần lượt `$0.00043732`,
+`$0.0011979`, `$0.00125018`; B7/B8 có HTTP 429 retry tự phục hồi, zero failed
+call và zero fallback. Cả ba là dirty implementation pilots, không canonical.
+
+Full-coverage dry 001 sau commit đầu tiên phát hiện request-estimate overflow dù
+context cap riêng vẫn pass: B6/B7/B8/B9 lần lượt 1/49/86/3 context. Runner được
+bổ sung adaptive serialization: chỉ context bị ảnh hưởng mới giảm token budget,
+rebuild strict schema và lặp preflight trước API; mọi lần giảm được ghi trong
+context metadata. Full dry 002 trên 96 project/806 context mỗi baseline pass với
+zero overflow: B6/B7/B8/B9 có 1/49/86/3 adapted context và lần lượt
+763/619/801/801 API-eligible context. Cần targeted adaptive-path API pilot trước
+full run.
+
 ## Canonical artifacts và code map
 
 - Phase 4: `results/reproduction/phase4_gptoss20b_full_001__*`;
@@ -257,13 +308,14 @@ Canonical full run `p9_useg_dev_full_003` tại clean commit
 - Phase 7: `results/graphs/program/p7_pg_dev_full_004/`;
 - Phase 8: `results/graphs/knowledge/p8_skg_global_full_002/`;
 - Phase 9: `results/graphs/useg/p9_useg_dev_full_003/`;
+- Phase 10 run root: `results/specifications/phase10/<baseline>/<run-id>/`;
 - configs/locks: `configs/experiments/`;
-- Phase 5/6/7/8/9 code: `src/baselines/`, `src/hypotheses/`,
+- Phase 5/6/7/8/9/10 code: `src/baselines/`, `src/hypotheses/`,
   `src/graphs/program/`, `src/graphs/knowledge/`, `src/graphs/evidence/`,
-  `src/graphs/useg/`;
+  `src/graphs/useg/`, `src/retrieval/`, `src/specification/`;
 - runbooks: `docs/10_PHASE5_RUNBOOK.md`, `docs/11_PHASE6_RUNBOOK.md`,
   `docs/12_PHASE7_RUNBOOK.md`, `docs/13_PHASE8_RUNBOOK.md`,
-  `docs/14_PHASE9_RUNBOOK.md`.
+  `docs/14_PHASE9_RUNBOOK.md`, `docs/15_PHASE10_RUNBOOK.md`.
 
 Checksum chi tiết nằm trong từng canonical run. Raw results/DB thường bị Git
 ignore; clone khác có thể chỉ có compact exports và manifests.
@@ -284,16 +336,17 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
   candidate path.
 - Phase 9 full 001/full 002 chỉ là dirty-tree diagnostics; downstream phải pin
   full 003. Hai trong 81 graph success không có incident candidate path.
+- Phase 10 compile-only không phải static verification; B9 final findings vẫn bị
+  chặn đến Phase 11/12. Dry-run không chứng minh provider/schema behavior thật.
 - Hosted model không có project-controlled weight hash.
 - `test_locked` chưa mở; chưa được claim final paper performance.
 
-## Handoff Phase 9 → Phase 10
+## Handoff hoàn thiện Phase 10
 
-Graph retrieval/spec synthesis phải pin exact Phase 9 canonical artifact
-`p9_useg_dev_full_003` cùng checksums D-027, so sánh raw/text-RAG/graph
-unpruned/pruned, giữ budget đã khóa, compile generated QLL/template constraints
-và không dùng ground-truth patch. Tiếp tục development-only và không mở
-`test_locked`.
+Theo `docs/15_PHASE10_RUNBOOK.md`, toàn bộ B6–B9 API pilot đã validated. Sau
+implementation commit, chạy bốn full development run và chọn canonical
+artifacts. Không mở `test_locked`; không chuyển compile success thành
+verified finding. Phase 11 chỉ bắt đầu sau khi Phase 10 full runs được khóa.
 
 ## Checklist agent
 
@@ -315,6 +368,6 @@ uv run --frozen mypy src
 uv run --frozen pytest -q
 ```
 
-Tại Phase 9 canonical lock: Ruff pass, mypy pass, 87 tests pass. Formatter
+Tại Phase 10 implementation: Ruff pass, mypy pass, 96 tests pass. Formatter
 còn báo các file lịch sử ngoài phạm vi; không bulk-format trong task không liên
 quan.

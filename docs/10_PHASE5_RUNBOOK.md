@@ -1,7 +1,7 @@
 # Phase 5 Runbook
 
-**Mục đích:** chạy B3-B5 có kiểm soát sau Phase 4 mà không vô tình tiêu API,
-không vượt label firewall và không coi B6-B9 placeholder là kết quả.
+**Mục đích:** chạy B3-B5 có kiểm soát sau Phase 4 mà không vô tình tiêu API hoặc
+vượt label firewall. B6-B9 hiện dùng Phase 10 runbook riêng.
 
 ## Phạm vi hiện tại
 
@@ -9,8 +9,9 @@ không vượt label firewall và không coi B6-B9 placeholder là kết quả.
 - B3: raw/chunked Java context + GPT-OSS 20B.
 - B4: lexical text-RAG + GPT-OSS 20B.
 - B5: static hypothesis, không dùng API.
-- B6-B9: script/config tồn tại nhưng cố ý trả exit 78 cho đến khi dependency
-  Phase 6-12 được triển khai.
+- B6-B9: retrieval/specification đã chuyển sang
+  [`15_PHASE10_RUNBOOK.md`](15_PHASE10_RUNBOOK.md); không dùng hướng dẫn Phase 5
+  để chạy các entrypoint này.
 
 B3-B5 dùng đủ 120 opaque project của `D_repro_v1`. Đây là bộ kiểm chứng triển
 khai cùng release Phase 4, chưa phải main result trên `D_extended/test_locked`.
@@ -157,4 +158,4 @@ bash scripts/tools/run_phase5_suite.sh \
 - Không dùng B1/B2 làm fair zero-hint comparator.
 - Không diễn giải chênh lệch với B2/Groq Phase 4 là tác động của retrieval vì
   provider route khác nhau.
-- Không chạy B6-B9 cho tới khi các phase dependency được hoàn thành.
+- Không dùng Phase 5 output/config để thay thế Phase 10 B6-B9 artifacts.
