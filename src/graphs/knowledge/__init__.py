@@ -1,1 +1,1 @@
-"""Security Knowledge Graph implementation (Phase 8)."""
+"""Versioned, provenance-complete Security Knowledge Graph support."""

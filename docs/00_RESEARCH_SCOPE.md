@@ -2,7 +2,7 @@
 
 **Mục đích:** khóa câu hỏi khoa học, điều kiện đầu vào và tiêu chí thành công trước khi phát triển phương pháp.
 
-**Protocol:** `1.2.3` — cập nhật và frozen ngày 13/09/2026.
+**Protocol:** `1.5.0` — cập nhật và frozen ngày 17/09/2026.
 
 **Phạm vi:** Java, CodeQL, CWE-Bench-Java và `openai/gpt-oss-20b` qua OpenRouter.
 
@@ -75,7 +75,12 @@ resource-efficient retrieval. Không kết hợp hai claim khi dữ liệu khôn
 
 Nguồn machine-readable duy nhất là [`configs/upstreams.yaml`](../configs/upstreams.yaml).
 IRIS v1, CWE-Bench reproduction, CWE-Bench extended, CodeQL reproduction/main,
-GPT-OSS 20B/OpenRouter model/provider route và Docker base đều được khóa. Phase 3
+GPT-OSS 20B/OpenRouter model/provider route, Security KG sources và Docker base
+đều được khóa. Phase 8 dùng MITRE CWE 4.20, OWASP Top 10:2021 tại commit
+`66ebc4798d2ca72973967a20264bdeb70dcf0a13`, và CodeQL Java API models
+`codeql/java-all@9.2.2`; checksum chi tiết nằm trong
+[`configs/knowledge/phase8_sources.yaml`](../configs/knowledge/phase8_sources.yaml).
+Phase 3
 chỉ dùng một endpoint dùng một lần để kiểm tra kỹ thuật và không giữ lại output LLM. Vì
 API release cũ không công bố digest, legacy IRIS CodeQL ZIP đã được tải trực tiếp,
 kiểm tra cấu trúc archive và khóa SHA256 trong upstream config.

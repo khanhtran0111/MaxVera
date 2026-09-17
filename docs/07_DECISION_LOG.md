@@ -370,6 +370,50 @@ extractor semantics, graph schema, edge threshold và failure-as-miss policy gi�
 nguyên. Mọi thay đổi Phase 8 phải dùng đúng canonical run/checksum này làm input
 development và tiếp tục giữ `test_locked` đóng.
 
+## D-024 — Phase 8 global, pinned Security Knowledge Graph (2026-09-17)
+
+Phase 8 dùng một KG toàn cục versioned; per-project view được hoãn đến Phase 9 để
+không nhân bản knowledge hoặc trộn source program với knowledge facts quá sớm.
+Scope khóa bốn root `CWE-22/78/79/94` và mọi quan hệ incident một hop trong MITRE
+Research Concepts view 1000. Không mở rộng đệ quy vì dataset hiện chỉ có bốn family
+và closure rộng sẽ đưa knowledge chưa được development audit vào pipeline.
+
+Ba nguồn được materialize tại preparation boundary rồi build hoàn toàn offline:
+
+- MITRE CWE 4.20, published 30/04/2026, XML SHA-256
+  `1f5a78bd62e00f86436b4fe32d5034a57e8f0da88e4063b2072b664ae510912e`,
+  theo CWE Terms of Use;
+- OWASP Top 10:2021 tại commit
+  `66ebc4798d2ca72973967a20264bdeb70dcf0a13`, CC-BY-SA-4.0;
+- CodeQL `codeql/java-all@9.2.2`, build commit
+  `94101634db019b00637dd5cfe241f7e570da290d`, model-tree SHA-256
+  `b466420b95d11f5ce74e3e503757f8c3a307bfa7531e13add068eca50fef817a`, MIT.
+
+Schema v1 có node `CWE`, `OWASP_CATEGORY`, `SOURCE`, `SINK`, `SANITIZER`,
+`PROPAGATOR`, `PRECONDITION`, `MITIGATION`; edge `RELATED_CWE`,
+`MAPS_TO_OWASP` và các edge `HAS_*`/`MITIGATED_BY`. ID hash canonical không phụ
+thuộc thứ tự input. Mỗi fact bắt buộc có URL, version, license, artifact checksum,
+locator, extraction rule và confidence. Fact deterministic và LLM-inferred nằm ở
+hai thư mục serialization riêng; canonical Phase 8 có zero LLM call và inferred
+layer rỗng.
+
+API semantics chỉ lấy CodeQL model không experimental và có provenance đã qua bước
+manual (`manual`, `df-manual`, `ai-manual`, `hq-manual`). `manual`/`df-manual`/
+`hq-manual` có confidence 1.0, `ai-manual` 0.9; upstream generated-only models bị
+loại thay vì gọi là verified. Propagator bị bounded trong cùng model file có ít
+nhất một source/sink/barrier liên quan. Sanitizer coverage hiện sparse và được giữ
+trung thực, không sinh placeholder hay dùng LLM bù fact.
+
+Runner chỉ đọc checksum/aggregate manifest của lock Phase 6 D-019 và Phase 7 D-023;
+không đọc project hypothesis, program graph content, evaluator-only, advisory hoặc
+`test_locked`. Validator kiểm exact source/dependency checksums, layer separation,
+canonical ordering/ID, endpoint integrity, provenance của mọi fact, leakage string,
+và sample đủ relation bắt buộc cho từng root CWE. Alternative scrape web lúc
+analysis, dùng latest không pin, recursive related-CWE closure, per-project KG và
+trộn LLM facts vào deterministic facts đều bị loại. Contract này tăng main
+protocol từ `1.4.0` lên `1.5.0`; không đổi RQ, split, LLM budget, metric hoặc khóa
+Phase 6/7.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

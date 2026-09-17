@@ -26,7 +26,7 @@ def test_main_protocol_is_draft_for_explicit_phase_blockers() -> None:
     config = yaml.safe_load(
         (REPO_ROOT / "configs/experiments/main.yaml").read_text(encoding="utf-8")
     )
-    assert config["protocol_version"] == "1.4.0"
+    assert config["protocol_version"] == "1.5.0"
     assert config["status"] == "draft"
     assert config["draft_blockers"]
     assert config["leakage_firewall"]["enabled"] is True
@@ -41,6 +41,8 @@ def test_upstream_pins_are_immutable_and_dockerfile_matches() -> None:
     assert len(pins["iris_reproduction"]["codeql_artifact"]["sha256"]) == 64
     assert "pending" not in str(pins).lower()
     assert pins["codeql_main"]["cli_version"] == "2.26.2"
+    assert pins["security_knowledge"]["mitre_cwe_version"] == "4.20"
+    assert len(pins["security_knowledge"]["owasp_top10_commit"]) == 40
     digest = pins["container"]["digest"]
     dockerfile = (REPO_ROOT / "Dockerfile").read_text(encoding="utf-8")
     assert digest in dockerfile

@@ -1,0 +1,63 @@
+schema_version: 1
+source_bundle_id: phase8-security-knowledge-sources-v1
+raw_root: data/raw/security_knowledge/phase8_sources_v1
+
+mitre_cwe:
+  source_id: mitre-cwe-4.20
+  publisher: The MITRE Corporation
+  version: "4.20"
+  published_date: "2026-04-30"
+  archive_url: https://cwe.mitre.org/data/xml/cwec_v4.20.xml.zip
+  archive_filename: mitre/cwec_v4.20.xml.zip
+  archive_sha256: 3976f599e5e5200219a3108bb896d06e2a88fbb293369e1883cb423a5e9d7d50
+  xml_member: cwec_v4.20.xml
+  xml_filename: mitre/cwec_v4.20.xml
+  xml_sha256: 1f5a78bd62e00f86436b4fe32d5034a57e8f0da88e4063b2072b664ae510912e
+  definition_url_template: https://cwe.mitre.org/data/definitions/{cwe_number}.html
+  license_name: CWE Terms of Use
+  license_url: https://cwe.mitre.org/about/termsofuse.html
+  license_filename: mitre/TERMS_OF_USE.html
+  license_sha256: 5cc9035587e691dc3850334bbf08b9e8e3c3028a44d4bcf268af2e557d1e759b
+
+owasp_top10:
+  source_id: owasp-top10-2021
+  publisher: OWASP Foundation
+  version: "OWASP Top 10:2021"
+  repository: https://github.com/OWASP/Top10
+  commit: 66ebc4798d2ca72973967a20264bdeb70dcf0a13
+  license_name: CC-BY-SA-4.0
+  license_url: https://creativecommons.org/licenses/by-sa/4.0/
+  artifacts:
+    license:
+      repository_path: LICENSE
+      filename: owasp/LICENSE
+      sha256: fd5524ce899b86f8a02c8de7005a6d22113f465a8262fd8b86e0e1d28c0f6f45
+    A01:2021:
+      title: Broken Access Control
+      repository_path: 2021/docs/en/A01_2021-Broken_Access_Control.md
+      filename: owasp/A01_2021-Broken_Access_Control.md
+      sha256: 52d3cef100ba7811e6b83d07737ec01965324aa1a1cb02f1df4dfcc9d960ecaa
+    A03:2021:
+      title: Injection
+      repository_path: 2021/docs/en/A03_2021-Injection.md
+      filename: owasp/A03_2021-Injection.md
+      sha256: c660dd06c1d62d634f41607b243708f5bef1d2865d883065e4601332911a0060
+
+codeql_java_models:
+  source_id: codeql-java-all-9.2.2
+  publisher: GitHub, Inc.
+  version: codeql/java-all@9.2.2
+  repository: https://github.com/github/codeql
+  commit: 94101634db019b00637dd5cfe241f7e570da290d
+  pack_build_sha: 94101634db019b00637dd5cfe241f7e570da290d
+  pack_relative_path: qlpacks/codeql/java-all/9.2.2
+  qlpack_filename: codeql/java-all-9.2.2/qlpack.yml
+  qlpack_sha256: 2eb23ab691e9eb25015575e958ac71d06e5af28e536963cefaa6131466e14922
+  model_file_count: 613
+  model_tree_sha256: b466420b95d11f5ce74e3e503757f8c3a307bfa7531e13add068eca50fef817a
+  license_name: MIT
+  license_url: https://opensource.org/license/mit
+  license_repository_path: LICENSE
+  license_filename: codeql/LICENSE
+  license_sha256: 66056d06b874e3eb6a22f5fff297e1676a23dc43e8c8b81279c1ef33a6a270df
+

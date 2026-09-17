@@ -1,9 +1,9 @@
-# Experimental Protocol 1.2.3
+# Experimental Protocol 1.5.0
 
 **Mục đích:** định nghĩa dataset view, baseline, evaluation unit, metric, budget,
 failure policy và kiểm định thống kê áp dụng cho mọi kết quả chính. Protocol này
-được cập nhật và frozen ngày 13/09/2026; `configs/experiments/main.yaml` còn `draft` chỉ vì
-checksum split và threshold calibration chưa tồn tại ở Phase 0.
+được cập nhật và frozen ngày 17/09/2026; `configs/experiments/main.yaml` còn
+`draft` vì threshold calibration Phase 12 chưa tồn tại.
 
 ## Dataset và label firewall
 
@@ -114,3 +114,17 @@ manifest, per-project status, raw findings, metrics và `checksums.sha256`. Khô
 có `--overwrite`; resume phải có parent run. Smoke output/cache bị cô lập, luôn
 cleanup bằng trap và không được promote. Validator, không phải exit code đơn lẻ,
 quyết định run hợp lệ.
+
+## Security Knowledge Graph contract
+
+Phase 8 tạo một KG toàn cục, không phải graph theo project. Scope gồm bốn CWE gốc
+`22/78/79/94` và closure một hop của quan hệ MITRE CWE Research Concepts; project
+view chỉ được tạo từ Phase 9. MITRE CWE, OWASP và CodeQL Java API models phải được
+materialize ở preparation boundary với version/hash/license đã khóa; build KG sau
+đó chạy offline và không đọc advisory, evaluator-only hay `test_locked`.
+
+Fact deterministic và fact LLM-inferred dùng hai serialization riêng. Mọi node và
+edge đều có URL, version, license, artifact checksum, locator, extraction rule và
+confidence. Canonical Phase 8 không gọi LLM và lớp inferred phải rỗng. CodeQL model
+experimental hoặc provenance chưa được manual review bị loại; `manual`,
+`df-manual`, `ai-manual` và `hq-manual` được giữ với confidence policy versioned.

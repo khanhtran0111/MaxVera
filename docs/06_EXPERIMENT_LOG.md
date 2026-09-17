@@ -46,6 +46,9 @@ chép tay.
 | 2026-09-16 | Phase 7 full 003 | completed/not lockable | intended 80 success/16 recorded failures and checksums pass, but validator found 52 invalid node spans across five successful projects: 38 reversed ranges and 14 ranges beyond their persisted source file; diagnosed as independent multi-location getter bindings in QL; zero API calls |
 | 2026-09-16 | Phase 7 location-binding repair/pilots | implemented/passed | node/edge QL binds one `Location` per descriptor; runner validates each project graph before `SUCCESS`; all five formerly affected projects pass validator, totaling 22,400 nodes/35,354 edges with 100% edge resolution; D-022 |
 | 2026-09-16 | Phase 7 full 004 | selected/locked | 96/96 final statuses; 81 graph successes, 14 missing-database misses and one zero-node miss; 275,674 nodes, 442,786 edges, 100% resolved references; checksums and validator pass; clean commit `13a6016`; zero API calls; D-023 |
+| 2026-09-17 | Phase 8 pilot 001 | passed/diagnostic | full public-source parse pass with 6,117 nodes/9,467 edges; audit exposed that upstream generated-only CodeQL models were still admitted, so policy was tightened before selection |
+| 2026-09-17 | Phase 8 pilot 002 | passed | reviewed-provenance-only API policy; 2,619 nodes/5,285 edges, 7,904 deterministic facts, four CWE audits pass, zero inferred facts/LLM calls |
+| 2026-09-17 | Phase 8 full 001 | validated candidate/not locked | `p8_skg_global_full_001`; graph digest matches pilot 002; exact source/dependency checksums and validator pass; manifest records dirty working tree, so canonical lock awaits a clean commit/reproduction run |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

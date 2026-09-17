@@ -1,0 +1,283 @@
+# MaxVera — Project Memory
+
+> Cập nhật: 2026-09-17 (Asia/Bangkok)
+> Git snapshot: `main`/`origin/main` tại
+> `cef6a01986afbdb9683c5dc9bf108b25c42b65e1`
+> Hiện trạng: Phase 0–7 hoàn tất và Phase 6–7 đã khóa canonical; Phase 8 đã
+> implemented/validated bằng full candidate nhưng chưa khóa vì worktree chưa có
+> clean implementation commit; `test_locked` chưa mở/chạy.
+
+## Mục đích và cách dùng
+
+Đây là context nạp nhanh cho các lần chạy mới tiếp theo, không phải nhật ký đầy đủ. Chỉ giữ
+các invariant, quyết định, mốc canonical, lỗi có ảnh hưởng downstream và handoff
+hiện tại. Chi tiết nằm tại:
+
+- `docs/06_EXPERIMENT_LOG.md`: diễn biến run và chẩn đoán;
+- `docs/07_DECISION_LOG.md`: quyết định D-001 trở đi;
+- runbook từng phase: quy trình vận hành;
+- manifest/config/checksum của canonical run: nguồn có thẩm quyền cao nhất.
+
+Thứ tự xử lý mâu thuẫn: canonical manifest/checksum → resolved config → decision
+log → experiment log/runbook → file này → hội thoại.
+
+### Tự cập nhật sau mỗi phase
+
+Agent phải tự cập nhật file này trước khi báo phase hoàn tất, commit khóa hoặc
+chuyển phase; người dùng không cần nhắc. Chỉ thêm:
+
+1. trạng thái phase (`implemented`, `validated`, `locked` hoặc `blocked`);
+2. quyết định/invariant mới ảnh hưởng các phase sau;
+3. run ID, metrics chính và lock commit lấy từ artifact đã validate;
+4. lỗi/giới hạn còn ảnh hưởng downstream;
+5. handoff ngắn cho phase kế tiếp và Git snapshot mới.
+
+Không chép toàn bộ log chạy. Nếu chưa có canonical run, ghi rõ blocker và không
+tuyên bố phase đã khóa. Không ghi secret, API key, raw advisory hay label
+evaluator-only.
+
+## Snapshot hiện tại
+
+| Hạng mục | Giá trị |
+|---|---|
+| Bài toán | Zero-hint, repository-level vulnerability research |
+| Ngôn ngữ / static engine | Java / CodeQL |
+| Protocol hiện hành | `1.5.0` |
+| Dataset chính | `D_extended`: 120 rows, 77 repository groups, 4 CWE |
+| Development | 96 opaque projects |
+| Locked test | 24 opaque projects, chưa được analyzer truy cập |
+| Phase 6 lock | `p6_static_v2_dev_full_001`, static Top-10 |
+| Phase 7 lock | `p7_pg_dev_full_004`, 81/96 graph success |
+| Phase 8 candidate | `p8_skg_global_full_001`, 2,619 nodes / 5,285 edges |
+| LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
+| CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
+| Phase tiếp theo | Khóa Phase 8 trên clean commit, rồi Phase 9 — Evidence Graph |
+
+`configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 khóa
+calibration thresholds. Header của `docs/00_RESEARCH_SCOPE.md`,
+`docs/01_EXPERIMENT_PROTOCOL.md`, main config và D-024 cùng dùng contract
+`1.5.0` hiện hành.
+
+## Invariant không được phá
+
+- Analyzer chỉ thấy source repository, opaque project ID và metadata build tối
+  thiểu; không thấy CVE/CWE thật, advisory, patch/fix, identity mapping hay kết
+  quả công bố.
+- Split theo repository group. Không dùng `test_locked` để tune prompt, ranking,
+  schema, knowledge, threshold hoặc debug Phase 8–12.
+- Primary evaluation là intention-to-analyze: mọi selected project phải có final
+  status; build/database/analysis failure tính là miss, không bị loại khỏi mẫu.
+- Immutable run không sửa/overwrite. Rerun dùng run ID mới; resume chỉ dành cho
+  `.inprogress` cùng implementation/config.
+- Một project, một graph build và một LLM request chạy tuần tự; không chạy CodeQL
+  và LLM đồng thời.
+- B6–B9 phải fail-closed cho tới khi dependency thật tồn tại; không tạo kết quả
+  placeholder.
+- B1/B2 là oracle references, không phải fair zero-hint comparators.
+- IRIS track chỉ được gọi **IRIS pipeline reproduction with GPT-OSS 20B via
+  OpenRouter**, không claim exact/numerical reproduction.
+
+## Technical contract
+
+### Dataset
+
+| Track | Upstream commit | Rows / groups / CWE |
+|---|---|---|
+| `D_repro_v1` | `698fb7248ae30cb7f7782d59c841f05ad70ea9cc` | 120 / 77 / 4 |
+| `D_extended` | `afe0ebd0adc237abb46255f9cd479b1d71819136` | 120 / 77 / 4 |
+
+`D_extended` hiện chỉ có CWE-22/78/79/94, không phải bộ 213 CVE/49 CWE từng
+được upstream mô tả. Split development/test là 96/24.
+
+Phase 2 đã tạo final build status cho 120/120: 104 CodeQL DB thành công, 11
+`BUILD_FAILED`, 5 `CODEQL_DB_FAILED`.
+
+### LLM runtime
+
+- Model/route: `openai/gpt-oss-20b`, OpenRouter provider `akashml`;
+- không provider fallback; temperature 0, top-p 1, seed 1234;
+- strict Structured Outputs và validation cục bộ cho file/location;
+- Phase 4 dùng Groq lịch sử; Phase 5+ dùng AkashML, nên không coi chênh lệch
+  giữa hai phase là tác động retrieval thuần túy.
+
+## Các mốc Phase 0–8
+
+### Phase 0–3 — Nền tảng
+
+- **Phase 0:** khóa scope Java/CodeQL, RQ1–RQ6, B0–B9, leakage firewall,
+  metrics/statistical protocol và ba track reproduction/baseline/proposed.
+- **Phase 1:** dựng scaffold reproducible, `uv`/Python 3.10, config/provenance,
+  atomic immutable outputs và entrypoint B0–B9. Commit nền:
+  `19dc32d Implement research protocol and Phase 1 scaffold`.
+- **Phase 2:** materialize hai dataset, group split 80/20 bằng seed 1234, pinned
+  toolchains, fetch/build/CodeQL DB; kết quả 104 success/16 recorded failures.
+- **Phase 3:** disposable smoke trên 4 project, kiểm cả pass và injected failure;
+  cleanup về 0 artifact. Smoke không được promote thành scientific result.
+
+Quyết định nền tảng: D-001–D-007.
+
+### Phase 4 — B0/B1/B2 và IRIS reproduction
+
+Canonical: `phase4_gptoss20b_full_001`, chạy đủ 120 projects.
+
+| Baseline | Analysis success | Detected | Macro F1 trên success |
+|---|---:|---:|---:|
+| B0 CodeQL zero-hint | 104 | 36 | 0.08383 |
+| B1 CodeQL CWE-oracle | 104 | 21 | 0.13763 |
+| B2 IRIS + GPT-OSS | 99 | 36 | 0.10931 |
+
+Toolchain IRIS gốc không đọc được DB mới nên D-008 cho phép CodeQL 2.26.2;
+GPT-OSS/OpenRouter thay model gốc. Đây là pipeline reproduction có substitution.
+Commit: `cc3399c Complete Phase 4 reproduction with GPT-OSS 20B`.
+
+### Phase 5 — Controlled baselines B3/B4/B5
+
+Chạy trên `D_repro_v1` 120 rows để so cùng Phase 4; chưa phải main locked-test
+claim. B3 raw/chunked LLM, B4 lexical text-RAG, B5 deterministic static.
+
+| Baseline / run | Success | Detected | Recall ITA | Hyp R@10 | MRR |
+|---|---:|---:|---:|---:|---:|
+| B3 `p5_akashml_bm_full_001_b3` | 119/120 | 3 | .0250 | .0667 | .0583 |
+| B4 `p5_akashml_bm_full_001_b4` | 119/120 | 11 | .0917 | .3833 | .3226 |
+| B5 `p5_akashml_bm_full_001_b5` | 120/120 | 9 | .0750 | .8500 | .6076 |
+
+Hai final HTTP 429 được giữ làm miss. Structured Outputs, validation-aware repair
+và bounded Retry-After/backoff là các hardening chính (D-011–D-016).
+
+### Phase 6 — Zero-hint hypothesis generation
+
+Chạy development-only. Static v1 đạt R@10 `0.5625`; audit phát hiện ranking
+lệch CWE-22. D-018 thêm family-balanced interleaving, không đổi candidate pool.
+
+Canonical: `p6_static_v2_dev_full_001`, 96/96 success, deterministic static:
+
+- Recall@1/3/5/10: `0.3333 / 0.8229 / 0.8750 / 0.8750`;
+- MRR: `0.5546875`; candidate-pool Recall@40: `0.8750`;
+- còn 12/96 candidate-pool misses;
+- run commit `6483e10aaa59a63a0811900430dc16d8b174871c`, lock commit `cbdbf2e`.
+
+### Phase 7 — Source-backed CodeQL Program Graph
+
+Input là Phase 6 Top-10. Graph gồm `EXPR/STMT/CALLABLE/TYPE` và các edge
+AST/CALL/DEF_USE/DATA_FLOW/CONTROL_DEP/TYPE/TAINT_CANDIDATE; scope bị bounded
+bởi hypothesis files cộng một edge endpoint kề.
+
+Các lỗi đáng nhớ vì ảnh hưởng implementation:
+
+- zero-node phải là `ANALYSIS_FAILED`, không phải success;
+- CodeQL timeout phải TERM/KILL toàn process group để không để orphan giữ DB lock;
+- bind đúng một CodeQL `Location` cho toàn bộ file/start/end, tránh Cartesian
+  location tạo reversed/out-of-range spans;
+- runner phải validate integrity từng project trước khi ghi `SUCCESS`.
+
+Full 001–003 chỉ là diagnostic, không dùng downstream. Canonical:
+`p7_pg_dev_full_004` tại commit
+`13a60162949b0a297b51050cccf6ed5cd4fbd241`:
+
+- 96/96 final statuses; 81 `SUCCESS`, 15 `ANALYSIS_FAILED`;
+- 15 misses = 14 missing DB + 1 graph rỗng sau seed filtering;
+- 275,674 nodes; 442,786 edges; 100% edge references resolved;
+- validator: `PASS_WITH_ANALYSIS_FAILURES`; static analysis only;
+- lock commit `cef6a01` (D-023).
+
+`STATUS=FAILED` của run là đúng do còn 15 misses; validator pass và đủ 96 final
+statuses mới là gate authoritative.
+
+### Phase 8 — Global Security Knowledge Graph
+
+D-024 khóa một KG toàn cục, versioned và build offline; scope là bốn root CWE
+22/78/79/94 cộng closure một hop theo quan hệ incident của MITRE CWE view 1000.
+Nguồn preparation đã pin checksum và license:
+
+- MITRE CWE `4.20` XML và CWE Terms of Use;
+- OWASP Top 10:2021 tại commit
+  `66ebc4798d2ca72973967a20264bdeb70dcf0a13`, CC-BY-SA-4.0;
+- CodeQL `java-all@9.2.2`, build commit
+  `94101634db019b00637dd5cfe241f7e570da290d`, MIT.
+
+Schema gồm `CWE/OWASP_CATEGORY/SOURCE/SINK/SANITIZER/PROPAGATOR/PRECONDITION/
+MITIGATION`; mọi fact có stable ID, source locator, version, license, artifact
+checksum, extraction method và confidence. CodeQL API facts chỉ lấy các model
+origin đã review (`manual`, `df-manual`, `ai-manual`, `hq-manual`); generated và
+experimental models bị loại. Deterministic và LLM-inferred facts nằm ở hai file
+riêng; policy hiện tại cấm network/LLM trong build nên inferred file phải rỗng.
+
+Validated full candidate `p8_skg_global_full_001`:
+
+- 2,619 nodes; 5,285 edges; 7,904 deterministic facts; 0 inferred/LLM facts;
+- graph digest
+  `8685f50d8e5f3727aa8cba9361f739c58fc57fb3ba444d59a9577dc413fbc805`;
+- đủ source/sink/sanitizer/propagator/precondition/mitigation và related-CWE theo
+  audit policy; dependency/source/provenance/checksum validation đều pass;
+- manifest SHA-256
+  `372da360df05ec80cf6028dcef48718b161a4f9f9f294cee1a178d045ad88531`;
+- **chưa canonical/locked**: manifest ghi `git.dirty: true`. Cần commit đồng bộ,
+  chạy lại bằng run ID mới trên clean tree và xác nhận cùng graph digest.
+
+## Canonical artifacts và code map
+
+- Phase 4: `results/reproduction/phase4_gptoss20b_full_001__*`;
+- Phase 5: `results/aggregate/phase5_baseline_leaderboard.csv` và raw B3/B4/B5;
+- Phase 6: `results/hypotheses/static/p6_static_v2_dev_full_001/`;
+- Phase 7: `results/graphs/program/p7_pg_dev_full_004/`;
+- Phase 8 validated candidate: `results/graphs/knowledge/p8_skg_global_full_001/`;
+- configs/locks: `configs/experiments/`;
+- Phase 5/6/7/8 code: `src/baselines/`, `src/hypotheses/`,
+  `src/graphs/program/`, `src/graphs/knowledge/`;
+- runbooks: `docs/10_PHASE5_RUNBOOK.md`, `docs/11_PHASE6_RUNBOOK.md`,
+  `docs/12_PHASE7_RUNBOOK.md`, `docs/13_PHASE8_RUNBOOK.md`.
+
+Checksum chi tiết nằm trong từng canonical run. Raw results/DB thường bị Git
+ignore; clone khác có thể chỉ có compact exports và manifests.
+
+## Giới hạn còn hiệu lực
+
+- Dataset chỉ có 4 CWE; chưa được claim broad-CWE generalization.
+- Phase 4 có tool/model/provider substitution; không phải exact reproduction.
+- Phase 5 là implementation validation trên `D_repro_v1`, chưa phải final test.
+- Phase 6 còn 12/96 pool misses.
+- Phase 7 chỉ có 81 graph successes; 15 failures tiếp tục tính là miss downstream.
+- Program Graph là hypothesis-bounded, không phải full-repository CPG.
+- Phase 8 chỉ có một CodeQL barrier model được map thành sanitizer (CWE-79);
+  validator yêu cầu coverage thật, không tạo placeholder cho CWE khác.
+- Phase 8 full 001 là validated candidate nhưng chưa canonical vì được tạo trên
+  dirty tree; downstream chỉ được pin sau clean rerun và lock decision.
+- Hosted model không có project-controlled weight hash.
+- `test_locked` chưa mở; chưa được claim final paper performance.
+
+## Handoff khóa Phase 8 → Phase 9
+
+Phase 8 đã implement và validate. Để khóa canonical: commit đồng bộ code/config/
+docs/memory nhưng không commit `.env`, raw source bundle hoặc ignored results;
+trên clean tree chạy `p8_skg_global_full_002`, validate, xác nhận graph digest vẫn
+là `8685f50d...bc805`, rồi ghi lock commit/checksum bằng decision mới và cập nhật
+main config/memory. Không reuse/overwrite `full_001`.
+
+Phase 9 chỉ bắt đầu sau lock đó. Evidence Graph/USEG phải pin Phase 6, Phase 7 và
+Phase 8 canonical artifacts; tiếp tục development-only, fail-closed cho 15 graph
+misses và không mở `test_locked`. Preparation có thể truy cập mạng để materialize
+nguồn đã pin; build/analysis phải offline.
+
+## Checklist agent
+
+1. Đọc file này và phần liên quan trong decision log.
+2. Kiểm tra Git status; không đè thay đổi của người dùng.
+3. Xác minh config lock và artifact trực tiếp, không dựa vào hội thoại.
+4. Không mở `test_locked` hoặc evaluator-only trong analyzer task.
+5. Dùng run ID mới, atomic outputs, final statuses và validator.
+6. Ghi decision/experiment log nếu thay đổi reproducibility hoặc protocol.
+7. Trước khi báo phase hoàn tất, tự cập nhật ngắn gọn file này.
+8. Chỉ commit khóa khi memory, config, decision log, experiment log và runbook
+   đã đồng bộ.
+
+Quality checks chuẩn:
+
+```bash
+uv run --frozen ruff check .
+uv run --frozen mypy src
+uv run --frozen pytest -q
+```
+
+Tại Phase 8 validated candidate: Ruff pass, mypy pass, 81 tests pass. Formatter
+còn báo các file lịch sử ngoài phạm vi; không bulk-format trong task không liên
+quan.

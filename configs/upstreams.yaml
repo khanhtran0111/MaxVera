@@ -1,6 +1,6 @@
 schema_version: 1
 frozen_at: "2026-09-03T00:00:00+07:00"
-protocol_version: "1.2.3"
+protocol_version: "1.5.0"
 
 iris_reproduction:
   repository: https://github.com/iris-sast/iris.git
@@ -34,6 +34,17 @@ codeql_main:
   windows_x64:
     url: https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.26.2/codeql-bundle-win64.tar.gz
     sha256: 6f0eeb9d9168ffb0567768102ae2c3bcb159a091c19f9adf46b0de2965254278
+
+security_knowledge:
+  source_config: configs/knowledge/phase8_sources.yaml
+  source_bundle_id: phase8-security-knowledge-sources-v1
+  mitre_cwe_version: "4.20"
+  mitre_cwe_xml_sha256: 1f5a78bd62e00f86436b4fe32d5034a57e8f0da88e4063b2072b664ae510912e
+  owasp_top10_version: "2021"
+  owasp_top10_commit: 66ebc4798d2ca72973967a20264bdeb70dcf0a13
+  codeql_java_model_pack: codeql/java-all@9.2.2
+  codeql_java_model_commit: 94101634db019b00637dd5cfe241f7e570da290d
+  codeql_java_model_tree_sha256: b466420b95d11f5ce74e3e503757f8c3a307bfa7531e13add068eca50fef817a
 
 qwen:
   purpose: phase3_disposable_smoke_only

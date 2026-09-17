@@ -1,5 +1,8 @@
 # MaxVera
 
+Project state and Phase 0–7 handoff memory:
+[`PROJECT_MEMORY.md`](PROJECT_MEMORY.md).
+
 MaxVera is a reproducible research scaffold for graph-grounded, zero-hint,
 repository-level vulnerability discovery in Java. The analysis pipeline uses
 CodeQL for static verification and `openai/gpt-oss-20b` through a pinned
@@ -16,10 +19,20 @@ The Phase 7 CodeQL program graph is locked at canonical development run
 intention-to-analyze misses; its extractor, integrity validator, and
 neighborhood/slice query CLI are documented in
 [`docs/12_PHASE7_RUNBOOK.md`](docs/12_PHASE7_RUNBOOK.md).
+Phase 8 implements a global, versioned Security Knowledge Graph from pinned
+MITRE CWE 4.20, OWASP Top 10:2021 and CodeQL Java API semantics. It separates
+deterministic and inferred facts, requires per-fact provenance/confidence, runs
+offline with zero LLM calls, and is documented in
+[`docs/13_PHASE8_RUNBOOK.md`](docs/13_PHASE8_RUNBOOK.md).
+Validated full candidate `p8_skg_global_full_001` contains 2,619 nodes and 5,285
+edges (7,904 deterministic facts); its graph digest matches the final pilot.
+Canonical lock is intentionally pending a clean commit because the run manifest
+records the implementation working tree as dirty.
 The frozen 120-row release has 120 final build statuses and 104 successful
 CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw
 context, B4 text-RAG, and B5 static hypotheses; B6-B9 remain fail-closed until
-their graph, verification, and calibration dependencies in Phases 6-12 exist.
+their remaining retrieval, USEG, verification, and calibration dependencies in
+Phases 9-12 exist.
 Every entrypoint fails closed if any smoke artifact remains.
 
 ## Bootstrap
