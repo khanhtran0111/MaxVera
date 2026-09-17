@@ -11,10 +11,6 @@ static_verification: true
 calibration: true
 role: proposed_method
 blocked_by:
-  - phase_6_zero_hint_hypothesis_generator
-  - phase_7_program_graph
-  - phase_8_security_knowledge_graph
-  - phase_9_useg
   - phase_10_specification_synthesis
   - phase_11_static_verification
   - phase_12_calibration

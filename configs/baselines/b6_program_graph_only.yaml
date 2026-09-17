@@ -9,5 +9,4 @@ provider_route: akashml
 retrieval: program_graph_only
 role: fair_baseline
 blocked_by:
-  - phase_7_program_graph
   - phase_10_graph_retrieval

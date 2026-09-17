@@ -1,1 +1,1 @@
-"""Evidence Graph implementation (Phase 9)."""
+"""Versioned Evidence Graph schema for Phase 9."""

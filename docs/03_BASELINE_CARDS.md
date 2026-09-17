@@ -16,10 +16,10 @@ nhất, B9 là proposed method chứ không phải external baseline.
 | B3 | Java chunks breadth-first | GPT-OSS 20B | Phase 5 runnable | Không security-aware retrieval |
 | B4 | Java chunks xếp hạng bằng security terms | GPT-OSS 20B | Phase 5 runnable | Text retrieval, không program graph |
 | B5 | Regex/static API signals trên toàn source Java | Không | Phase 5 runnable | Hypothesis, chưa static verification |
-| B6 | Program Graph | GPT-OSS 20B | Blocked đến Phase 7/10 | Chưa có graph extractor/retriever |
+| B6 | Program Graph | GPT-OSS 20B | Blocked đến Phase 10 | Phase 7 graph có sẵn; chưa có retriever |
 | B7 | Security KG | GPT-OSS 20B | Blocked đến Phase 10 | Phase 8 KG có sẵn; chưa có retriever |
-| B8 | USEG không pruning | GPT-OSS 20B | Blocked đến Phase 9/10 | Nearest ablation |
-| B9 | USEG pruned + verification/calibration | GPT-OSS 20B | Blocked đến Phase 6-12 | Proposed method |
+| B8 | USEG không pruning | GPT-OSS 20B | Blocked đến Phase 10 | Phase 9 USEG có sẵn; chưa có retriever |
+| B9 | USEG pruned + verification/calibration | GPT-OSS 20B | Blocked đến Phase 10-12 | USEG có sẵn; thiếu pruning/spec, verification và calibration |
 
 ## Hợp đồng công bằng B3/B4
 

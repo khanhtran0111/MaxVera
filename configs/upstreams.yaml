@@ -1,6 +1,6 @@
 schema_version: 1
 frozen_at: "2026-09-03T00:00:00+07:00"
-protocol_version: "1.5.0"
+protocol_version: "1.6.0"
 
 iris_reproduction:
   repository: https://github.com/iris-sast/iris.git

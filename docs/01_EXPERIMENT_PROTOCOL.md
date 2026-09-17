@@ -1,4 +1,4 @@
-# Experimental Protocol 1.5.0
+# Experimental Protocol 1.6.0
 
 **Mục đích:** định nghĩa dataset view, baseline, evaluation unit, metric, budget,
 failure policy và kiểm định thống kê áp dụng cho mọi kết quả chính. Protocol này
@@ -128,3 +128,20 @@ edge đều có URL, version, license, artifact checksum, locator, extraction ru
 confidence. Canonical Phase 8 không gọi LLM và lớp inferred phải rỗng. CodeQL model
 experimental hoặc provenance chưa được manual review bị loại; `manual`,
 `df-manual`, `ai-manual` và `hq-manual` được giữ với confidence policy versioned.
+
+## Evidence Graph và USEG contract
+
+Phase 9 iteration 0 chỉ dùng ba canonical development artifacts của Phase 6/7/8;
+không đọc evaluator-only, advisory, patch hoặc `test_locked`, và không gọi mạng/
+LLM. Evidence schema khai báo `HYPOTHESIS`, `ASSERTION`, `CODEQL_FINDING`,
+`TAINT_PATH`, `SANITIZER_EVIDENCE`, `CONTRADICTION`, `VERIFICATION_RESULT`; edge
+chỉ gồm `SUPPORTS`, `CONTRADICTS`, `VERIFIED_BY`, `DERIVED_FROM`, `MATCHES`.
+
+`TAINT_CANDIDATE` từ Phase 7 chỉ được materialize thành finding/path với trạng thái
+`unverified_candidate`, không được gọi là verified vulnerability. Node loại
+verification/contradiction/sanitizer chỉ xuất hiện khi có upstream evidence thật;
+không tạo placeholder. Confidence được giữ thành các component độc lập có basis,
+không gộp thành scalar. Mọi record mang analysis iteration và provenance artifact.
+Đồ thị dependency phải acyclic, JSONL round-trip lossless, và mọi candidate path
+phải truy được tới Program location lẫn Security fact. 15 Phase 7 failures tiếp
+tục là intention-to-analyze miss.

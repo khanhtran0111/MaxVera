@@ -1,1 +1,1 @@
-"""Unified Security Evidence Graph implementation (Phase 9)."""
+"""Unified Security Evidence Graph construction and validation for Phase 9."""

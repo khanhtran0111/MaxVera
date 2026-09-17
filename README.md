@@ -1,6 +1,6 @@
 # MaxVera
 
-Project state and Phase 0–7 handoff memory:
+Project state and phase handoff memory:
 [`PROJECT_MEMORY.md`](PROJECT_MEMORY.md).
 
 MaxVera is a reproducible research scaffold for graph-grounded, zero-hint,
@@ -28,11 +28,18 @@ Canonical development run `p8_skg_global_full_002`, built from clean commit
 `50ed53e`, contains 2,619 nodes and 5,285 edges (7,904 deterministic facts).
 Its graph digest matches the final pilot and dirty-tree diagnostic full 001;
 source, dependency, provenance, checksum and per-CWE audit gates all pass.
+Phase 9 implements the iteration-0 Evidence Graph/USEG that joins locked Phase 6
+hypotheses, Phase 7 source-backed Program nodes, and Phase 8 Security facts while
+keeping confidence components and provenance separate. Validated candidate
+`p9_useg_dev_full_001` covers all 96 development statuses (81 graphs and 15
+inherited misses), with 7,527 nodes, 16,398 edges, 823/823 candidate taint paths
+traceable across Program and Security layers, zero cycles, and lossless JSONL
+round-trip. See [`docs/14_PHASE9_RUNBOOK.md`](docs/14_PHASE9_RUNBOOK.md).
 The frozen 120-row release has 120 final build statuses and 104 successful
 CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw
 context, B4 text-RAG, and B5 static hypotheses; B6-B9 remain fail-closed until
-their remaining retrieval, USEG, verification, and calibration dependencies in
-Phases 9-12 exist.
+their remaining retrieval, specification, verification, and calibration
+dependencies in Phases 10-12 exist.
 Every entrypoint fails closed if any smoke artifact remains.
 
 ## Bootstrap

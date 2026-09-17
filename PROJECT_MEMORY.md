@@ -1,10 +1,11 @@
 # MaxVera — Project Memory
 
 > Cập nhật: 2026-09-17 (Asia/Bangkok)
-> Git snapshot của canonical Phase 8 run:
-> `50ed53ee5b99ce3adeae81fbbf9c41c33e4fe70a`
-> Hiện trạng: Phase 0–8 hoàn tất; Phase 6–8 đã khóa canonical; `test_locked`
-> chưa mở/chạy.
+> Git HEAD trước thay đổi Phase 9:
+> `4f6d75bdd042d1a35cbfe8cbf52e2709dd5d0aef`
+> Hiện trạng: Phase 0–8 hoàn tất và khóa canonical; Phase 9 đã implemented/
+> validated bằng full candidate nhưng chưa khóa vì implementation chưa có clean
+> commit; `test_locked` chưa mở/chạy.
 
 ## Mục đích và cách dùng
 
@@ -41,21 +42,22 @@ evaluator-only.
 |---|---|
 | Bài toán | Zero-hint, repository-level vulnerability research |
 | Ngôn ngữ / static engine | Java / CodeQL |
-| Protocol hiện hành | `1.5.0` |
+| Protocol hiện hành | `1.6.0` |
 | Dataset chính | `D_extended`: 120 rows, 77 repository groups, 4 CWE |
 | Development | 96 opaque projects |
 | Locked test | 24 opaque projects, chưa được analyzer truy cập |
 | Phase 6 lock | `p6_static_v2_dev_full_001`, static Top-10 |
 | Phase 7 lock | `p7_pg_dev_full_004`, 81/96 graph success |
 | Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
+| Phase 9 candidate | `p9_useg_dev_full_001`, 81/96 graph success |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase tiếp theo | Phase 9 — Evidence Graph và USEG |
+| Phase tiếp theo | Khóa Phase 9 trên clean commit, rồi Phase 10 — Graph retrieval/spec synthesis |
 
 `configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 khóa
 calibration thresholds. Header của `docs/00_RESEARCH_SCOPE.md`,
-`docs/01_EXPERIMENT_PROTOCOL.md`, main config và D-024–D-025 cùng dùng contract
-`1.5.0` hiện hành.
+`docs/01_EXPERIMENT_PROTOCOL.md`, main config và D-026 cùng dùng contract `1.6.0`
+hiện hành.
 
 ## Invariant không được phá
 
@@ -99,7 +101,7 @@ Phase 2 đã tạo final build status cho 120/120: 104 CodeQL DB thành công, 1
 - Phase 4 dùng Groq lịch sử; Phase 5+ dùng AkashML, nên không coi chênh lệch
   giữa hai phase là tác động retrieval thuần túy.
 
-## Các mốc Phase 0–8
+## Các mốc Phase 0–9
 
 ### Phase 0–3 — Nền tảng
 
@@ -216,6 +218,33 @@ Canonical full run `p8_skg_global_full_002` tại clean commit
 - manifest ghi `git.dirty: false`; graph digest khớp pilot 002 và dirty-tree
   diagnostic full 001. Full 002 được khóa cho Phase 9 trở đi.
 
+### Phase 9 — Evidence Graph và USEG iteration 0
+
+D-026 định nghĩa Evidence nodes `HYPOTHESIS/ASSERTION/CODEQL_FINDING/TAINT_PATH/
+SANITIZER_EVIDENCE/CONTRADICTION/VERIFICATION_RESULT`, reference Program/Security
+nodes và năm edge `SUPPORTS/CONTRADICTS/VERIFIED_BY/DERIVED_FROM/MATCHES`. Mọi
+record có analysis iteration, stable ID, artifact provenance; confidence giữ dạng
+component độc lập, không aggregate sớm.
+
+Iteration 0 map exact candidate CWE, source location theo same-file line
+containment ưu tiên symbol, API theo exact symbol/role, và precondition theo CWE
+membership. Phase 7 `TAINT_CANDIDATE` chỉ trở thành `unverified_candidate`, không
+phải verified vulnerability. Không materialize placeholder sanitizer evidence,
+contradiction hoặc verification result khi upstream chưa có bằng chứng thật.
+
+Validated full candidate `p9_useg_dev_full_001`:
+
+- đủ 96 statuses: 81 `SUCCESS`, 15 `ANALYSIS_FAILED` kế thừa Phase 7;
+- 7,527 nodes, 16,398 edges; 806 hypotheses và 2,634 assertions trên 81 graph;
+- 823 CodeQL candidate findings/taint paths; 823/823 trace được tới cả Program
+  location và Security fact;
+- graph digest
+  `918707ee3bbb59858b2b2d8dd9aafb762467f983bf579c97e35ba4191a1a41fa`;
+- zero cycle, JSONL round-trip lossless, zero LLM/network call;
+- hai successful projects không có incident taint candidate phù hợp, giữ 0 path;
+- **chưa canonical/locked**: manifest ghi `git.dirty: true`; cần clean commit và
+  full run ID mới trước khi dùng downstream.
+
 ## Canonical artifacts và code map
 
 - Phase 4: `results/reproduction/phase4_gptoss20b_full_001__*`;
@@ -223,11 +252,14 @@ Canonical full run `p8_skg_global_full_002` tại clean commit
 - Phase 6: `results/hypotheses/static/p6_static_v2_dev_full_001/`;
 - Phase 7: `results/graphs/program/p7_pg_dev_full_004/`;
 - Phase 8: `results/graphs/knowledge/p8_skg_global_full_002/`;
+- Phase 9 validated candidate: `results/graphs/useg/p9_useg_dev_full_001/`;
 - configs/locks: `configs/experiments/`;
-- Phase 5/6/7/8 code: `src/baselines/`, `src/hypotheses/`,
-  `src/graphs/program/`, `src/graphs/knowledge/`;
+- Phase 5/6/7/8/9 code: `src/baselines/`, `src/hypotheses/`,
+  `src/graphs/program/`, `src/graphs/knowledge/`, `src/graphs/evidence/`,
+  `src/graphs/useg/`;
 - runbooks: `docs/10_PHASE5_RUNBOOK.md`, `docs/11_PHASE6_RUNBOOK.md`,
-  `docs/12_PHASE7_RUNBOOK.md`, `docs/13_PHASE8_RUNBOOK.md`.
+  `docs/12_PHASE7_RUNBOOK.md`, `docs/13_PHASE8_RUNBOOK.md`,
+  `docs/14_PHASE9_RUNBOOK.md`.
 
 Checksum chi tiết nằm trong từng canonical run. Raw results/DB thường bị Git
 ignore; clone khác có thể chỉ có compact exports và manifests.
@@ -243,20 +275,25 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
 - Phase 8 chỉ có một CodeQL barrier model được map thành sanitizer (CWE-79);
   validator yêu cầu coverage thật, không tạo placeholder cho CWE khác.
 - Phase 8 full 001 chỉ là dirty-tree diagnostic; downstream phải pin full 002.
+- Phase 9 iteration 0 chưa có final verified finding, contradiction hoặc
+  verification result; các fact này thuộc Phase 11 và không được suy diễn từ
+  candidate path.
+- Phase 9 full 001 chỉ là dirty-tree candidate; Phase 10 phải pin clean canonical
+  rerun. Hai trong 81 graph success không có incident candidate path.
 - Hosted model không có project-controlled weight hash.
 - `test_locked` chưa mở; chưa được claim final paper performance.
 
-## Handoff Phase 9 — Evidence Graph và USEG
+## Handoff khóa Phase 9 → Phase 10
 
-Phase 9 phải pin Phase 6 `p6_static_v2_dev_full_001`, Phase 7
-`p7_pg_dev_full_004` và Phase 8 `p8_skg_global_full_002` bằng exact checksums.
-Định nghĩa evidence nodes/edges và cross-layer Program ↔ Security ↔ Evidence sao
-cho mọi finding truy ngược được tới source location, knowledge fact và tool/model
-call; confidence/provenance không được gộp sớm thành một scalar.
+Commit đồng bộ code/config/docs/memory nhưng không commit ignored results. Trên
+clean tree chạy `p9_useg_dev_full_002`, validate, xác nhận graph digest vẫn là
+`918707ee...a41fa`, rồi ghi canonical lock/checksums bằng decision mới. Không sửa
+hoặc reuse full 001.
 
-Tiếp tục development-only, fail-closed cho 15 Phase 7 graph misses, không mở
-`test_locked`, không tạo placeholder evidence và bảo đảm serialization round-trip
-không mất dữ liệu hoặc tạo cycle double-count confidence.
+Phase 10 chỉ bắt đầu sau lock đó. Graph retrieval/spec synthesis phải pin exact
+Phase 9 canonical artifact, so sánh raw/text-RAG/graph unpruned/pruned, giữ budget
+đã khóa, compile generated QLL/template constraints và không dùng ground-truth
+patch. Tiếp tục development-only và không mở `test_locked`.
 
 ## Checklist agent
 
@@ -278,6 +315,6 @@ uv run --frozen mypy src
 uv run --frozen pytest -q
 ```
 
-Tại Phase 8 canonical lock: Ruff pass, mypy pass, 82 tests pass. Formatter
+Tại Phase 9 validated candidate: Ruff pass, mypy pass, 86 tests pass. Formatter
 còn báo các file lịch sử ngoài phạm vi; không bulk-format trong task không liên
 quan.

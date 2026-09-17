@@ -442,6 +442,51 @@ không đổi protocol `1.5.0`, schema, scope, source policy, confidence hoặc 
 firewall. Phase 9 phải pin đúng run/checksum trên, tiếp tục development-only và
 không mở `test_locked`.
 
+## D-026 — Phase 9 iteration-0 Evidence Graph và USEG (2026-09-17)
+
+Phase 9 tạo một USEG development-only bằng exact lock Phase 6
+`p6_static_v2_dev_full_001`, Phase 7 `p7_pg_dev_full_004` và Phase 8
+`p8_skg_global_full_002`. Runner lấy tập 96 opaque project trực tiếp từ manifest
+Phase 6, không đọc split/evaluator/advisory/patch hoặc `test_locked`; build dùng
+zero LLM và zero network call. Mười lăm failure Phase 7 được truyền nguyên trạng
+thành `ANALYSIS_FAILED`, không tạo partial/placeholder graph.
+
+Schema `phase9-useg-v1` khai báo Evidence node `HYPOTHESIS`, `ASSERTION`,
+`CODEQL_FINDING`, `TAINT_PATH`, `SANITIZER_EVIDENCE`, `CONTRADICTION`,
+`VERIFICATION_RESULT`; Program và Security facts được nhập bằng reference node
+giữ nguyên upstream ID. Edge bị giới hạn ở `SUPPORTS`, `CONTRADICTS`,
+`VERIFIED_BY`, `DERIVED_FROM`, `MATCHES`. Mọi record có `analysis_iteration=0`,
+artifact checksum và record-level provenance. Confidence là danh sách component
+độc lập kèm basis; cấm aggregate confidence scalar để tránh gộp bằng chứng sớm.
+
+Cross-layer mapping v1 dùng exact candidate-CWE identity; location assertion map
+tới tối đa ba Program nodes cùng file và chứa line, ưu tiên exact symbol; API fact
+map bằng exact symbol với callable/type trong đúng source/sink role của CWE;
+precondition map qua quan hệ CWE membership. Mỗi hypothesis lấy tối đa 16
+`TAINT_CANDIDATE` incident với Program node đã map. Các edge này chỉ được ghi là
+`CODEQL_FINDING`/`TAINT_PATH` có status `unverified_candidate` và
+`complete_path=false`; chúng không phải verified vulnerability. Finding/path,
+assertion và reference đều có stable canonical ID/order.
+
+`SANITIZER_EVIDENCE`, `CONTRADICTION` và `VERIFICATION_RESULT` chưa được
+materialize vì upstream iteration 0 không có đủ evidence xác nhận; schema hỗ trợ
+nhưng policy cấm bịa placeholder. Tương tự, Phase 9 có zero final finding nên gate
+final-finding trace trả `PASS_NO_FINAL_FINDINGS_PHASE9`; Phase 11 phải materialize
+verification thật và validator khi đó yêu cầu trace tới Program location,
+Security fact và tool/model call.
+
+Validator kiểm exact dependency/config/implementation checksums, 96 final status,
+canonical IDs/order, resolved endpoints, record provenance, independent
+confidence components, leakage strings, graph rebuild determinism, acyclic
+dependency graph, lossless JSONL round-trip và trace Program+Security cho mọi
+candidate path. Full candidate `p9_useg_dev_full_001` pass với 81/96 graph
+success, 15 inherited misses, 7.527 nodes, 16.398 edges và 823/823 candidate
+paths traceable; 0 cycle, zero LLM/network call. Hai successful projects không có
+incident taint candidate phù hợp và được giữ ở 0 path thay vì sinh dữ liệu giả.
+Manifest full 001 ghi Git dirty nên chưa được khóa canonical; cần clean commit và
+full run ID mới. Contract tăng protocol từ `1.5.0` lên `1.6.0`, không đổi dataset,
+split, budget, metric hoặc lock Phase 6–8.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và
