@@ -70,6 +70,21 @@ def test_phase8_config_locks_sources_scope_schema_and_dependencies() -> None:
     assert sources["codeql_java_models"]["model_file_count"] == 613
 
 
+def test_phase8_canonical_selection_is_locked_to_clean_full_002() -> None:
+    main = yaml.safe_load(
+        (REPO_ROOT / "configs/experiments/main.yaml").read_text(encoding="utf-8")
+    )
+    lock = main["development_locks"]["phase8_security_knowledge_graph"]
+    assert lock["status"] == "locked_for_downstream_development"
+    assert lock["canonical_run_id"] == "p8_skg_global_full_002"
+    assert lock["run_commit"] == "50ed53ee5b99ce3adeae81fbbf9c41c33e4fe70a"
+    assert lock["run_git_dirty"] is False
+    assert lock["graph_sha256"] == (
+        "8685f50d8e5f3727aa8cba9361f739c58fc57fb3ba444d59a9577dc413fbc805"
+    )
+    assert lock["llm_inferred_facts"] == 0
+
+
 def test_phase8_codeql_semantics_are_role_separated_and_provenance_complete(
     tmp_path: Path,
 ) -> None:

@@ -1,11 +1,10 @@
 # MaxVera — Project Memory
 
 > Cập nhật: 2026-09-17 (Asia/Bangkok)
-> Git snapshot: `main`/`origin/main` tại
-> `cef6a01986afbdb9683c5dc9bf108b25c42b65e1`
-> Hiện trạng: Phase 0–7 hoàn tất và Phase 6–7 đã khóa canonical; Phase 8 đã
-> implemented/validated bằng full candidate nhưng chưa khóa vì worktree chưa có
-> clean implementation commit; `test_locked` chưa mở/chạy.
+> Git snapshot của canonical Phase 8 run:
+> `50ed53ee5b99ce3adeae81fbbf9c41c33e4fe70a`
+> Hiện trạng: Phase 0–8 hoàn tất; Phase 6–8 đã khóa canonical; `test_locked`
+> chưa mở/chạy.
 
 ## Mục đích và cách dùng
 
@@ -48,14 +47,14 @@ evaluator-only.
 | Locked test | 24 opaque projects, chưa được analyzer truy cập |
 | Phase 6 lock | `p6_static_v2_dev_full_001`, static Top-10 |
 | Phase 7 lock | `p7_pg_dev_full_004`, 81/96 graph success |
-| Phase 8 candidate | `p8_skg_global_full_001`, 2,619 nodes / 5,285 edges |
+| Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase tiếp theo | Khóa Phase 8 trên clean commit, rồi Phase 9 — Evidence Graph |
+| Phase tiếp theo | Phase 9 — Evidence Graph và USEG |
 
 `configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 khóa
 calibration thresholds. Header của `docs/00_RESEARCH_SCOPE.md`,
-`docs/01_EXPERIMENT_PROTOCOL.md`, main config và D-024 cùng dùng contract
+`docs/01_EXPERIMENT_PROTOCOL.md`, main config và D-024–D-025 cùng dùng contract
 `1.5.0` hiện hành.
 
 ## Invariant không được phá
@@ -202,7 +201,8 @@ origin đã review (`manual`, `df-manual`, `ai-manual`, `hq-manual`); generated 
 experimental models bị loại. Deterministic và LLM-inferred facts nằm ở hai file
 riêng; policy hiện tại cấm network/LLM trong build nên inferred file phải rỗng.
 
-Validated full candidate `p8_skg_global_full_001`:
+Canonical full run `p8_skg_global_full_002` tại clean commit
+`50ed53ee5b99ce3adeae81fbbf9c41c33e4fe70a` (D-025):
 
 - 2,619 nodes; 5,285 edges; 7,904 deterministic facts; 0 inferred/LLM facts;
 - graph digest
@@ -210,9 +210,11 @@ Validated full candidate `p8_skg_global_full_001`:
 - đủ source/sink/sanitizer/propagator/precondition/mitigation và related-CWE theo
   audit policy; dependency/source/provenance/checksum validation đều pass;
 - manifest SHA-256
-  `372da360df05ec80cf6028dcef48718b161a4f9f9f294cee1a178d045ad88531`;
-- **chưa canonical/locked**: manifest ghi `git.dirty: true`. Cần commit đồng bộ,
-  chạy lại bằng run ID mới trên clean tree và xác nhận cùng graph digest.
+  `91ca35b8ee2b9f153ba8dedfe75a4e165231b5a3b86cc5219e7623a2497f270a`;
+- checksum index
+  `a051e41e7e5194f25d3ac08f9654a30af6f7cab0e14846952cce0fb64cb8953c`;
+- manifest ghi `git.dirty: false`; graph digest khớp pilot 002 và dirty-tree
+  diagnostic full 001. Full 002 được khóa cho Phase 9 trở đi.
 
 ## Canonical artifacts và code map
 
@@ -220,7 +222,7 @@ Validated full candidate `p8_skg_global_full_001`:
 - Phase 5: `results/aggregate/phase5_baseline_leaderboard.csv` và raw B3/B4/B5;
 - Phase 6: `results/hypotheses/static/p6_static_v2_dev_full_001/`;
 - Phase 7: `results/graphs/program/p7_pg_dev_full_004/`;
-- Phase 8 validated candidate: `results/graphs/knowledge/p8_skg_global_full_001/`;
+- Phase 8: `results/graphs/knowledge/p8_skg_global_full_002/`;
 - configs/locks: `configs/experiments/`;
 - Phase 5/6/7/8 code: `src/baselines/`, `src/hypotheses/`,
   `src/graphs/program/`, `src/graphs/knowledge/`;
@@ -240,23 +242,21 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
 - Program Graph là hypothesis-bounded, không phải full-repository CPG.
 - Phase 8 chỉ có một CodeQL barrier model được map thành sanitizer (CWE-79);
   validator yêu cầu coverage thật, không tạo placeholder cho CWE khác.
-- Phase 8 full 001 là validated candidate nhưng chưa canonical vì được tạo trên
-  dirty tree; downstream chỉ được pin sau clean rerun và lock decision.
+- Phase 8 full 001 chỉ là dirty-tree diagnostic; downstream phải pin full 002.
 - Hosted model không có project-controlled weight hash.
 - `test_locked` chưa mở; chưa được claim final paper performance.
 
-## Handoff khóa Phase 8 → Phase 9
+## Handoff Phase 9 — Evidence Graph và USEG
 
-Phase 8 đã implement và validate. Để khóa canonical: commit đồng bộ code/config/
-docs/memory nhưng không commit `.env`, raw source bundle hoặc ignored results;
-trên clean tree chạy `p8_skg_global_full_002`, validate, xác nhận graph digest vẫn
-là `8685f50d...bc805`, rồi ghi lock commit/checksum bằng decision mới và cập nhật
-main config/memory. Không reuse/overwrite `full_001`.
+Phase 9 phải pin Phase 6 `p6_static_v2_dev_full_001`, Phase 7
+`p7_pg_dev_full_004` và Phase 8 `p8_skg_global_full_002` bằng exact checksums.
+Định nghĩa evidence nodes/edges và cross-layer Program ↔ Security ↔ Evidence sao
+cho mọi finding truy ngược được tới source location, knowledge fact và tool/model
+call; confidence/provenance không được gộp sớm thành một scalar.
 
-Phase 9 chỉ bắt đầu sau lock đó. Evidence Graph/USEG phải pin Phase 6, Phase 7 và
-Phase 8 canonical artifacts; tiếp tục development-only, fail-closed cho 15 graph
-misses và không mở `test_locked`. Preparation có thể truy cập mạng để materialize
-nguồn đã pin; build/analysis phải offline.
+Tiếp tục development-only, fail-closed cho 15 Phase 7 graph misses, không mở
+`test_locked`, không tạo placeholder evidence và bảo đảm serialization round-trip
+không mất dữ liệu hoặc tạo cycle double-count confidence.
 
 ## Checklist agent
 
@@ -278,6 +278,6 @@ uv run --frozen mypy src
 uv run --frozen pytest -q
 ```
 
-Tại Phase 8 validated candidate: Ruff pass, mypy pass, 81 tests pass. Formatter
+Tại Phase 8 canonical lock: Ruff pass, mypy pass, 82 tests pass. Formatter
 còn báo các file lịch sử ngoài phạm vi; không bulk-format trong task không liên
 quan.

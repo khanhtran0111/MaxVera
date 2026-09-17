@@ -21,21 +21,22 @@ development_locks:
     manifest_sha256: ce5f1d61616f6b990d863f75f94cfca35926a0973a08d5051655d9f35ce2c832
     graph_summary_sha256: a70bc3bbea0b4e8387ceeff1e804ff259db9152f925de0812f94fd6aa73462b7
   phase8_security_knowledge_graph:
-    status: validated_candidate_pending_clean_commit_lock
+    status: locked_for_downstream_development
     builder_version: phase8-security-kg-v1
     graph_scope: global
     root_cwes: [CWE-22, CWE-78, CWE-79, CWE-94]
-    candidate_run_id: p8_skg_global_full_001
+    canonical_run_id: p8_skg_global_full_002
+    run_commit: 50ed53ee5b99ce3adeae81fbbf9c41c33e4fe70a
+    run_git_dirty: false
     nodes: 2619
     edges: 5285
     deterministic_facts: 7904
     llm_inferred_facts: 0
     graph_sha256: 8685f50d8e5f3727aa8cba9361f739c58fc57fb3ba444d59a9577dc413fbc805
-    manifest_sha256: 372da360df05ec80cf6028dcef48718b161a4f9f9f294cee1a178d045ad88531
+    manifest_sha256: 91ca35b8ee2b9f153ba8dedfe75a4e165231b5a3b86cc5219e7623a2497f270a
     kg_summary_sha256: 85bff62c1c4e541885f411e8cde90060dcd9e063d09ff9c8bf98d5723b570308
     audit_sample_sha256: 8cabf57e1e67e6946d6560ded5736e4c8c1e754c4b31323758f7b125f0f810f2
-    checksums_index_sha256: 2f003e1792365daac5fa09e37365744b419ff0ea1a835709c4d0acbe71f79f91
-    lock_blocker: run_manifest_git_dirty_true
+    checksums_index_sha256: a051e41e7e5194f25d3ac08f9654a30af6f7cab0e14846952cce0fb64cb8953c
 scope:
   language: Java
   static_analyzer: CodeQL

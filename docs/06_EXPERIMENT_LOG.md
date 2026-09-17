@@ -49,6 +49,7 @@ chép tay.
 | 2026-09-17 | Phase 8 pilot 001 | passed/diagnostic | full public-source parse pass with 6,117 nodes/9,467 edges; audit exposed that upstream generated-only CodeQL models were still admitted, so policy was tightened before selection |
 | 2026-09-17 | Phase 8 pilot 002 | passed | reviewed-provenance-only API policy; 2,619 nodes/5,285 edges, 7,904 deterministic facts, four CWE audits pass, zero inferred facts/LLM calls |
 | 2026-09-17 | Phase 8 full 001 | validated candidate/not locked | `p8_skg_global_full_001`; graph digest matches pilot 002; exact source/dependency checksums and validator pass; manifest records dirty working tree, so canonical lock awaits a clean commit/reproduction run |
+| 2026-09-17 | Phase 8 full 002 | selected/locked | `p8_skg_global_full_002`; clean commit `50ed53e`; 2,619 nodes/5,285 edges, 7,904 deterministic facts, zero inferred facts/LLM calls; digest reproduces pilot 002/full 001; provenance, checksum, dependencies and four-CWE audit pass; D-025 |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

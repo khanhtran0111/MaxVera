@@ -67,9 +67,10 @@ jq '.root_cwes[] | {cwe_id,status,relation_counts}' \
 
 Không chạy lại cùng ID hoặc chỉnh artifact sau atomic finalization. Nếu code/config
 đổi, tạo run ID mới. Chỉ khóa một full run khi implementation/config/docs đã đồng
-bộ và provenance manifest đủ để tái lập. Workspace hiện đã có validated candidate
-`p8_skg_global_full_001`; không dùng lại ID đó. Run `full_002` sau clean commit là
-candidate phù hợp để khóa canonical.
+bộ và provenance manifest đủ để tái lập. Canonical development artifact là
+`p8_skg_global_full_002`, được tạo tại clean commit `50ed53e`; validator và mọi
+gate bên dưới đều pass. `full_001` là dirty-tree diagnostic candidate. Không sửa
+hoặc chạy lại hai ID này; reproduction mới phải dùng run ID mới.
 
 ## Output chính
 

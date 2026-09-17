@@ -414,6 +414,34 @@ trộn LLM facts vào deterministic facts đều bị loại. Contract này tăn
 protocol từ `1.4.0` lên `1.5.0`; không đổi RQ, split, LLM budget, metric hoặc khóa
 Phase 6/7.
 
+## D-025 — Khóa Phase 8 Security Knowledge Graph full 002 (2026-09-17)
+
+Full run `p8_skg_global_full_002` được tạo tại clean implementation commit
+`50ed53ee5b99ce3adeae81fbbf9c41c33e4fe70a`; manifest ghi `git.dirty: false`.
+Validator pass với 2.619 nodes, 5.285 edges, 7.904 deterministic facts, zero
+LLM-inferred fact, zero LLM/network call trong build và audit `PASS` cho cả bốn
+root CWE. Graph digest
+`8685f50d8e5f3727aa8cba9361f739c58fc57fb3ba444d59a9577dc413fbc805`
+khớp byte-for-byte về canonical fact content với pilot 002 và dirty-tree
+diagnostic full 001, chứng minh builder tái tạo deterministic trên clean commit.
+
+`p8_skg_global_full_002` được khóa làm canonical development Security KG cho
+Phase 9 trở đi. Full 001 vẫn là immutable validated diagnostic nhưng không được
+dùng downstream do provenance Git dirty; không được sửa hoặc thay full 002 bằng
+conditional rerun. Exact lock checksums:
+
+- manifest: `91ca35b8ee2b9f153ba8dedfe75a4e165231b5a3b86cc5219e7623a2497f270a`;
+- KG summary: `85bff62c1c4e541885f411e8cde90060dcd9e063d09ff9c8bf98d5723b570308`;
+- audit sample: `8cabf57e1e67e6946d6560ded5736e4c8c1e754c4b31323758f7b125f0f810f2`;
+- checksum index: `a051e41e7e5194f25d3ac08f9654a30af6f7cab0e14846952cce0fb64cb8953c`.
+
+Experiment config `phase8_security_kg.yaml` giữ nguyên byte content đã được
+manifest pin; canonical selection metadata nằm trong `main.yaml` để không làm
+mất khả năng validate artifact sau khi khóa. Quyết định này hoàn tất Phase 8,
+không đổi protocol `1.5.0`, schema, scope, source policy, confidence hoặc leakage
+firewall. Phase 9 phải pin đúng run/checksum trên, tiếp tục development-only và
+không mở `test_locked`.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và
