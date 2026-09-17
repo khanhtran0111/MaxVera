@@ -50,18 +50,19 @@ Sau khi commit implementation/config/docs và xác nhận worktree sạch, dùng
 
 ```bash
 bash scripts/tools/build_phase9_useg.sh \
-  --mode full --run-id p9_useg_dev_full_002
+  --mode full --run-id p9_useg_dev_full_003
 
 bash scripts/tools/validate_phase9.sh \
-  --run-root results/graphs/useg/p9_useg_dev_full_002
+  --run-root results/graphs/useg/p9_useg_dev_full_003
 
-jq . results/graphs/useg/p9_useg_dev_full_002/useg_summary.json
-jq . results/graphs/useg/p9_useg_dev_full_002/trace_audit.json
+jq . results/graphs/useg/p9_useg_dev_full_003/useg_summary.json
+jq . results/graphs/useg/p9_useg_dev_full_003/trace_audit.json
 ```
 
-Workspace hiện có validated dirty-tree candidate `p9_useg_dev_full_001`; không
-dùng lại hoặc chỉnh artifact này. `full_002` trên clean commit là candidate phù
-hợp để khóa canonical.
+Canonical development run là `p9_useg_dev_full_003`, được tạo từ clean commit
+`2395d219789ad5401e1fecdb26cee9030208c19b`. `full_001` và `full_002` là các
+dirty-tree diagnostics immutable, không được dùng downstream. Mọi reproduction
+mới phải dùng run ID mới, không sửa hoặc overwrite ba artifact này.
 
 ## 4. Truy vết một candidate path
 
@@ -69,10 +70,10 @@ Lấy một `TAINT_PATH` ID rồi query provenance subgraph:
 
 ```bash
 path_id="$(jq -r 'select(.kind == "TAINT_PATH") | .node_id' \
-  results/graphs/useg/p9_useg_dev_full_002/useg/nodes.jsonl | head -n 1)"
+  results/graphs/useg/p9_useg_dev_full_003/useg/nodes.jsonl | head -n 1)"
 
 bash scripts/tools/trace_phase9_useg.sh \
-  --run-root results/graphs/useg/p9_useg_dev_full_002 \
+  --run-root results/graphs/useg/p9_useg_dev_full_003 \
   --node-id "$path_id" --max-depth 4
 ```
 

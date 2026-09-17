@@ -65,6 +65,23 @@ def test_phase9_config_pins_schema_and_all_three_upstreams() -> None:
     assert config["execution"]["network_calls"] == 0
 
 
+def test_phase9_canonical_selection_is_locked_to_clean_full_003() -> None:
+    config = yaml.safe_load(
+        (REPO_ROOT / "configs/experiments/main.yaml").read_text(encoding="utf-8")
+    )
+    lock = config["development_locks"]["phase9_evidence_graph_useg"]
+    assert lock["status"] == "locked_for_downstream_development"
+    assert lock["canonical_run_id"] == "p9_useg_dev_full_003"
+    assert lock["run_commit"] == "2395d219789ad5401e1fecdb26cee9030208c19b"
+    assert lock["run_git_dirty"] is False
+    assert lock["graph_sha256"] == (
+        "918707ee3bbb59858b2b2d8dd9aafb762467f983bf579c97e35ba4191a1a41fa"
+    )
+    assert lock["manifest_sha256"] == (
+        "83dce921c979db710762bd205588c667033bc10fb6c64c4581fce9a8c84810c7"
+    )
+
+
 def test_phase9_cross_layer_candidate_path_is_acyclic_and_fully_traceable() -> None:
     project_id = "proj_fixture"
     program_nodes = [

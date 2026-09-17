@@ -30,8 +30,9 @@ Its graph digest matches the final pilot and dirty-tree diagnostic full 001;
 source, dependency, provenance, checksum and per-CWE audit gates all pass.
 Phase 9 implements the iteration-0 Evidence Graph/USEG that joins locked Phase 6
 hypotheses, Phase 7 source-backed Program nodes, and Phase 8 Security facts while
-keeping confidence components and provenance separate. Validated candidate
-`p9_useg_dev_full_001` covers all 96 development statuses (81 graphs and 15
+keeping confidence components and provenance separate. Run
+`p9_useg_dev_full_003`, built from clean commit `2395d21`, is the locked
+canonical development run. It covers all 96 statuses (81 graphs and 15
 inherited misses), with 7,527 nodes, 16,398 edges, 823/823 candidate taint paths
 traceable across Program and Security layers, zero cycles, and lossless JSONL
 round-trip. See [`docs/14_PHASE9_RUNBOOK.md`](docs/14_PHASE9_RUNBOOK.md).

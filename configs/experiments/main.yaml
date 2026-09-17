@@ -38,13 +38,15 @@ development_locks:
     audit_sample_sha256: 8cabf57e1e67e6946d6560ded5736e4c8c1e754c4b31323758f7b125f0f810f2
     checksums_index_sha256: a051e41e7e5194f25d3ac08f9654a30af6f7cab0e14846952cce0fb64cb8953c
   phase9_evidence_graph_useg:
-    status: validated_candidate_pending_clean_commit_lock
+    status: locked_for_downstream_development
     useg_version: phase9-useg-v1
     analysis_iteration: 0
     phase6_run_id: p6_static_v2_dev_full_001
     phase7_run_id: p7_pg_dev_full_004
     phase8_run_id: p8_skg_global_full_002
-    candidate_run_id: p9_useg_dev_full_001
+    canonical_run_id: p9_useg_dev_full_003
+    run_commit: 2395d219789ad5401e1fecdb26cee9030208c19b
+    run_git_dirty: false
     selected_projects: 96
     analysis_successes: 81
     analysis_failures: 15
@@ -53,13 +55,12 @@ development_locks:
     candidate_taint_paths: 823
     traceable_candidate_taint_paths: 823
     graph_sha256: 918707ee3bbb59858b2b2d8dd9aafb762467f983bf579c97e35ba4191a1a41fa
-    manifest_sha256: 5bf49b52db43f2a3ea9e7ab9f366b0ea3ddd9d6f20b63c453027debfe26692b4
+    manifest_sha256: 83dce921c979db710762bd205588c667033bc10fb6c64c4581fce9a8c84810c7
     useg_summary_sha256: 06c33ace27422141494a1287b612c59ceb3cdc0fd5ee4d2d2e1eddfb59300ff7
     trace_audit_sha256: 838b8735d0c2cf8e9b2fa3100dc6d053bac72db8e03ef48837fc7d50a1420480
     project_status_sha256: 37feda20d9f712d4343607b1f851cd00a83bb74b381bb1cf5de0310259645638
     project_summary_sha256: 755263d55a7da26dfae76151912be5039dd4169a3d0afab5bc9ef0d7e87e92bf
-    checksums_index_sha256: 14c037a9cc08936fb08f808a3d6524d70c5319f62601e40bc28c6d9da24bc509
-    lock_blocker: run_manifest_git_dirty_true
+    checksums_index_sha256: 45d1ed92e1a8f7adb365aa0bced3872f21e5815fe574a4d62838cb7747784235
 scope:
   language: Java
   static_analyzer: CodeQL

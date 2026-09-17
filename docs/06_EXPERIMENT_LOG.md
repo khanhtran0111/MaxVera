@@ -53,6 +53,8 @@ chép tay.
 | 2026-09-17 | Phase 9 pilot 001/failure pilot 001 | passed | positive project: 82 nodes/159 edges and one fully traceable candidate path; Phase 7 failure project remains a recorded `ANALYSIS_FAILED` with no placeholder graph |
 | 2026-09-17 | Phase 9 pilot 002 | passed | four successful projects: 355 nodes/683 edges, 21/21 candidate paths trace Program and Security layers, zero cycles, lossless round-trip |
 | 2026-09-17 | Phase 9 full 001 | validated candidate/not locked | `p9_useg_dev_full_001`; 81/96 successful and 15 inherited misses; 7,527 nodes/16,398 edges, 823/823 candidate paths fully traceable, zero cycles, lossless round-trip, zero LLM/network calls; manifest is dirty, so clean reproduction run remains required |
+| 2026-09-17 | Phase 9 full 002 | validated diagnostic/not locked | `p9_useg_dev_full_002`; substantive graph and audit results reproduce full 001, but the run was started while Phase 9 changes were staged and its manifest records a dirty worktree; artifact remains immutable and is not used downstream |
+| 2026-09-17 | Phase 9 full 003 | selected/locked | `p9_useg_dev_full_003`; clean commit `2395d21`; 81/96 successful and 15 inherited misses; 7,527 nodes/16,398 edges, 823/823 candidate paths fully traceable, zero cycles, lossless round-trip, zero LLM/network calls; graph digest reproduces full 001/002; D-027 |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

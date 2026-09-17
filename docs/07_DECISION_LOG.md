@@ -487,6 +487,36 @@ Manifest full 001 ghi Git dirty nên chưa được khóa canonical; cần clean
 full run ID mới. Contract tăng protocol từ `1.5.0` lên `1.6.0`, không đổi dataset,
 split, budget, metric hoặc lock Phase 6–8.
 
+## D-027 — Khóa Phase 9 USEG full 003 (2026-09-17)
+
+Full run `p9_useg_dev_full_003` được tạo tại clean implementation commit
+`2395d219789ad5401e1fecdb26cee9030208c19b`; manifest ghi `git.dirty: false`.
+Validator trả `PASS_WITH_ANALYSIS_FAILURES` với đủ 96/96 final statuses: 81
+graph success và 15 intention-to-analyze misses kế thừa nguyên trạng từ Phase 7.
+Run có 7.527 nodes, 16.398 edges và 823/823 candidate taint paths truy được tới
+cả Program location lẫn Security fact; dependency graph có zero cycle, JSONL
+round-trip lossless, zero final finding và zero LLM/network call.
+
+Graph digest
+`918707ee3bbb59858b2b2d8dd9aafb762467f983bf579c97e35ba4191a1a41fa`
+khớp full 001 và full 002. Hai run trước vẫn là immutable diagnostics nhưng không
+được dùng downstream vì manifest đều ghi dirty worktree; full 002 được chạy khi
+implementation đã stage nhưng chưa commit. `p9_useg_dev_full_003` được khóa làm
+canonical development USEG cho Phase 10 trở đi. Exact lock checksums:
+
+- manifest: `83dce921c979db710762bd205588c667033bc10fb6c64c4581fce9a8c84810c7`;
+- USEG summary: `06c33ace27422141494a1287b612c59ceb3cdc0fd5ee4d2d2e1eddfb59300ff7`;
+- trace audit: `838b8735d0c2cf8e9b2fa3100dc6d053bac72db8e03ef48837fc7d50a1420480`;
+- project statuses: `37feda20d9f712d4343607b1f851cd00a83bb74b381bb1cf5de0310259645638`;
+- project summaries: `755263d55a7da26dfae76151912be5039dd4169a3d0afab5bc9ef0d7e87e92bf`;
+- checksum index: `45d1ed92e1a8f7adb365aa0bced3872f21e5815fe574a4d62838cb7747784235`.
+
+Canonical selection nằm trong `configs/experiments/main.yaml`; experiment config
+`phase9_useg.yaml` giữ nguyên byte content đã được manifest pin. Quyết định này
+hoàn tất Phase 9 mà không đổi protocol `1.6.0`, schema, mapping, confidence,
+failure-as-miss hoặc leakage policy. Phase 10 phải pin exact run/checksum trên,
+tiếp tục development-only và không mở `test_locked`.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và
