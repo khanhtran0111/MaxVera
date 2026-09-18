@@ -63,7 +63,7 @@ development_locks:
     checksums_index_sha256: 45d1ed92e1a8f7adb365aa0bced3872f21e5815fe574a4d62838cb7747784235
 development_stages:
   phase10_graph_retrieval_specification:
-    status: full_dry_validated_pending_adaptive_path_pilot
+    status: full_dry_and_pilots_validated_pending_full_runs
     protocol_version: "1.7.0"
     dependency_run_id: p9_useg_dev_full_003
     retrieval_version: phase10-retrieval-v1

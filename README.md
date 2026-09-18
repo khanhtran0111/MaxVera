@@ -46,6 +46,8 @@ The one-project API pilots are validated: B6/B7 each produced 8/10 grounded
 specifications with two expected fail-closed missing-source cases, while B8/B9
 produced 10/10; every emitted final query compiled. These remain dirty-tree
 development pilots, not canonical results.
+The clean-commit adaptive-path B9 pilot also passed 10/10 specification and
+compile gates, so Phase 10 is ready for full development runs.
 The frozen 120-row release has 120 final build statuses and 104 successful
 CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw
 context, B4 text-RAG, and B5 static hypotheses. B6-B8 and B9 synthesis are

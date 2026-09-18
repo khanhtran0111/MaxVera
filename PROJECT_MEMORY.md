@@ -1,10 +1,11 @@
 # MaxVera — Project Memory
 
-> Cập nhật: 2026-09-17 (Asia/Bangkok)
+> Cập nhật: 2026-09-18 (Asia/Bangkok)
 > Phase 9 canonical implementation/run commit:
 > `2395d219789ad5401e1fecdb26cee9030208c19b`
-> Hiện trạng: Phase 0–9 đã khóa; Phase 10 đã implemented, dry-run và B6–B9 API
-> pilots validated; chưa full lock; `test_locked` chưa mở/chạy.
+> Hiện trạng: Phase 0–9 đã khóa; Phase 10 implementation, full dry-run và B6–B9
+> API pilots (gồm adaptive path) đã validated; chưa full lock; `test_locked` chưa
+> mở/chạy.
 
 ## Mục đích và cách dùng
 
@@ -49,10 +50,10 @@ evaluator-only.
 | Phase 7 lock | `p7_pg_dev_full_004`, 81/96 graph success |
 | Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
 | Phase 9 lock | `p9_useg_dev_full_003`, 81/96 graph success |
-| Phase 10 | Implemented; B6–B9 dry-run/API pilots validated |
+| Phase 10 | Implemented; full dry + B6–B9/adaptive API pilots validated |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase tiếp theo | Clean Phase 10 full runs → annotated spec gate/lock |
+| Phase tiếp theo | Phase 10 full development runs → annotated spec gate/lock |
 
 `configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 khóa
 calibration thresholds. Header của `docs/00_RESEARCH_SCOPE.md`,
@@ -297,8 +298,13 @@ bổ sung adaptive serialization: chỉ context bị ảnh hưởng mới giảm
 rebuild strict schema và lặp preflight trước API; mọi lần giảm được ghi trong
 context metadata. Full dry 002 trên 96 project/806 context mỗi baseline pass với
 zero overflow: B6/B7/B8/B9 có 1/49/86/3 adapted context và lần lượt
-763/619/801/801 API-eligible context. Cần targeted adaptive-path API pilot trước
-full run.
+763/619/801/801 API-eligible context.
+
+Targeted B9 adaptive pilot 001 trên `proj_aff72cca32a2f43c0147` pass từ clean
+commit `e3ddccf`: context `hyp_f0eef19181ba14128564` giảm budget 4.854→4.701,
+actual prompt 5.201 tokens; toàn project 10/10 specs compile, zero retry/failure,
+max prompt 6.092/8.192, chi phí `$0.0013405`. Implementation đủ gate để chạy
+full development B6–B9.
 
 ## Canonical artifacts và code map
 
