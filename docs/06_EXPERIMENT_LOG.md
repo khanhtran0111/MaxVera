@@ -73,6 +73,7 @@ chép tay.
 | 2026-09-20 | Phase 11 fixed DB pilot | passed | evaluator-only preparation fetched the development fixed revision into an isolated temporary checkout and built one opaque CodeQL database; vulnerable checkout unchanged, no identity/fix commit persisted in analyzer artifacts |
 | 2026-09-20 | Phase 11 vulnerable-only pilot 004 | passed/clean | clean implementation commit `8bdfcc7`; one B9 spec, 2 query invocations, zero LLM calls/tokens, explicit `UNVERIFIED_UNRESOLVED_SINK`; independent validator pass |
 | 2026-09-20 | Phase 11 differential pilot 001 | passed/clean | same clean commit and frozen spec over vulnerable/fixed databases; 4 query invocations, both versions resolve 5 sources/0 sinks, zero paths and explicit `UNVERIFIED_UNRESOLVED_SINK`; zero LLM; independent validator pass; full fixed DB preparation remains before full run |
+| 2026-09-20 | Phase 11 differential pilot 002 | passed/selected pilot | clean hardening commit `4705c03`; same 1-spec/4-query result as pilot 001, plus immutable in-run fixed preparation/status snapshots so later database preparation cannot invalidate provenance; validator pass; full run remains pending |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

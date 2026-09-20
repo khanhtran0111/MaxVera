@@ -52,7 +52,7 @@ evaluator-only.
 | Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
 | Phase 9 lock | `p9_useg_dev_full_003`, 81/96 graph success |
 | Phase 10 | Locked: B6–B9 full 001 + annotated gate 003 |
-| Phase 11 | Implemented; clean vulnerable pilot 004 + differential pilot 001 pass |
+| Phase 11 | Implemented; clean vulnerable pilot 004 + differential pilot 002 pass |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
 | Phase tiếp theo | Phase 11 full fixed DB preparation → differential full |
@@ -358,7 +358,7 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
 - Phase 10 compile-only không phải static verification; B9 final findings vẫn bị
   chặn đến Phase 11/12. Dry-run không chứng minh provider/schema behavior thật.
 - Phase 11 vulnerable-only path không phải verified finding; canonical lock cần
-  full fixed databases và differential full run. Pilot 004/diff 001 chỉ kiểm
+  full fixed databases và differential full run. Pilot 004/diff 002 chỉ kiểm
   runtime, fixed boundary và status semantics trên một spec.
 - Hosted model không có project-controlled weight hash.
 - `test_locked` chưa mở; chưa được claim final paper performance.

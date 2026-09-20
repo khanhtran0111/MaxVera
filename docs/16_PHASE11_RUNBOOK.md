@@ -148,7 +148,8 @@ Phase 11 chưa được khóa chỉ vì vulnerable-only pilot pass. Canonical lo
 fixed DB preparation hoàn tất, differential pilot pass, full run từ clean commit
 và validator pass. `test_locked` vẫn đóng cho tới protocol final-experiment.
 
-Differential pilot `p11_diff_pilot_001` cũng đã pass trên cùng clean commit và
-fixed DB: 1 spec, 4 query invocations, zero LLM. Cả vulnerable/fixed database đều
+Differential pilot `p11_diff_pilot_002` tại clean commit `4705c03` đã pass với
+immutable fixed-dependency snapshot: 1 spec, 4 query invocations, zero LLM. Cả
+vulnerable/fixed database đều
 resolve 5 source và 0 sink, nên kết quả đúng vẫn là
 `UNVERIFIED_UNRESOLVED_SINK`, không phải verified finding.

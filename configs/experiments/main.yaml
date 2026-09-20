@@ -126,9 +126,9 @@ development_stages:
     max_iterations: 1
     llm_calls: 0
     final_finding_requires: vulnerable_path_absent_in_fixed_database
-    implementation_commit: 8bdfcc7ddf7b69af5f8a1c16e1e3359905362b93
+    implementation_commit: 4705c03f2b6efe38bcab469a10dbe43b08aa2466
     clean_vulnerable_pilot: p11_vuln_pilot_004
-    clean_differential_pilot: p11_diff_pilot_001
+    clean_differential_pilot: p11_diff_pilot_002
     next_gate: full_fixed_database_preparation_and_differential_run
 scope:
   language: Java
