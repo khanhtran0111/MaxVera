@@ -36,7 +36,11 @@ def validate(run_root: Path) -> str:
     if (run_root / "STATUS").read_text(encoding="utf-8").strip() != "PASS":
         raise ValueError("Phase 10 evaluation status is not PASS")
     manifest = _json(run_root / "manifest.json")
-    if manifest.get("phase") != 10 or manifest.get("data_role") != "evaluator":
+    if (
+        manifest.get("phase") != 10
+        or manifest.get("data_role") != "evaluator"
+        or manifest.get("run_id") != run_root.name
+    ):
         raise ValueError("not a Phase 10 evaluator artifact")
     indexed: set[str] = set()
     for line in (run_root / "checksums.sha256").read_text(encoding="utf-8").splitlines():
@@ -86,4 +90,3 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -130,7 +130,7 @@ def _aggregate(
     }
 
 
-def evaluate(*, repo_root: Path, config_path: Path, output_root: Path) -> None:
+def evaluate(*, repo_root: Path, config_path: Path, output_root: Path, run_id: str) -> None:
     if os.environ.get("MAXVERA_DATA_ROLE") != "evaluator":
         raise RuntimeError("set MAXVERA_DATA_ROLE=evaluator for Phase 10 spec evaluation")
     config = _mapping(config_path)
@@ -271,6 +271,7 @@ def evaluate(*, repo_root: Path, config_path: Path, output_root: Path) -> None:
                 "schema_version": 1,
                 "phase": 10,
                 "protocol_version": config["protocol_version"],
+                "run_id": run_id,
                 "evaluation_id": config["evaluation_id"],
                 "created_at": utc_now(),
                 "data_role": "evaluator",
@@ -314,7 +315,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     repo_root = args.repo_root.resolve()
     config_path = args.config if args.config.is_absolute() else repo_root / args.config
     output_root = repo_root / "results/evaluations/phase10" / args.run_id
-    evaluate(repo_root=repo_root, config_path=config_path.resolve(), output_root=output_root)
+    evaluate(
+        repo_root=repo_root,
+        config_path=config_path.resolve(),
+        output_root=output_root,
+        run_id=args.run_id,
+    )
     print(f"Phase 10 annotated specification evaluation completed: {output_root}")
     return 0
 
