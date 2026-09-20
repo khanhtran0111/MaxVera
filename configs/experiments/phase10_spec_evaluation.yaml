@@ -1,0 +1,45 @@
+schema_version: 1
+protocol_version: "1.7.0"
+evaluation_id: phase10_annotated_spec_proxy_v1
+status: frozen_phase_10_development_evaluation
+purpose: evaluator_only_paper_compatible_specification_gate
+
+dataset:
+  id: D_extended
+  development_split: data/processed/splits/development.csv
+  forbidden_test_split: data/processed/splits/test_locked.csv
+  labels: data/processed/evaluator_only/D_extended_labels.csv
+  fix_locations: data/processed/evaluator_only/D_extended_fix_locations.jsonl
+
+phase9_nodes: results/graphs/useg/p9_useg_dev_full_003/useg/nodes.jsonl
+
+phase10_runs:
+  B6:
+    run_root: results/specifications/phase10/program_graph_only/p10_b6_dev_full_001
+    run_id: p10_b6_dev_full_001
+    manifest_sha256: 8686ce9a87126e3625b10ac61ae61bf37e099bbc74d51e5f0fb0a7dd6e8403a0
+    summary_sha256: e9273104a934cf4ffc4e5300f8cf99c9280baa7ccc066a13a5fa74ec5044ed78
+  B7:
+    run_root: results/specifications/phase10/security_kg_only/p10_b7_dev_full_001
+    run_id: p10_b7_dev_full_001
+    manifest_sha256: 7f50d7b742f689d82cb8d8dc198712263facaf626e8b713beab7e9764d7684a5
+    summary_sha256: 37194bb543f7d433806b01ce9874c2c063764879b9acf5176d3ae54c4a632ef7
+  B8:
+    run_root: results/specifications/phase10/useg_no_pruning/p10_b8_dev_full_001
+    run_id: p10_b8_dev_full_001
+    manifest_sha256: a5abe8307cc8890882bbf63596c6a2ee49cf3efc99eb32d413574e5d5bbac114
+    summary_sha256: df0a3d71ba0a8aa9e52d128d48433421ee99bb990fcfa13a22043b18b17c0e1c
+  B9:
+    run_root: results/specifications/phase10/full_useg/p10_b9_dev_full_001
+    run_id: p10_b9_dev_full_001
+    manifest_sha256: 3943d6af3cfdd373ae4619d2cf3e43a06b0d896e536c19dbd88562845fdcc45f
+    summary_sha256: f7f6f03b4098333e8d277e39e7f677bdf775023b321eb7487acbdef9ec6cb296
+
+matching:
+  require_correct_cwe: true
+  endpoint_match: any_source_or_sink_intersects_fix_scope
+  location_fallback: method_then_class_then_file
+  unannotated_projects: exclude_from_proxy_denominator
+  analysis_failure: count_as_miss
+  interpretation: paper_compatible_proxy_not_static_verification
+
