@@ -63,7 +63,7 @@ development_locks:
     checksums_index_sha256: 45d1ed92e1a8f7adb365aa0bced3872f21e5815fe574a4d62838cb7747784235
 development_stages:
   phase10_graph_retrieval_specification:
-    status: full_dry_and_pilots_validated_pending_full_runs
+    status: locked_for_phase11_development
     protocol_version: "1.7.0"
     dependency_run_id: p9_useg_dev_full_003
     retrieval_version: phase10-retrieval-v1
@@ -74,7 +74,46 @@ development_stages:
       B8: unified_graph_unpruned
       B9: unified_graph_pruned
     final_findings_allowed: false
-    next_gate: api_pilot_and_codeql_compile_validation
+    run_commit: 184fef10ec629bee1f395c8961e051a44dcb38cb
+    run_git_dirty: false
+    canonical_runs:
+      B6:
+        run_id: p10_b6_dev_full_001
+        specifications: 763
+        analysis_successes: 54
+        analysis_failures: 42
+        manifest_sha256: 8686ce9a87126e3625b10ac61ae61bf37e099bbc74d51e5f0fb0a7dd6e8403a0
+        summary_sha256: e9273104a934cf4ffc4e5300f8cf99c9280baa7ccc066a13a5fa74ec5044ed78
+      B7:
+        run_id: p10_b7_dev_full_001
+        specifications: 619
+        analysis_successes: 34
+        analysis_failures: 62
+        manifest_sha256: 7f50d7b742f689d82cb8d8dc198712263facaf626e8b713beab7e9764d7684a5
+        summary_sha256: 37194bb543f7d433806b01ce9874c2c063764879b9acf5176d3ae54c4a632ef7
+      B8:
+        run_id: p10_b8_dev_full_001
+        specifications: 801
+        analysis_successes: 78
+        analysis_failures: 18
+        manifest_sha256: a5abe8307cc8890882bbf63596c6a2ee49cf3efc99eb32d413574e5d5bbac114
+        summary_sha256: df0a3d71ba0a8aa9e52d128d48433421ee99bb990fcfa13a22043b18b17c0e1c
+      B9:
+        run_id: p10_b9_dev_full_001
+        specifications: 801
+        analysis_successes: 78
+        analysis_failures: 18
+        manifest_sha256: 3943d6af3cfdd373ae4619d2cf3e43a06b0d896e536c19dbd88562845fdcc45f
+        summary_sha256: f7f6f03b4098333e8d277e39e7f677bdf775023b321eb7487acbdef9ec6cb296
+    annotated_spec_gate:
+      run_id: p10_dev_spec_eval_003
+      evaluator_commit: 6117b00b72bd6bca204c1cf33a1880d476836144
+      annotated_projects: 91
+      interpretation: paper_compatible_fix_location_proxy_not_static_verification
+      manifest_sha256: e20c5c43d34bab7665c1f0411870c6e1c476d18eac80b9f965595e0b5874bbe6
+      metrics_sha256: bd7161a9dd933dc90fe179161c0814eab934fce48246f750c182a63217053c23
+      checksums_index_sha256: cf15847234351ce21c390879cedbbac56d351914e6fe9438a43f80b9e398bc5a
+    next_gate: phase11_static_verification
 scope:
   language: Java
   static_analyzer: CodeQL

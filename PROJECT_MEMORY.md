@@ -1,11 +1,11 @@
 # MaxVera — Project Memory
 
-> Cập nhật: 2026-09-18 (Asia/Bangkok)
+> Cập nhật: 2026-09-20 (Asia/Bangkok)
 > Phase 9 canonical implementation/run commit:
 > `2395d219789ad5401e1fecdb26cee9030208c19b`
-> Hiện trạng: Phase 0–9 đã khóa; Phase 10 implementation, full dry-run và B6–B9
-> API pilots (gồm adaptive path) đã validated; chưa full lock; `test_locked` chưa
-> mở/chạy.
+> Hiện trạng: Phase 0–10 đã khóa cho development; Phase 10 full B6–B9 và
+> evaluator-only annotated gate đã validated; Phase 11 chưa triển khai/chạy;
+> `test_locked` chưa mở/chạy.
 
 ## Mục đích và cách dùng
 
@@ -50,10 +50,10 @@ evaluator-only.
 | Phase 7 lock | `p7_pg_dev_full_004`, 81/96 graph success |
 | Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
 | Phase 9 lock | `p9_useg_dev_full_003`, 81/96 graph success |
-| Phase 10 | Implemented; full dry + B6–B9/adaptive API pilots validated |
+| Phase 10 | Locked: B6–B9 full 001 + annotated gate 003 |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase tiếp theo | Phase 10 full development runs → annotated spec gate/lock |
+| Phase tiếp theo | Phase 11 static verification implementation → pilot |
 
 `configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 khóa
 calibration thresholds. Header của `docs/00_RESEARCH_SCOPE.md`,
@@ -270,9 +270,8 @@ Implementation có offline estimator, atomic/resumable runner, exact-dependency
 validator, numbered B6–B9 dispatch, dry-run/suite scripts và runbook. Bốn
 one-project dry-run 007 pass với zero API/network call; endpoint/token preflight
 ghi B6/B7 8/10 context API-eligible, B8/B9 10/10 và request estimate cao nhất
-7.469/8.192 tokens. **Chưa canonical/locked**: cần
-API pilot, annotated-subset spec evaluation, clean implementation commit và full
-development runs mới.
+7.469/8.192 tokens. Đây là pre-full diagnostic; canonical full lock được ghi ở
+D-029 và phần cuối mục này.
 
 B9 API pilot 001 là diagnostic immutable: 7/10 grounded specs compile thành
 công, chi phí `$0.00092432`; ba CWE-78 request bị HTTP 400 do optional role không
@@ -306,6 +305,17 @@ actual prompt 5.201 tokens; toàn project 10/10 specs compile, zero retry/failur
 max prompt 6.092/8.192, chi phí `$0.0013405`. Implementation đủ gate để chạy
 full development B6–B9.
 
+Canonical Phase 10 full runs được tạo từ clean commit `184fef1` và khóa bởi
+D-029: B6/B7/B8/B9 có 54/34/78/78 project success, tạo 763/619/801/801 grounded
+specifications và compile 100% final query. Mọi run giữ đủ 96 statuses; 15 failure
+upstream từ Phase 7/9 tiếp tục là intention-to-analyze misses.
+
+Evaluator-only gate `p10_dev_spec_eval_003` tại clean commit `6117b00` dùng 91
+development projects có fix-location annotation, không mở `test_locked` và không
+sửa synthesis artifact. B9 có 14/762 paper-compatible proxy-positive specs và
+phát hiện 6/91 projects. Đây không phải verified path; kết quả được đóng băng để
+Phase 11 kiểm chứng, không dùng sửa prompt/retrieval/specification.
+
 ## Canonical artifacts và code map
 
 - Phase 4: `results/reproduction/phase4_gptoss20b_full_001__*`;
@@ -315,6 +325,7 @@ full development B6–B9.
 - Phase 8: `results/graphs/knowledge/p8_skg_global_full_002/`;
 - Phase 9: `results/graphs/useg/p9_useg_dev_full_003/`;
 - Phase 10 run root: `results/specifications/phase10/<baseline>/<run-id>/`;
+- Phase 10 evaluator: `results/evaluations/phase10/p10_dev_spec_eval_003/`;
 - configs/locks: `configs/experiments/`;
 - Phase 5/6/7/8/9/10 code: `src/baselines/`, `src/hypotheses/`,
   `src/graphs/program/`, `src/graphs/knowledge/`, `src/graphs/evidence/`,
@@ -347,12 +358,12 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
 - Hosted model không có project-controlled weight hash.
 - `test_locked` chưa mở; chưa được claim final paper performance.
 
-## Handoff hoàn thiện Phase 10
+## Handoff Phase 11
 
-Theo `docs/15_PHASE10_RUNBOOK.md`, toàn bộ B6–B9 API pilot đã validated. Sau
-implementation commit, chạy bốn full development run và chọn canonical
-artifacts. Không mở `test_locked`; không chuyển compile success thành
-verified finding. Phase 11 chỉ bắt đầu sau khi Phase 10 full runs được khóa.
+Phase 10 đã khóa. Phase 11 phải pin exact B9 `p10_b9_dev_full_001`, chạy generated
+specification trên development CodeQL databases, lưu positive/negative evidence,
+materialize verification iteration mới của USEG và giữ deterministic stop policy.
+Không mở `test_locked`; không dùng LLM verdict hoặc Phase 10 proxy làm verifier.
 
 ## Checklist agent
 

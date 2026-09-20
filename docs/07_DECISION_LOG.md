@@ -567,6 +567,42 @@ lại, dựng lại schema và lặp preflight với 128-token margin. Metadata 
 `initial_token_budget`, final `token_budget` và `request_budget_adapted`; nếu
 grounded role mất đi hoặc request vẫn quá lớn thì hypothesis fail trước API.
 
+## D-029 — Khóa Phase 10 full development và annotated proxy gate (2026-09-20)
+
+Bốn API full run B6–B9 được tạo tuần tự từ clean implementation commit
+`184fef10ec629bee1f395c8961e051a44dcb38cb`, giữ đúng canonical Phase 9
+`p9_useg_dev_full_003`, protocol 1.7.0, GPT-OSS 20B/AkashML và budget-matched
+contract. Validator độc lập chấp nhận cả bốn với đủ 96 final statuses. B6/B7/B8/B9
+lần lượt tạo 763/619/801/801 grounded specifications; mọi emitted final query
+compile thành công. Project success là 54/34/78/78 trên 96; 15 misses downstream
+ở mọi baseline kế thừa Phase 7/9 và các miss còn lại là fail-closed missing source.
+
+Gate precision/recall đã được materialize bằng evaluator process riêng, không sửa
+raw synthesis artifacts và không mở `test_locked`. Tập annotated gồm 91/96
+development projects có fix-location record; 5 project không có annotation được
+ghi rõ và loại khỏi proxy denominator. Specification được tính proxy-positive chỉ
+khi candidate CWE khớp development label và ít nhất một grounded source/sink
+location giao method, rồi class, rồi file fix scope. Đây là paper-compatible
+fix-location proxy, không phải verified path, và không được dùng để sửa prompt,
+retrieval hay specification sau khi quan sát kết quả.
+
+Canonical evaluator run `p10_dev_spec_eval_003` được tạo từ clean commit
+`6117b00b72bd6bca204c1cf33a1880d476836144`, validator pass và tái tạo byte-identical
+aggregate so với hai diagnostic runs trước. Với B9, 762 specs thuộc annotated
+subset, 254 có candidate CWE đúng, 14 proxy-positive và 6/91 project detected
+(recall ITA proxy 0.065934). Kết quả thấp được giữ trung thực; Phase 11 phải chạy
+CodeQL dataflow thật và không được gọi proxy này là vulnerability verification.
+
+Exact evaluation locks:
+
+- manifest: `e20c5c43d34bab7665c1f0411870c6e1c476d18eac80b9f965595e0b5874bbe6`;
+- aggregate: `bd7161a9dd933dc90fe179161c0814eab934fce48246f750c182a63217053c23`;
+- checksum index: `cf15847234351ce21c390879cedbbac56d351914e6fe9438a43f80b9e398bc5a`.
+
+Quyết định này khóa Phase 10 cho Phase 11 development. Nó materialize gate đã có,
+không đổi RQ, dataset, split, model, budget hay metric family nên protocol giữ
+`1.7.0`. Bốn synthesis run và evaluator run là immutable; rerun phải dùng ID mới.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

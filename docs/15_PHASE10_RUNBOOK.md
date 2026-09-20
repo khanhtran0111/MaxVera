@@ -147,6 +147,40 @@ development subset theo protocol. Không dùng patch/test labels để sửa pro
 retrieval hoặc spec sau khi xem kết quả; metric này hiện chưa thể tạo trước khi
 có live specifications và annotation được khóa.
 
+Evaluator chạy tách biệt và không sửa bốn synthesis artifact:
+
+```bash
+export MAXVERA_DATA_ROLE=evaluator
+bash scripts/tools/evaluate_phase10_specs.sh --run-id p10_dev_spec_eval_003
+bash scripts/tools/validate_phase10_evaluation.sh \
+  --run-root results/evaluations/phase10/p10_dev_spec_eval_003
+unset MAXVERA_DATA_ROLE
+```
+
+Gate dùng 91 development projects có fix-location annotation. Một specification
+proxy-positive khi candidate CWE đúng và ít nhất một grounded source/sink location
+giao method/class/file fix scope. Đây là paper-compatible proxy, không phải
+static verification; 5 development projects không có fix-location annotation bị
+ghi riêng và không nằm trong denominator của gate này.
+
+## 6. Canonical development lock
+
+Bốn full run được tạo tuần tự từ clean commit `184fef1`, đủ 96 final statuses,
+khớp exact Phase 9 dependency và validator pass:
+
+| Baseline | Run ID | Project success | Grounded specs | Compile rate |
+|---|---|---:|---:|---:|
+| B6 | `p10_b6_dev_full_001` | 54/96 | 763 | 100% |
+| B7 | `p10_b7_dev_full_001` | 34/96 | 619 | 100% |
+| B8 | `p10_b8_dev_full_001` | 78/96 | 801 | 100% |
+| B9 | `p10_b9_dev_full_001` | 78/96 | 801 | 100% |
+
+Canonical annotated gate là `p10_dev_spec_eval_003`, tạo từ clean evaluator
+commit `6117b00`. Trên 91 annotated development projects, B9 có 762 emitted specs,
+254 đúng candidate CWE, 14 paper-compatible proxy positives và phát hiện 6/91
+projects. Kết quả thấp được giữ nguyên để Phase 11 kiểm chứng; không dùng nhãn để
+repair prompt/retrieval/specification sau khóa.
+
 ## Output chính
 
 ```text

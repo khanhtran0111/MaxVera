@@ -36,23 +36,21 @@ canonical development run. It covers all 96 statuses (81 graphs and 15
 inherited misses), with 7,527 nodes, 16,398 edges, 823/823 candidate taint paths
 traceable across Program and Security layers, zero cycles, and lossless JSONL
 round-trip. See [`docs/14_PHASE9_RUNBOOK.md`](docs/14_PHASE9_RUNBOOK.md).
-Phase 10 now implements B6/B7/B8 graph retrieval and the synthesis-only portion
-of B9. It builds budget-bounded compact contexts from the locked Phase 9 USEG,
-uses strict grounded JSON specifications, applies bounded repair, and checks
-generated CodeQL templates with `query compile --check-only`. Outputs remain
+Phase 10 implements and locks B6/B7/B8 graph retrieval and the synthesis-only
+portion of B9. The canonical full development runs are
+`p10_b6_dev_full_001` through `p10_b9_dev_full_001`; B9 emits 801/806 grounded
+specifications for the 81 usable Phase 9 projects and all 801 final templates
+compile. The separate evaluator-only annotated gate
+`p10_dev_spec_eval_003` reports paper-compatible fix-location proxy metrics on
+91 development projects without modifying the immutable synthesis artifacts.
+These metrics are not static verification. Outputs remain
 `SYNTHESIZED_UNVERIFIED`; see
 [`docs/15_PHASE10_RUNBOOK.md`](docs/15_PHASE10_RUNBOOK.md).
-The one-project API pilots are validated: B6/B7 each produced 8/10 grounded
-specifications with two expected fail-closed missing-source cases, while B8/B9
-produced 10/10; every emitted final query compiled. These remain dirty-tree
-development pilots, not canonical results.
-The clean-commit adaptive-path B9 pilot also passed 10/10 specification and
-compile gates, so Phase 10 is ready for full development runs.
 The frozen 120-row release has 120 final build statuses and 104 successful
 CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw
 context, B4 text-RAG, and B5 static hypotheses. B6-B8 and B9 synthesis are
-implemented for development; B9 final findings remain fail-closed until Phase
-11 verification and Phase 12 calibration exist.
+locked for development; B9 final findings remain fail-closed until Phase 11
+verification and Phase 12 calibration exist.
 Every entrypoint fails closed if any smoke artifact remains.
 
 ## Bootstrap
