@@ -115,7 +115,7 @@ development_stages:
       checksums_index_sha256: cf15847234351ce21c390879cedbbac56d351914e6fe9438a43f80b9e398bc5a
     next_gate: phase11_static_verification
   phase11_static_verification:
-    status: implemented_vulnerable_pilot_validated_pending_fixed_differential
+    status: implemented_differential_pilot_validated_pending_full_fixed_databases
     protocol_version: "1.8.0"
     verifier_version: phase11-static-verification-v1
     phase9_run_id: p9_useg_dev_full_003
@@ -126,7 +126,10 @@ development_stages:
     max_iterations: 1
     llm_calls: 0
     final_finding_requires: vulnerable_path_absent_in_fixed_database
-    next_gate: fixed_database_preparation_and_differential_pilot
+    implementation_commit: 8bdfcc7ddf7b69af5f8a1c16e1e3359905362b93
+    clean_vulnerable_pilot: p11_vuln_pilot_004
+    clean_differential_pilot: p11_diff_pilot_001
+    next_gate: full_fixed_database_preparation_and_differential_run
 scope:
   language: Java
   static_analyzer: CodeQL

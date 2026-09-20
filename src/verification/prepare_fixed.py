@@ -22,6 +22,10 @@ from src.data.build_projects import build_command_and_env
 from src.graphs.program.build_databases import _attempts, _codeql_binary
 from src.reproduction.common import atomic_json, atomic_jsonl, read_csv, read_jsonl
 
+PHASE10_STATUS = Path(
+    "results/specifications/phase10/full_useg/p10_b9_dev_full_001/project_status.jsonl"
+)
+
 
 def _mapping(path: Path) -> dict[str, Any]:
     loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -53,6 +57,7 @@ def _selected_rows(root: Path, args: argparse.Namespace) -> list[dict[str, str]]
     test_path = root / "data/processed/splits/test_locked.csv"
     labels_path = root / "data/processed/evaluator_only/D_extended_labels.csv"
     analysis_path = root / "data/processed/analysis_input/D_extended_projects.csv"
+    phase10_status_path = root / PHASE10_STATUS
     development = [row["project_id"] for row in read_csv(development_path)]
     locked = {row["project_id"] for row in read_csv(test_path)}
     if set(development) & locked:
@@ -61,17 +66,23 @@ def _selected_rows(root: Path, args: argparse.Namespace) -> list[dict[str, str]]
     analysis = {row["project_id"]: row for row in read_csv(analysis_path)}
     if set(development) - labels.keys() or set(development) - analysis.keys():
         raise ValueError("development projects do not resolve to fixed labels/build metadata")
+    phase10_successes = {
+        str(row["project_id"])
+        for row in read_jsonl(phase10_status_path)
+        if row.get("status") == "SUCCESS"
+    }
     rows = [
         {
             **analysis[project_id],
             "fix_commit_ids": labels[project_id]["fix_commit_ids"],
         }
         for project_id in development
+        if project_id in phase10_successes
     ]
     if args.project_id:
         rows = [row for row in rows if row["project_id"] == args.project_id]
         if not rows:
-            raise ValueError("--project-id is not in the development split")
+            raise ValueError("--project-id is not an analyzable Phase 10 development project")
     if args.limit is not None:
         if args.limit < 1:
             raise ValueError("--limit must be positive")
@@ -260,6 +271,10 @@ def prepare(args: argparse.Namespace) -> int:
         "identity_mapping_persisted": False,
         "labels_sha256": sha256_file(root / "data/processed/evaluator_only/D_extended_labels.csv"),
         "development_split_sha256": sha256_file(root / "data/processed/splits/development.csv"),
+        "phase10_project_status_sha256": sha256_file(root / PHASE10_STATUS),
+        "eligible_phase10_projects": sum(
+            row.get("status") == "SUCCESS" for row in read_jsonl(root / PHASE10_STATUS)
+        ),
         "status_sha256": sha256_file(status_path),
         "phase11_config_sha256": sha256_file(
             root / "configs/experiments/phase11_static_verification.yaml"

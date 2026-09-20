@@ -70,6 +70,9 @@ chép tay.
 | 2026-09-20 | Phase 10 lock | locked | full B6–B9 run IDs and evaluator checksums pinned in `configs/experiments/main.yaml`; development synthesis is frozen for Phase 11; protocol remains 1.7.0; D-029 |
 | 2026-09-20 | Phase 11 vulnerable-only pilot 001 | rejected | CodeQL execution succeeded, but independent validator found a USEG cycle across TAINT_PATH → HYPOTHESIS → VERIFICATION_RESULT → TAINT_PATH; immutable diagnostic retained and edge materialization corrected |
 | 2026-09-20 | Phase 11 vulnerable-only pilot 003 | passed/diagnostic | one B9 spec on `proj_7341ff37e347ec3be4ce`; 2 CodeQL queries, zero LLM calls/tokens; source resolved to 5 expressions, sink resolved to 0, final state `UNVERIFIED_UNRESOLVED_SINK`; validator pass after acyclic USEG update and exact query-attempt accounting |
+| 2026-09-20 | Phase 11 fixed DB pilot | passed | evaluator-only preparation fetched the development fixed revision into an isolated temporary checkout and built one opaque CodeQL database; vulnerable checkout unchanged, no identity/fix commit persisted in analyzer artifacts |
+| 2026-09-20 | Phase 11 vulnerable-only pilot 004 | passed/clean | clean implementation commit `8bdfcc7`; one B9 spec, 2 query invocations, zero LLM calls/tokens, explicit `UNVERIFIED_UNRESOLVED_SINK`; independent validator pass |
+| 2026-09-20 | Phase 11 differential pilot 001 | passed/clean | same clean commit and frozen spec over vulnerable/fixed databases; 4 query invocations, both versions resolve 5 sources/0 sinks, zero paths and explicit `UNVERIFIED_UNRESOLVED_SINK`; zero LLM; independent validator pass; full fixed DB preparation remains before full run |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

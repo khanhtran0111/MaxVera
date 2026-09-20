@@ -14,11 +14,7 @@ import yaml
 from src.common.provenance import sha256_file
 from src.graphs.evidence.model import cycle_nodes, sort_edges, sort_nodes
 from src.reproduction.common import read_jsonl
-from src.verification.runner import (
-    FINAL_SPEC_STATUSES,
-    _dependency_status,
-    _fixed_database_status,
-)
+from src.verification.runner import FINAL_SPEC_STATUSES, _dependency_status
 
 REQUIRED_FILES = {
     "STATUS",
@@ -101,6 +97,21 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
     phase10_root = repo_root / str(phase10_config["run_root"])
     phase10_status_rows = read_jsonl(phase10_root / "project_status.jsonl")
     if manifest.get("verification_mode") == "differential":
+        snapshot_manifest_path = run_root / "fixed_database_preparation.json"
+        snapshot_status_path = run_root / "fixed_database_build_status.jsonl"
+        if not snapshot_manifest_path.is_file() or not snapshot_status_path.is_file():
+            raise ValueError("Phase 11 differential dependency snapshot is missing")
+        snapshot_manifest = _json(snapshot_manifest_path)
+        if (
+            snapshot_manifest.get("development_only") is not True
+            or snapshot_manifest.get("locked_test_prepared") is not False
+            or snapshot_manifest.get("identity_mapping_persisted") is not False
+            or snapshot_manifest.get("status_sha256") != sha256_file(snapshot_status_path)
+        ):
+            raise ValueError("Phase 11 fixed database snapshot violates the opaque contract")
+        snapshot_statuses = {
+            str(row["project_id"]): row for row in read_jsonl(snapshot_status_path)
+        }
         resolved = _mapping(run_root / "config.resolved.yaml")
         arguments = cast(Mapping[str, Any], resolved["arguments"])
         configured_root = (
@@ -110,9 +121,24 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
         fixed_root = Path(str(configured_root))
         if not fixed_root.is_absolute():
             fixed_root = repo_root / fixed_root
-        dependency["fixed_databases"] = _fixed_database_status(
-            fixed_root, selected, phase10_status_rows
-        )
+        phase10_by_id = {str(row["project_id"]): row for row in phase10_status_rows}
+        required = [
+            project_id
+            for project_id in selected
+            if phase10_by_id[project_id].get("status") == "SUCCESS"
+        ]
+        if any(
+            snapshot_statuses.get(project_id, {}).get("status") != "SUCCESS"
+            or not (fixed_root / project_id / "codeql-database.yml").is_file()
+            for project_id in required
+        ):
+            raise ValueError("Phase 11 fixed database snapshot/availability mismatch")
+        dependency["fixed_databases"] = {
+            "preparation_manifest_sha256": sha256_file(snapshot_manifest_path),
+            "build_status_sha256": sha256_file(snapshot_status_path),
+            "required_databases": len(required),
+            "available_databases": len(required),
+        }
     if _json(run_root / "dependency_status.json") != dependency:
         raise ValueError("Phase 11 dependency status mismatch")
     if manifest.get("development_dependencies") != dependency:

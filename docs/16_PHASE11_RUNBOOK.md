@@ -55,7 +55,8 @@ bash scripts/tools/validate_phase11.sh \
 ```
 
 Tăng dần bằng cách bỏ `--spec-limit`, hoặc dùng `--limit N` thay
-`--project-id`. Pilot 003 đã pass với 1 spec/2 queries/zero LLM; spec đó resolve
+`--project-id`. Clean pilot 004 tại commit `8bdfcc7` đã pass với 1 spec/2
+queries/zero LLM; spec đó resolve
 5 source expressions nhưng không resolve sink nên được ghi rõ
 `UNVERIFIED_UNRESOLVED_SINK`.
 
@@ -76,7 +77,7 @@ bash scripts/tools/prepare_phase11_fixed_databases.sh \
 unset MAXVERA_DATA_ROLE
 ```
 
-Sau khi pilot build pass, build toàn development set:
+Sau khi pilot build pass, build toàn bộ 78 development projects có B9 specs:
 
 ```bash
 export MAXVERA_DATA_ROLE=evaluator
@@ -126,6 +127,8 @@ Nếu tiến trình dừng, dùng lại cùng command và thêm `--resume`; nế
 results/verification/phase11/<run-id>/
   manifest.json
   dependency_status.json
+  fixed_database_preparation.json        # differential only, immutable snapshot
+  fixed_database_build_status.jsonl      # differential only, immutable snapshot
   project_status.jsonl
   verification_results.jsonl
   taint_paths.jsonl
@@ -144,3 +147,8 @@ results/verification/phase11/<run-id>/
 Phase 11 chưa được khóa chỉ vì vulnerable-only pilot pass. Canonical lock cần
 fixed DB preparation hoàn tất, differential pilot pass, full run từ clean commit
 và validator pass. `test_locked` vẫn đóng cho tới protocol final-experiment.
+
+Differential pilot `p11_diff_pilot_001` cũng đã pass trên cùng clean commit và
+fixed DB: 1 spec, 4 query invocations, zero LLM. Cả vulnerable/fixed database đều
+resolve 5 source và 0 sink, nên kết quả đúng vẫn là
+`UNVERIFIED_UNRESOLVED_SINK`, không phải verified finding.

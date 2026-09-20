@@ -11,6 +11,7 @@ import os
 import re
 import resource
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
@@ -612,6 +613,23 @@ def run(args: argparse.Namespace) -> int:
         atomic_json(manifest_path, manifest)
         atomic_json(work / "environment.json", collect_environment(root))
         atomic_json(work / "dependency_status.json", dependency)
+        if args.verification_mode == "differential":
+            shutil.copyfile(
+                fixed_root / "preparation_manifest.json",
+                work / "fixed_database_preparation.json",
+            )
+            shutil.copyfile(
+                fixed_root / "build_status.jsonl",
+                work / "fixed_database_build_status.jsonl",
+            )
+            fixed_dependency = cast(Mapping[str, Any], dependency["fixed_databases"])
+            if (
+                sha256_file(work / "fixed_database_preparation.json")
+                != fixed_dependency["preparation_manifest_sha256"]
+                or sha256_file(work / "fixed_database_build_status.jsonl")
+                != fixed_dependency["build_status_sha256"]
+            ):
+                raise RuntimeError("fixed database preparation changed while snapshotting")
         _write_text(work / "command.txt", shlex.join(sys.argv) + "\n")
         _write_text(
             work / "config.resolved.yaml",
