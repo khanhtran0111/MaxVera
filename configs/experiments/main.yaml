@@ -1,5 +1,5 @@
 schema_version: 1
-protocol_version: "1.7.0"
+protocol_version: "1.8.0"
 experiment_id: main_zero_hint
 status: draft
 draft_blockers:
@@ -114,6 +114,19 @@ development_stages:
       metrics_sha256: bd7161a9dd933dc90fe179161c0814eab934fce48246f750c182a63217053c23
       checksums_index_sha256: cf15847234351ce21c390879cedbbac56d351914e6fe9438a43f80b9e398bc5a
     next_gate: phase11_static_verification
+  phase11_static_verification:
+    status: implemented_vulnerable_pilot_validated_pending_fixed_differential
+    protocol_version: "1.8.0"
+    verifier_version: phase11-static-verification-v1
+    phase9_run_id: p9_useg_dev_full_003
+    phase10_run_id: p10_b9_dev_full_001
+    analysis_iteration: 1
+    max_paths_per_specification: 4
+    max_query_invocations_per_project: 40
+    max_iterations: 1
+    llm_calls: 0
+    final_finding_requires: vulnerable_path_absent_in_fixed_database
+    next_gate: fixed_database_preparation_and_differential_pilot
 scope:
   language: Java
   static_analyzer: CodeQL

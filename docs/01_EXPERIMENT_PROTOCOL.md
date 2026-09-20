@@ -1,8 +1,8 @@
-# Experimental Protocol 1.7.0
+# Experimental Protocol 1.8.0
 
 **Mục đích:** định nghĩa dataset view, baseline, evaluation unit, metric, budget,
 failure policy và kiểm định thống kê áp dụng cho mọi kết quả chính. Protocol này
-được cập nhật và frozen ngày 17/09/2026; `configs/experiments/main.yaml` còn
+được cập nhật và frozen ngày 20/09/2026; `configs/experiments/main.yaml` còn
 `draft` vì threshold calibration Phase 12 chưa tồn tại.
 
 ## Dataset và label firewall
@@ -175,3 +175,19 @@ QLL, không phải static verification. Mọi spec giữ trạng thái
 `SYNTHESIZED_UNVERIFIED`; final finding, verified path và vulnerable/fixed verdict
 chỉ được materialize từ Phase 11. Analyzer tiếp tục cấm evaluator-only, advisory,
 patch và `test_locked`.
+
+## Phase 11 static-verification contract
+
+Phase 11 pin exact Phase 9 USEG và Phase 10 B9 specification artifacts. Mỗi spec
+được render thành một endpoint-inventory query và một Java global-taint
+`path-problem`. Endpoint inventory tách `UNRESOLVED_SOURCE/SINK` khỏi trường hợp
+endpoint đã resolve nhưng không có path; SARIF phải giữ code flow đầy đủ.
+
+Vulnerable-only path vẫn là `UNVERIFIED_FIXED_NOT_RUN`. Chỉ path có ở vulnerable
+database và không còn với cùng frozen specification ở fixed database mới là
+`VERIFIED_DIFFERENTIAL`. Fixed DB được chuẩn bị bằng evaluator process riêng từ
+development fix revision, persist dưới opaque project ID và không chuyển label,
+commit ID hay advisory sang analyzer artifact. Loop v1 có đúng một iteration,
+tối đa 4 paths/spec và 40 query invocations/project; mọi LLM call/token bằng 0.
+USEG iteration 1 chỉ thêm verification/path evidence với stable provenance và
+phải giữ DAG. Failure tính là intention-to-analyze miss; `test_locked` vẫn đóng.

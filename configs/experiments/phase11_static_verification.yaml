@@ -1,0 +1,83 @@
+schema_version: 1
+protocol_version: "1.8.0"
+experiment_id: phase11_static_verification
+status: frozen_phase_11_development
+purpose: development_only_static_path_and_vulnerable_fixed_verification
+
+development_dependencies:
+  phase9:
+    run_root: results/graphs/useg/p9_useg_dev_full_003
+    run_id: p9_useg_dev_full_003
+    files:
+      manifest_sha256: manifest.json
+      nodes_sha256: useg/nodes.jsonl
+      edges_sha256: useg/edges.jsonl
+      checksums_index_sha256: checksums.sha256
+    sha256:
+      manifest_sha256: 83dce921c979db710762bd205588c667033bc10fb6c64c4581fce9a8c84810c7
+      nodes_sha256: fe4cf6f41ca45916c4610f0b241277b61eaf90ba5ce7785e7492c106ebffc0aa
+      edges_sha256: 4c3fc49f59357d8ebe120ef2f75d35a1ba8adb41038dbf2a6e4061c62d5b44aa
+      checksums_index_sha256: 45d1ed92e1a8f7adb365aa0bced3872f21e5815fe574a4d62838cb7747784235
+  phase10:
+    run_root: results/specifications/phase10/full_useg/p10_b9_dev_full_001
+    run_id: p10_b9_dev_full_001
+    files:
+      manifest_sha256: manifest.json
+      summary_sha256: phase10_summary.json
+      project_status_sha256: project_status.jsonl
+      specifications_sha256: specifications.jsonl
+      checksums_index_sha256: checksums.sha256
+    sha256:
+      manifest_sha256: 3943d6af3cfdd373ae4619d2cf3e43a06b0d896e536c19dbd88562845fdcc45f
+      summary_sha256: f7f6f03b4098333e8d277e39e7f677bdf775023b321eb7487acbdef9ec6cb296
+      project_status_sha256: 4c21130f148557df64786943d58931a0efb821d7613aaeef25a0eccbf6ab3874
+      specifications_sha256: ee48f6b6169449887e773309f9369cb3d9ad869fb65d621d715525e606557611
+      checksums_index_sha256: 5c79f46ad6adeb952980fe5233738a8b7d9d437c115c1dc1a7d8383b78defd9e
+
+databases:
+  vulnerable_root: data/interim/phase7_codeql_databases
+  preparation_manifest: data/interim/phase7_database_preparation.json
+  preparation_manifest_sha256: fd33661c2ea0fd5d54b2cc38e3634919cbc471c636673fb547c07dee3d2d9719
+  build_status: data/interim/phase7_database_build_status.jsonl
+  build_status_sha256: 2ad41ccf21201b2ab064b747bbd134cdf603dc3279b034ca3d2064b63d765f18
+  fixed_root: data/interim/phase11_fixed_codeql_databases
+  fixed_database_contract: opaque_project_id_at_development_fix_revision
+
+verification:
+  version: phase11-static-verification-v1
+  flow_engine: codeql_java_global_taint_tracking
+  max_iterations: 1
+  max_paths_per_specification: 4
+  max_query_invocations_per_project: 40
+  evidence_threshold: vulnerable_path_absent_in_fixed_database
+  stop_order: [EVIDENCE_THRESHOLD_MET, BUDGET_EXHAUSTED, NO_NEW_EVIDENCE]
+  unresolved_endpoint_status: UNVERIFIED
+  no_path_status: UNVERIFIED
+  fixed_path_persists_status: UNVERIFIED
+  llm_verdict_allowed: false
+  llm_calls: 0
+  llm_tokens: 0
+
+useg_update:
+  analysis_iteration: 1
+  materialize_node_kinds: [VERIFICATION_RESULT, TAINT_PATH]
+  materialize_edge_kinds: [SUPPORTS, CONTRADICTS, VERIFIED_BY]
+  preserve_phase9_graph: true
+
+execution:
+  codeql_cli_version: "2.26.2"
+  query_pack: codeql/java-all@9.2.2
+  threads: 2
+  ram_mb: 8192
+  timeout_seconds_per_query: 600
+  project_workers: 1
+  atomic_finalization: true
+  full_result_overwrite: false
+
+validation:
+  require_exact_phase9_and_phase10_locks: true
+  require_final_status_per_specification: true
+  require_path_or_explicit_unverified: true
+  require_differential_for_verified: true
+  require_deterministic_stop_reason: true
+  require_zero_llm_calls: true

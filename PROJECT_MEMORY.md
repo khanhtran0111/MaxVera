@@ -4,7 +4,8 @@
 > Phase 9 canonical implementation/run commit:
 > `2395d219789ad5401e1fecdb26cee9030208c19b`
 > Hiện trạng: Phase 0–10 đã khóa cho development; Phase 10 full B6–B9 và
-> evaluator-only annotated gate đã validated; Phase 11 chưa triển khai/chạy;
+> evaluator-only annotated gate đã validated; Phase 11 implemented và
+> vulnerable-only pilot pass, đang chờ fixed DB/differential pilot;
 > `test_locked` chưa mở/chạy.
 
 ## Mục đích và cách dùng
@@ -42,7 +43,7 @@ evaluator-only.
 |---|---|
 | Bài toán | Zero-hint, repository-level vulnerability research |
 | Ngôn ngữ / static engine | Java / CodeQL |
-| Protocol hiện hành | `1.7.0` |
+| Protocol hiện hành | `1.8.0` |
 | Dataset chính | `D_extended`: 120 rows, 77 repository groups, 4 CWE |
 | Development | 96 opaque projects |
 | Locked test | 24 opaque projects, chưa được analyzer truy cập |
@@ -51,14 +52,14 @@ evaluator-only.
 | Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
 | Phase 9 lock | `p9_useg_dev_full_003`, 81/96 graph success |
 | Phase 10 | Locked: B6–B9 full 001 + annotated gate 003 |
+| Phase 11 | Implemented; vulnerable-only pilot 003 pass; differential pending |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase tiếp theo | Phase 11 static verification implementation → pilot |
+| Phase tiếp theo | Phase 11 fixed DB preparation → differential pilot/full |
 
 `configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 khóa
-calibration thresholds. Header của `docs/00_RESEARCH_SCOPE.md`,
-`docs/01_EXPERIMENT_PROTOCOL.md`, main config và D-028 cùng dùng contract `1.7.0`;
-Phase 9 artifact tiếp tục giữ historical contract `1.6.0`.
+calibration thresholds. Phase 11 dùng protocol `1.8.0`; Phase 9/10 artifacts giữ
+historical contracts `1.6.0`/`1.7.0`.
 
 ## Invariant không được phá
 
@@ -327,12 +328,13 @@ Phase 11 kiểm chứng, không dùng sửa prompt/retrieval/specification.
 - Phase 10 run root: `results/specifications/phase10/<baseline>/<run-id>/`;
 - Phase 10 evaluator: `results/evaluations/phase10/p10_dev_spec_eval_003/`;
 - configs/locks: `configs/experiments/`;
-- Phase 5/6/7/8/9/10 code: `src/baselines/`, `src/hypotheses/`,
+- Phase 5/6/7/8/9/10/11 code: `src/baselines/`, `src/hypotheses/`,
   `src/graphs/program/`, `src/graphs/knowledge/`, `src/graphs/evidence/`,
-  `src/graphs/useg/`, `src/retrieval/`, `src/specification/`;
+  `src/graphs/useg/`, `src/retrieval/`, `src/specification/`, `src/verification/`;
 - runbooks: `docs/10_PHASE5_RUNBOOK.md`, `docs/11_PHASE6_RUNBOOK.md`,
   `docs/12_PHASE7_RUNBOOK.md`, `docs/13_PHASE8_RUNBOOK.md`,
-  `docs/14_PHASE9_RUNBOOK.md`, `docs/15_PHASE10_RUNBOOK.md`.
+  `docs/14_PHASE9_RUNBOOK.md`, `docs/15_PHASE10_RUNBOOK.md`,
+  `docs/16_PHASE11_RUNBOOK.md`.
 
 Checksum chi tiết nằm trong từng canonical run. Raw results/DB thường bị Git
 ignore; clone khác có thể chỉ có compact exports và manifests.
@@ -355,15 +357,18 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
   full 003. Hai trong 81 graph success không có incident candidate path.
 - Phase 10 compile-only không phải static verification; B9 final findings vẫn bị
   chặn đến Phase 11/12. Dry-run không chứng minh provider/schema behavior thật.
+- Phase 11 vulnerable-only path không phải verified finding; canonical lock cần
+  fixed databases và differential full run. Pilot 003 chỉ kiểm runtime/status.
 - Hosted model không có project-controlled weight hash.
 - `test_locked` chưa mở; chưa được claim final paper performance.
 
 ## Handoff Phase 11
 
-Phase 10 đã khóa. Phase 11 phải pin exact B9 `p10_b9_dev_full_001`, chạy generated
-specification trên development CodeQL databases, lưu positive/negative evidence,
-materialize verification iteration mới của USEG và giữ deterministic stop policy.
-Không mở `test_locked`; không dùng LLM verdict hoặc Phase 10 proxy làm verifier.
+Phase 11 implementation và vulnerable-only pilot đã pass. Tiếp theo dùng evaluator
+process dựng opaque fixed databases cho development, chạy differential pilot rồi
+full từ clean commit. Chỉ `VERIFIED_DIFFERENTIAL` được chuyển downstream; mọi
+`UNVERIFIED_*` giữ fail-closed. Không mở `test_locked` và không dùng LLM verdict
+hoặc Phase 10 proxy làm verifier.
 
 ## Checklist agent
 
@@ -385,6 +390,6 @@ uv run --frozen mypy src
 uv run --frozen pytest -q
 ```
 
-Tại Phase 10 implementation: Ruff pass, mypy pass, 96 tests pass. Formatter
-còn báo các file lịch sử ngoài phạm vi; không bulk-format trong task không liên
-quan.
+Tại Phase 11 implementation: targeted Ruff/mypy pass, Phase 10/11 unit tests pass,
+query compile test và vulnerable-only pilot validator pass. Full suite phải chạy
+lại trước clean implementation commit.

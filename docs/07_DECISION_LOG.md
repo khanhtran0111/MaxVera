@@ -603,6 +603,38 @@ Quyết định này khóa Phase 10 cho Phase 11 development. Nó materialize ga
 không đổi RQ, dataset, split, model, budget hay metric family nên protocol giữ
 `1.7.0`. Bốn synthesis run và evaluator run là immutable; rerun phải dùng ID mới.
 
+## D-030 — Phase 11 static path và vulnerable/fixed differential (2026-09-20)
+
+Phase 11 dùng hai deterministic CodeQL queries cho mỗi frozen B9 specification:
+endpoint inventory và Java global-taint `path-problem`. Query đầu phân biệt
+descriptor không resolve với endpoint resolve nhưng không có flow; query sau lưu
+full SARIF code flow. Sanitizer là barrier và propagator là additional flow step.
+Compiler/query engine vẫn là CodeQL 2.26.2 với `java-all@9.2.2`.
+
+Một vulnerable path đơn lẻ chưa phải verified finding. Trạng thái
+`VERIFIED_DIFFERENTIAL` chỉ được cấp khi cùng frozen specification có path trên
+vulnerable database và không có path trên fixed database. Mọi trường hợp còn lại
+ghi explicit `UNVERIFIED_*` hoặc `ANALYSIS_FAILED`; LLM verdict bị cấm và Phase 11
+v1 có zero LLM calls/tokens. Negative evidence, query attempts, resource usage và
+USEG delta iteration 1 đều được persist/checksum.
+
+Fixed DB preparation là evaluator-only: chỉ development IDs, kiểm split disjoint,
+đọc fix revision rồi persist database/status bằng opaque project ID; không chuyển
+commit ID, advisory hay identity mapping sang analyzer artifact. Vulnerable-only
+pilot được phép để kiểm query/runtime nhưng không đủ điều kiện khóa Phase 11.
+
+Loop v1 có đúng một iteration; tối đa 4 paths/spec và 40 query invocations/project.
+Stop reason deterministic theo `EVIDENCE_THRESHOLD_MET`, `BUDGET_EXHAUSTED`, rồi
+`NO_NEW_EVIDENCE`. USEG update chỉ thêm `VERIFICATION_RESULT`/`TAINT_PATH` và cạnh
+không tạo cycle. Full run bắt buộc differential, clean worktree, toàn bộ 96 project
+statuses và không cho subset/spec limit. Alternatives dùng compile success, LLM
+verdict hoặc vulnerable-only path làm final finding đều bị loại.
+
+Decision này tăng protocol `1.7.0` lên `1.8.0` vì thêm verifier, evidence threshold,
+fixed-database boundary, iteration/stop policy và query budget mới. Phase 9/10
+artifacts giữ historical protocol của chúng; main experiment tiếp tục `draft` cho
+tới khi Phase 12 khóa calibration thresholds.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

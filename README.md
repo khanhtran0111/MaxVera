@@ -46,11 +46,16 @@ compile. The separate evaluator-only annotated gate
 These metrics are not static verification. Outputs remain
 `SYNTHESIZED_UNVERIFIED`; see
 [`docs/15_PHASE10_RUNBOOK.md`](docs/15_PHASE10_RUNBOOK.md).
+Phase 11 is implemented as deterministic CodeQL global-taint verification. It
+records endpoint resolution, SARIF taint paths, explicit negative evidence and
+an acyclic USEG iteration-1 delta. Vulnerable-only results remain unverified;
+only vulnerable-path/fixed-no-path differential results may be verified. See
+[`docs/16_PHASE11_RUNBOOK.md`](docs/16_PHASE11_RUNBOOK.md).
 The frozen 120-row release has 120 final build statuses and 104 successful
 CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw
 context, B4 text-RAG, and B5 static hypotheses. B6-B8 and B9 synthesis are
 locked for development; B9 final findings remain fail-closed until Phase 11
-verification and Phase 12 calibration exist.
+differential verification and Phase 12 calibration are locked.
 Every entrypoint fails closed if any smoke artifact remains.
 
 ## Bootstrap

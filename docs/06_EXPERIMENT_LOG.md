@@ -68,6 +68,8 @@ chép tay.
 | 2026-09-18 | Phase 10 B6–B9 full development 001 | validated/selected | clean commit `184fef1`; B6/B7/B8/B9 have 54/34/78/78 project successes and 763/619/801/801 grounded specifications; all final queries compile; every run has 96 final statuses and validator `PASS_WITH_ANALYSIS_FAILURES`; failures remain intention-to-analyze misses |
 | 2026-09-20 | Phase 10 annotated spec gate 003 | passed/selected | evaluator-only clean run at `6117b00`; 91 development projects have fix-location annotations and 5 are explicitly unannotated; B9 has 14/762 paper-compatible proxy-positive specs and detects 6/91 projects; proxy is not static verification; aggregate reproduced byte-identically across diagnostic runs; D-029 |
 | 2026-09-20 | Phase 10 lock | locked | full B6–B9 run IDs and evaluator checksums pinned in `configs/experiments/main.yaml`; development synthesis is frozen for Phase 11; protocol remains 1.7.0; D-029 |
+| 2026-09-20 | Phase 11 vulnerable-only pilot 001 | rejected | CodeQL execution succeeded, but independent validator found a USEG cycle across TAINT_PATH → HYPOTHESIS → VERIFICATION_RESULT → TAINT_PATH; immutable diagnostic retained and edge materialization corrected |
+| 2026-09-20 | Phase 11 vulnerable-only pilot 003 | passed/diagnostic | one B9 spec on `proj_7341ff37e347ec3be4ce`; 2 CodeQL queries, zero LLM calls/tokens; source resolved to 5 expressions, sink resolved to 0, final state `UNVERIFIED_UNRESOLVED_SINK`; validator pass after acyclic USEG update and exact query-attempt accounting |
 
 Các smoke run đã bị cleanup theo protocol. Pilot dùng backend trước protocol
 1.1.0 chỉ là kiểm tra kỹ thuật và đã bị xóa cùng partial full run; không số liệu

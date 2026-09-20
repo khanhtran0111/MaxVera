@@ -26,7 +26,7 @@ def test_main_protocol_is_draft_for_explicit_phase_blockers() -> None:
     config = yaml.safe_load(
         (REPO_ROOT / "configs/experiments/main.yaml").read_text(encoding="utf-8")
     )
-    assert config["protocol_version"] == "1.7.0"
+    assert config["protocol_version"] == "1.8.0"
     assert config["status"] == "draft"
     assert config["draft_blockers"]
     assert config["leakage_firewall"]["enabled"] is True
