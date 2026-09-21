@@ -87,7 +87,9 @@ unset MAXVERA_DATA_ROLE
 
 Các build failure được giữ trong
 `data/interim/phase11_fixed_codeql_databases/build_status.jsonl`; không được drop
-khỏi denominator.
+khỏi denominator. Fixed database không tạo được sẽ trở thành project-level
+`ANALYSIS_FAILED` trong full run; các database đã tạo được vẫn tiếp tục chạy
+differential. Đây là intention-to-analyze accounting, không phải loại project.
 
 ## 5. Chạy differential
 

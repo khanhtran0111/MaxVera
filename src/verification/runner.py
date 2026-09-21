@@ -207,15 +207,12 @@ def _fixed_database_status(
         if status_by_id.get(project_id, {}).get("status") != "SUCCESS"
         or not (fixed_root / project_id / "codeql-database.yml").is_file()
     ]
-    if unavailable:
-        raise FileNotFoundError(
-            f"fixed CodeQL databases unavailable for {len(unavailable)} selected project(s)"
-        )
     return {
         "preparation_manifest_sha256": sha256_file(manifest_path),
         "build_status_sha256": sha256_file(status_path),
         "required_databases": len(required),
-        "available_databases": len(required),
+        "available_databases": len(required) - len(unavailable),
+        "unavailable_databases": len(unavailable),
     }
 
 

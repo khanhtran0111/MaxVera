@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
+from src.common.provenance import sha256_file
 from src.verification.query import query_id, render_endpoint_query, render_path_query
-from src.verification.runner import _status
+from src.verification.runner import _fixed_database_status, _status
 
 
 def _spec() -> dict[str, object]:
@@ -50,3 +54,41 @@ def test_only_vulnerable_fixed_disappearance_is_verified() -> None:
         _status({"source_endpoints": 0, "sink_endpoints": 1, "path_count": 0}, None)[0]
         == "UNVERIFIED_UNRESOLVED_SOURCE"
     )
+
+
+def test_fixed_database_failures_are_counted_instead_of_blocking_run(tmp_path: Path) -> None:
+    status_path = tmp_path / "build_status.jsonl"
+    rows = [
+        {"project_id": "available", "status": "SUCCESS"},
+        {"project_id": "failed", "status": "CODEQL_DB_FAILED"},
+    ]
+    status_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+    )
+    (tmp_path / "available").mkdir()
+    (tmp_path / "available" / "codeql-database.yml").write_text("sourceLocationPrefix: /\n")
+    (tmp_path / "preparation_manifest.json").write_text(
+        json.dumps(
+            {
+                "development_only": True,
+                "locked_test_prepared": False,
+                "identity_mapping_persisted": False,
+                "status_sha256": sha256_file(status_path),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = _fixed_database_status(
+        tmp_path,
+        ["available", "failed", "phase10_failed"],
+        [
+            {"project_id": "available", "status": "SUCCESS"},
+            {"project_id": "failed", "status": "SUCCESS"},
+            {"project_id": "phase10_failed", "status": "ANALYSIS_FAILED"},
+        ],
+    )
+
+    assert result["required_databases"] == 2
+    assert result["available_databases"] == 1
+    assert result["unavailable_databases"] == 1

@@ -635,6 +635,25 @@ fixed-database boundary, iteration/stop policy và query budget mới. Phase 9/1
 artifacts giữ historical protocol của chúng; main experiment tiếp tục `draft` cho
 tới khi Phase 12 khóa calibration thresholds.
 
+## D-031 — Phase 11 fixed-database failure accounting (2026-09-21)
+
+Full fixed preparation tạo được 61/78 database và ghi 17
+`CODEQL_DB_FAILED`. Preflight runner ban đầu lại yêu cầu đủ 78 database nên dừng
+toàn bộ trước khi nhánh project-level `ANALYSIS_FAILED` có thể chạy. Điều này mâu
+thuẫn với D-030 và primary intention-to-analyze: build/database failure phải là
+miss có trạng thái, không được drop project và cũng không được vô hiệu hóa kết
+quả của các project còn lại.
+
+Runner và validator vì vậy snapshot/count đủ required, available và unavailable
+fixed databases; database thiếu trở thành project-level `ANALYSIS_FAILED`, còn
+database sẵn có tiếp tục differential. Fixed preparer đồng thời expand revision
+viết tắt bằng commit graph evaluator-only trước khi fetch vì upstream không nhận
+abbreviated object ID; giá trị revision vẫn không được persist vào analyzer
+artifact. Alternative loại 17 project bị bác vì làm sai denominator; alternative
+dùng no-build database bị bác vì có thể biến extraction thiếu thành false
+negative evidence. Đây là sửa implementation để thực thi policy đã khóa, không
+đổi split, evidence threshold, query budget hay metric, nên protocol giữ `1.8.0`.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

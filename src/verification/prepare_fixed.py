@@ -52,6 +52,21 @@ def _run(
     )
 
 
+def _resolve_fixed_revision(source: Path, revision: str) -> str:
+    """Resolve abbreviated evaluator revisions without persisting their identity.
+
+    Git hosting providers generally reject fetching an abbreviated object ID even
+    when that commit is reachable.  The vulnerable partial clone already has the
+    upstream commit graph, so use it only to expand the evaluator-provided value
+    before creating the isolated fixed checkout.
+    """
+    resolved = _run(
+        ["git", "rev-parse", "--verify", f"{revision}^{{commit}}"],
+        cwd=source,
+    )
+    return resolved.stdout.strip() if resolved.returncode == 0 else revision
+
+
 def _selected_rows(root: Path, args: argparse.Namespace) -> list[dict[str, str]]:
     development_path = root / "data/processed/splits/development.csv"
     test_path = root / "data/processed/splits/test_locked.csv"
@@ -130,7 +145,7 @@ def prepare(args: argparse.Namespace) -> int:
         if not source.is_dir() or not fix_commits:
             reason = "vulnerable source repository or fixed revision is unavailable"
         else:
-            fixed_revision = fix_commits[-1]
+            fixed_revision = _resolve_fixed_revision(source, fix_commits[-1])
             upstream = _run(["git", "remote", "get-url", "origin"], cwd=source)
             upstream_url = upstream.stdout.strip() if upstream.returncode == 0 else ""
             for number, attempt in enumerate(_attempts(row, toolchain), start=1):

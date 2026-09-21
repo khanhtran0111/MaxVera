@@ -127,17 +127,20 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
             for project_id in selected
             if phase10_by_id[project_id].get("status") == "SUCCESS"
         ]
-        if any(
-            snapshot_statuses.get(project_id, {}).get("status") != "SUCCESS"
-            or not (fixed_root / project_id / "codeql-database.yml").is_file()
+        unavailable = [
+            project_id
             for project_id in required
-        ):
-            raise ValueError("Phase 11 fixed database snapshot/availability mismatch")
+            if (
+                snapshot_statuses.get(project_id, {}).get("status") != "SUCCESS"
+                or not (fixed_root / project_id / "codeql-database.yml").is_file()
+            )
+        ]
         dependency["fixed_databases"] = {
             "preparation_manifest_sha256": sha256_file(snapshot_manifest_path),
             "build_status_sha256": sha256_file(snapshot_status_path),
             "required_databases": len(required),
-            "available_databases": len(required),
+            "available_databases": len(required) - len(unavailable),
+            "unavailable_databases": len(unavailable),
         }
     if _json(run_root / "dependency_status.json") != dependency:
         raise ValueError("Phase 11 dependency status mismatch")
