@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import shlex
+import shutil
 import subprocess
 import tempfile
 import time
@@ -67,6 +68,176 @@ def _resolve_fixed_revision(source: Path, revision: str) -> str:
     return resolved.stdout.strip() if resolved.returncode == 0 else revision
 
 
+def _target_source_files(
+    root: Path,
+    config: Mapping[str, Any],
+    project_ids: set[str],
+) -> dict[str, tuple[str, ...]]:
+    """Resolve frozen Phase 10 endpoint nodes to their project source files."""
+    dependencies = cast(Mapping[str, Any], config["development_dependencies"])
+    phase10 = cast(Mapping[str, Any], dependencies["phase10"])
+    phase9 = cast(Mapping[str, Any], dependencies["phase9"])
+    phase10_root = root / str(phase10["run_root"])
+    phase9_root = root / str(phase9["run_root"])
+    node_projects: dict[str, str] = {}
+    for spec in read_jsonl(phase10_root / "specifications.jsonl"):
+        project_id = str(spec.get("project_id", ""))
+        if project_id not in project_ids:
+            continue
+        for field in ("sources", "sinks", "sanitizers", "propagators"):
+            values = spec.get(field, [])
+            if not isinstance(values, list):
+                continue
+            for value in values:
+                if isinstance(value, dict) and value.get("node_id"):
+                    node_projects[str(value["node_id"])] = project_id
+
+    files: dict[str, set[str]] = {project_id: set() for project_id in project_ids}
+    nodes_path = phase9_root / "useg/nodes.jsonl"
+    with nodes_path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            node = json.loads(line)
+            project_id = node_projects.get(str(node.get("node_id", "")))
+            if project_id is None:
+                continue
+            properties = node.get("properties", {})
+            if not isinstance(properties, dict):
+                continue
+            location = properties.get("location", {})
+            file_value = location.get("file") if isinstance(location, dict) else None
+            if not isinstance(file_value, str):
+                file_value = properties.get("file")
+            if isinstance(file_value, str) and file_value.endswith(".java"):
+                files[project_id].add(file_value)
+    return {key: tuple(sorted(value)) for key, value in files.items()}
+
+
+def _maven_modules(checkout: Path, source_files: Sequence[str]) -> tuple[str, ...]:
+    """Find the nearest Maven module containing each frozen endpoint file."""
+    modules: set[str] = set()
+    for source_file in source_files:
+        current = (checkout / source_file).parent
+        while current != checkout and checkout in current.parents:
+            if (current / "pom.xml").is_file():
+                modules.add(current.relative_to(checkout).as_posix())
+                break
+            current = current.parent
+    return tuple(sorted(modules))
+
+
+def _compatible_attempts(
+    row: Mapping[str, str],
+    toolchain: Mapping[str, Any],
+    checkout: Path,
+) -> list[dict[str, Any]]:
+    attempts = _attempts(row, toolchain)
+    has_maven = (checkout / "pom.xml").is_file()
+    has_gradle = any(
+        (checkout / name).is_file()
+        for name in ("settings.gradle", "settings.gradle.kts", "build.gradle", "build.gradle.kts")
+    )
+    if has_maven:
+        return [attempt for attempt in attempts if "maven" in attempt]
+    if has_gradle or (checkout / "gradlew").is_file():
+        return [
+            attempt for attempt in attempts if "gradle" in attempt or attempt.get("gradlew") is True
+        ]
+    return attempts
+
+
+def _tailored_build_command(
+    command: Sequence[str],
+    attempt: Mapping[str, Any],
+    modules: Sequence[str],
+) -> list[str]:
+    """Run only compilation tasks needed for CodeQL extraction."""
+    executable, *arguments = command
+    if "maven" in attempt:
+        options = [value for value in arguments if value not in {"clean", "package"}]
+        target = ["-pl", ",".join(modules), "-am"] if modules else []
+        return [
+            executable,
+            *target,
+            "compile",
+            "-U",
+            "-Dmaven.wagon.http.retryHandler.count=3",
+            *options,
+        ]
+    options = [value for value in arguments if value not in {"clean", "build", "classes"}]
+    return [executable, *options, "classes"]
+
+
+def _stabilize_build_environment(
+    environment: Mapping[str, str], attempt: Mapping[str, Any]
+) -> dict[str, str]:
+    """Avoid a known JDK 17 cgroup probe crash in legacy build plugins."""
+    result = dict(environment)
+    option = "-XX:-UseContainerSupport"
+    if str(attempt.get("jdk")) == "17" and option not in result.get("JAVA_TOOL_OPTIONS", ""):
+        result["JAVA_TOOL_OPTIONS"] = " ".join(
+            value for value in (result.get("JAVA_TOOL_OPTIONS", ""), option) if value
+        )
+    return result
+
+
+def _checkout_fixed_revision(
+    source: Path,
+    checkout: Path,
+    revision: str,
+    upstream_url: str,
+    *,
+    timeout: int,
+) -> tuple[bool, str]:
+    """Create one isolated checkout, preferring already-fetched local objects."""
+    candidates = [("local", str(source))]
+    if upstream_url:
+        candidates.append(("upstream", upstream_url))
+    failures: list[str] = []
+    for label, remote_url in candidates:
+        shutil.rmtree(checkout, ignore_errors=True)
+        checkout.mkdir()
+        initialized = _run(["git", "init", "--quiet"], cwd=checkout)
+        remote = (
+            _run(["git", "remote", "add", "origin", remote_url], cwd=checkout)
+            if initialized.returncode == 0
+            else initialized
+        )
+        fetch = (
+            _run(
+                [
+                    "git",
+                    "fetch",
+                    "--quiet",
+                    "--filter=blob:none",
+                    "--depth=1",
+                    "origin",
+                    revision,
+                ],
+                cwd=checkout,
+                timeout=timeout,
+            )
+            if remote.returncode == 0
+            else remote
+        )
+        switch = (
+            _run(["git", "checkout", "--quiet", "--detach", "FETCH_HEAD"], cwd=checkout)
+            if fetch.returncode == 0
+            else fetch
+        )
+        if switch.returncode == 0:
+            return True, label
+        failures.append(f"{label} exit {switch.returncode}")
+    return False, "; ".join(failures)
+
+
+def _reset_checkout(checkout: Path) -> bool:
+    reset = _run(["git", "reset", "--hard", "--quiet", "HEAD"], cwd=checkout)
+    clean = _run(["git", "clean", "-ffdx", "--quiet"], cwd=checkout)
+    return reset.returncode == 0 and clean.returncode == 0
+
+
 def _selected_rows(root: Path, args: argparse.Namespace) -> list[dict[str, str]]:
     development_path = root / "data/processed/splits/development.csv"
     test_path = root / "data/processed/splits/test_locked.csv"
@@ -105,6 +276,46 @@ def _selected_rows(root: Path, args: argparse.Namespace) -> list[dict[str, str]]
     return rows
 
 
+def _write_preparation_state(
+    root: Path,
+    fixed_root: Path,
+    by_id: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Atomically checkpoint statuses, then bind a fresh manifest to their hash."""
+    status_path = fixed_root / "build_status.jsonl"
+    atomic_jsonl(status_path, [by_id[key] for key in sorted(by_id)])
+    counts = Counter(str(row["status"]) for row in by_id.values())
+    eligible_ids = {
+        str(row["project_id"])
+        for row in read_jsonl(root / PHASE10_STATUS)
+        if row.get("status") == "SUCCESS"
+    }
+    completed = sum(project_id in by_id for project_id in eligible_ids)
+    manifest = {
+        "schema_version": 1,
+        "created_at": utc_now(),
+        "strategy": "evaluator_only_targeted_fixed_revision_to_opaque_project_database",
+        "development_only": True,
+        "locked_test_prepared": False,
+        "identity_mapping_persisted": False,
+        "labels_sha256": sha256_file(root / "data/processed/evaluator_only/D_extended_labels.csv"),
+        "development_split_sha256": sha256_file(root / "data/processed/splits/development.csv"),
+        "phase10_project_status_sha256": sha256_file(root / PHASE10_STATUS),
+        "eligible_phase10_projects": len(eligible_ids),
+        "accounted_projects": completed,
+        "preparation_complete": completed == len(eligible_ids),
+        "status_sha256": sha256_file(status_path),
+        "phase11_config_sha256": sha256_file(
+            root / "configs/experiments/phase11_static_verification.yaml"
+        ),
+        "implementation_sha256": sha256_file(root / "src/verification/prepare_fixed.py"),
+        "successful_databases": counts["SUCCESS"],
+        "failed_databases": counts["CODEQL_DB_FAILED"],
+    }
+    atomic_json(fixed_root / "preparation_manifest.json", manifest)
+    return manifest
+
+
 def prepare(args: argparse.Namespace) -> int:
     root = args.repo_root.resolve()
     if os.environ.get("MAXVERA_DATA_ROLE") != "evaluator":
@@ -118,187 +329,164 @@ def prepare(args: argparse.Namespace) -> int:
     status_path = fixed_root / "build_status.jsonl"
     records = read_jsonl(status_path)
     by_id = {str(row["project_id"]): row for row in records}
+    selected_ids = {row["project_id"] for row in rows}
+    target_files = _target_source_files(root, config, selected_ids)
     machine = effective_env(root / ".env")
     codeql = _codeql_binary(machine)
     toolchain = _mapping(root / "configs/toolchains/cwe_bench_java.yaml")
-    for position, row in enumerate(rows, start=1):
-        project_id = row["project_id"]
-        destination = fixed_root / project_id
-        if (destination / "codeql-database.yml").is_file():
-            by_id[project_id] = {
-                "schema_version": 1,
-                "project_id": project_id,
-                "status": "SUCCESS",
-                "reason": "existing opaque fixed database retained",
-                "attempts": [],
-                "updated_at": utc_now(),
-            }
-            continue
-        if destination.exists() or destination.is_symlink():
-            raise ValueError(f"invalid fixed database destination: {project_id}")
-        source = source_root / project_id
-        fix_commits = [value for value in row["fix_commit_ids"].split(";") if value]
-        started = time.monotonic()
-        attempts: list[dict[str, Any]] = []
-        success = False
-        reason = "all fixed-revision build attempts failed or were unavailable"
-        if not source.is_dir() or not fix_commits:
-            reason = "vulnerable source repository or fixed revision is unavailable"
-        else:
-            fixed_revision = _resolve_fixed_revision(source, fix_commits[-1])
-            upstream = _run(["git", "remote", "get-url", "origin"], cwd=source)
-            upstream_url = upstream.stdout.strip() if upstream.returncode == 0 else ""
-            for number, attempt in enumerate(_attempts(row, toolchain), start=1):
-                attempt_started = time.monotonic()
+    manifest = _write_preparation_state(root, fixed_root, by_id)
+    try:
+        for position, row in enumerate(rows, start=1):
+            project_id = row["project_id"]
+            destination = fixed_root / project_id
+            if (destination / "codeql-database.yml").is_file():
+                if by_id.get(project_id, {}).get("status") != "SUCCESS":
+                    by_id[project_id] = {
+                        "schema_version": 1,
+                        "project_id": project_id,
+                        "status": "SUCCESS",
+                        "reason": "existing opaque fixed database retained",
+                        "attempts": [],
+                        "updated_at": utc_now(),
+                    }
+                    manifest = _write_preparation_state(root, fixed_root, by_id)
+                continue
+            if destination.exists() or destination.is_symlink():
+                raise ValueError(f"invalid fixed database destination: {project_id}")
+            source = source_root / project_id
+            fix_commits = [value for value in row["fix_commit_ids"].split(";") if value]
+            started = time.monotonic()
+            attempts: list[dict[str, Any]] = []
+            success = False
+            reason = "all compatible fixed-revision build attempts failed"
+            checkout_method: str | None = None
+            modules: tuple[str, ...] = ()
+            if not source.is_dir() or not fix_commits:
+                reason = "vulnerable source repository or fixed revision is unavailable"
+            else:
+                fixed_revision = _resolve_fixed_revision(source, fix_commits[-1])
+                upstream = _run(["git", "remote", "get-url", "origin"], cwd=source)
+                upstream_url = upstream.stdout.strip() if upstream.returncode == 0 else ""
                 with tempfile.TemporaryDirectory(
                     prefix=f".{project_id}.fixed-", dir=fixed_root
                 ) as temporary:
                     temporary_root = Path(temporary)
                     checkout = temporary_root / "source"
-                    checkout.mkdir()
-                    initialized = _run(["git", "init", "--quiet"], cwd=checkout)
-                    remote = (
-                        _run(["git", "remote", "add", "origin", upstream_url], cwd=checkout)
-                        if initialized.returncode == 0 and upstream_url
-                        else initialized
+                    fetched, checkout_detail = _checkout_fixed_revision(
+                        source,
+                        checkout,
+                        fixed_revision,
+                        upstream_url,
+                        timeout=args.fetch_timeout,
                     )
-                    if remote.returncode == 0:
-                        fetch = _run(
-                            [
-                                "git",
-                                "fetch",
-                                "--quiet",
-                                "--filter=blob:none",
-                                "--depth=1",
-                                "origin",
-                                fixed_revision,
-                            ],
-                            cwd=checkout,
-                            timeout=args.fetch_timeout,
-                        )
-                        switch = (
-                            _run(
-                                ["git", "checkout", "--quiet", "--detach", "FETCH_HEAD"],
-                                cwd=checkout,
-                            )
-                            if fetch.returncode == 0
-                            else fetch
-                        )
+                    if not fetched:
+                        reason = "fixed revision checkout failed: " + checkout_detail
                     else:
-                        switch = remote
-                    if switch.returncode != 0:
-                        attempts.append(
-                            {
-                                "number": number,
-                                "toolchain": attempt,
-                                "outcome": "UNAVAILABLE",
-                                "reason": (
-                                    "fixed revision could not be fetched into the opaque checkout"
-                                ),
-                                "seconds": round(time.monotonic() - attempt_started, 3),
-                            }
-                        )
-                        break
-                    try:
-                        command, environment = build_command_and_env(
-                            root, checkout, attempt, toolchain, machine
-                        )
-                    except ValueError as error:
-                        attempts.append(
-                            {
-                                "number": number,
-                                "toolchain": attempt,
-                                "outcome": "UNAVAILABLE",
-                                "reason": str(error),
-                                "seconds": round(time.monotonic() - attempt_started, 3),
-                            }
-                        )
-                        continue
-                    database = temporary_root / "database"
-                    codeql_command = [
-                        str(codeql),
-                        "database",
-                        "create",
-                        str(database),
-                        "--language=java",
-                        "--threads=4",
-                        "--ram=16384",
-                        f"--source-root={checkout}",
-                        f"--command={shlex.join(command)}",
-                    ]
-                    try:
-                        process = _run(
-                            codeql_command,
-                            cwd=checkout,
-                            timeout=args.timeout,
-                            env=environment,
-                        )
-                        exit_code: int | None = process.returncode
-                        log_text = (
-                            f"command={shlex.join(codeql_command)}\n"
-                            f"stdout:\n{process.stdout}\n"
-                            f"stderr:\n{process.stderr}"
-                        )
-                    except subprocess.TimeoutExpired as error:
-                        exit_code = None
-                        log_text = (
-                            f"timeout_seconds={args.timeout}\n"
-                            f"stdout={error.stdout!r}\n"
-                            f"stderr={error.stderr!r}"
-                        )
-                    log = fixed_root / "logs" / project_id
-                    log.mkdir(parents=True, exist_ok=True)
-                    (log / f"attempt_{number:02d}.log").write_text(
-                        log_text, encoding="utf-8", newline="\n"
-                    )
-                    attempts.append(
-                        {
-                            "number": number,
-                            "toolchain": attempt,
-                            "outcome": "SUCCESS" if exit_code == 0 else "FAILED",
-                            "exit_code": exit_code,
-                            "seconds": round(time.monotonic() - attempt_started, 3),
-                        }
-                    )
-                    if exit_code == 0 and (database / "codeql-database.yml").is_file():
-                        os.replace(database, destination)
-                        success = True
-                        reason = "opaque fixed-revision CodeQL database built"
-                        break
-        by_id[project_id] = {
-            "schema_version": 1,
-            "project_id": project_id,
-            "status": "SUCCESS" if success else "CODEQL_DB_FAILED",
-            "reason": reason,
-            "attempts": attempts,
-            "seconds": round(time.monotonic() - started, 3),
-            "updated_at": utc_now(),
-        }
-        atomic_jsonl(status_path, [by_id[key] for key in sorted(by_id)])
-        print(f"[{position}/{len(rows)}] {project_id}: {by_id[project_id]['status']}", flush=True)
-    counts = Counter(str(row["status"]) for row in by_id.values())
-    manifest = {
-        "schema_version": 1,
-        "created_at": utc_now(),
-        "strategy": "evaluator_only_last_fix_revision_to_opaque_project_database",
-        "development_only": True,
-        "locked_test_prepared": False,
-        "identity_mapping_persisted": False,
-        "labels_sha256": sha256_file(root / "data/processed/evaluator_only/D_extended_labels.csv"),
-        "development_split_sha256": sha256_file(root / "data/processed/splits/development.csv"),
-        "phase10_project_status_sha256": sha256_file(root / PHASE10_STATUS),
-        "eligible_phase10_projects": sum(
-            row.get("status") == "SUCCESS" for row in read_jsonl(root / PHASE10_STATUS)
-        ),
-        "status_sha256": sha256_file(status_path),
-        "phase11_config_sha256": sha256_file(
-            root / "configs/experiments/phase11_static_verification.yaml"
-        ),
-        "implementation_sha256": sha256_file(root / "src/verification/prepare_fixed.py"),
-        "successful_databases": counts["SUCCESS"],
-        "failed_databases": counts["CODEQL_DB_FAILED"],
-    }
-    atomic_json(fixed_root / "preparation_manifest.json", manifest)
+                        checkout_method = checkout_detail
+                        modules = _maven_modules(checkout, target_files[project_id])
+                        compatible = _compatible_attempts(row, toolchain, checkout)
+                        if not compatible:
+                            reason = "no compatible pinned build toolchain is available"
+                        for number, attempt in enumerate(compatible, start=1):
+                            attempt_started = time.monotonic()
+                            if not _reset_checkout(checkout):
+                                attempts.append(
+                                    {
+                                        "number": number,
+                                        "toolchain": attempt,
+                                        "outcome": "UNAVAILABLE",
+                                        "reason": "isolated fixed checkout could not be reset",
+                                        "seconds": round(time.monotonic() - attempt_started, 3),
+                                    }
+                                )
+                                break
+                            try:
+                                command, environment = build_command_and_env(
+                                    root, checkout, attempt, toolchain, machine
+                                )
+                                environment = _stabilize_build_environment(environment, attempt)
+                                command = _tailored_build_command(command, attempt, modules)
+                            except ValueError as error:
+                                attempts.append(
+                                    {
+                                        "number": number,
+                                        "toolchain": attempt,
+                                        "outcome": "UNAVAILABLE",
+                                        "reason": str(error),
+                                        "seconds": round(time.monotonic() - attempt_started, 3),
+                                    }
+                                )
+                                continue
+                            database = temporary_root / f"database-{number:02d}"
+                            codeql_command = [
+                                str(codeql),
+                                "database",
+                                "create",
+                                str(database),
+                                "--language=java",
+                                "--threads=4",
+                                "--ram=16384",
+                                f"--source-root={checkout}",
+                                f"--command={shlex.join(command)}",
+                            ]
+                            try:
+                                process = _run(
+                                    codeql_command,
+                                    cwd=checkout,
+                                    timeout=args.timeout,
+                                    env=environment,
+                                )
+                                exit_code: int | None = process.returncode
+                                log_text = (
+                                    f"command={shlex.join(codeql_command)}\n"
+                                    f"stdout:\n{process.stdout}\n"
+                                    f"stderr:\n{process.stderr}"
+                                )
+                            except subprocess.TimeoutExpired as error:
+                                exit_code = None
+                                log_text = (
+                                    f"timeout_seconds={args.timeout}\n"
+                                    f"stdout={error.stdout!r}\n"
+                                    f"stderr={error.stderr!r}"
+                                )
+                            log = fixed_root / "logs" / project_id
+                            log.mkdir(parents=True, exist_ok=True)
+                            (log / f"attempt_{number:02d}.log").write_text(
+                                log_text, encoding="utf-8", newline="\n"
+                            )
+                            attempts.append(
+                                {
+                                    "number": number,
+                                    "toolchain": attempt,
+                                    "outcome": ("SUCCESS" if exit_code == 0 else "FAILED"),
+                                    "exit_code": exit_code,
+                                    "seconds": round(time.monotonic() - attempt_started, 3),
+                                }
+                            )
+                            if exit_code == 0 and (database / "codeql-database.yml").is_file():
+                                os.replace(database, destination)
+                                success = True
+                                reason = "targeted opaque fixed-revision CodeQL database built"
+                                break
+            by_id[project_id] = {
+                "schema_version": 1,
+                "project_id": project_id,
+                "status": "SUCCESS" if success else "CODEQL_DB_FAILED",
+                "reason": reason,
+                "checkout_method": checkout_method,
+                "target_module_count": len(modules),
+                "attempts": attempts,
+                "seconds": round(time.monotonic() - started, 3),
+                "updated_at": utc_now(),
+            }
+            manifest = _write_preparation_state(root, fixed_root, by_id)
+            print(
+                f"[{position}/{len(rows)}] {project_id}: {by_id[project_id]['status']}",
+                flush=True,
+            )
+    except KeyboardInterrupt:
+        _write_preparation_state(root, fixed_root, by_id)
+        raise
     print(json.dumps(manifest, indent=2, sort_keys=True))
     return 1 if any(by_id[row["project_id"]]["status"] != "SUCCESS" for row in rows) else 0
 

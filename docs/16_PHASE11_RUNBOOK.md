@@ -63,10 +63,12 @@ queries/zero LLM; spec đó resolve
 ## 4. Chuẩn bị fixed-version databases
 
 Bước này là evaluator-only vì cần đọc fix revision. Script chỉ chọn development
-split, kiểm development/test disjointness, đọc upstream URL từ opaque vulnerable
-checkout, khởi tạo checkout tạm và fetch đúng fixed revision, rồi chỉ persist DB
-dưới opaque project ID. Nó không sửa vulnerable checkout và không persist commit
-ID/identity mapping trong status/manifest.
+split, kiểm development/test disjointness, tạo một checkout tạm từ local object
+store (fallback upstream), rồi chỉ persist DB dưới opaque project ID. Maven chỉ
+compile các reactor module chứa endpoint Phase 10 cùng dependencies; Gradle chạy
+`classes`. Các attempt không đúng build system bị bỏ qua. Script không sửa
+vulnerable checkout và không persist commit ID/identity mapping trong
+status/manifest.
 
 Thử một project trước:
 
@@ -90,6 +92,8 @@ Các build failure được giữ trong
 khỏi denominator. Fixed database không tạo được sẽ trở thành project-level
 `ANALYSIS_FAILED` trong full run; các database đã tạo được vẫn tiếp tục chạy
 differential. Đây là intention-to-analyze accounting, không phải loại project.
+Status và preparation manifest được checkpoint sau từng project, nên rerun giữ
+database đã thành công và contract checksum vẫn hợp lệ sau một lần ngắt sạch.
 
 ## 5. Chạy differential
 
@@ -111,14 +115,12 @@ Full development run chỉ chạy từ clean commit và cấm `--limit`, `--proj
 `--spec-limit`:
 
 ```bash
-bash scripts/tools/run_phase11_verification.sh \
-  --run-id p11_diff_dev_full_001 \
-  --mode full \
-  --verification-mode differential
-
-bash scripts/tools/validate_phase11.sh \
-  --run-root results/verification/phase11/p11_diff_dev_full_001
+bash scripts/tools/run_phase11_full.sh p11_diff_dev_full_001
 ```
+
+Wrapper chấp nhận preparation status `1` (database failures đã được accounting),
+nhưng dừng với status `>1` hoặc khi bị interrupt; verifier và validator chỉ chạy
+sau một preparation hoàn chỉnh.
 
 Nếu tiến trình dừng, dùng lại cùng command và thêm `--resume`; nếu artifact final
 đã tồn tại phải dùng run ID mới.
