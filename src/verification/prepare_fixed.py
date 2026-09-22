@@ -20,7 +20,13 @@ import yaml
 from src.common.envfile import effective_env
 from src.common.provenance import sha256_file, utc_now
 from src.data.build_projects import build_command_and_env
-from src.graphs.program.build_databases import _attempts, _codeql_binary
+from src.graphs.program.build_databases import (
+    _attempts,
+    _codeql_binary,
+    _node_files,
+    _preferred_attempt,
+)
+from src.graphs.program.runner import _run_command
 from src.reproduction.common import atomic_json, atomic_jsonl, read_csv, read_jsonl
 
 PHASE10_STATUS = Path(
@@ -42,15 +48,7 @@ def _run(
     timeout: int = 300,
     env: Mapping[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        list(command),
-        cwd=cwd,
-        env=env,
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-    )
+    return _run_command(command, cwd=cwd, env=env, timeout=timeout)
 
 
 def _resolve_fixed_revision(source: Path, revision: str) -> str:
@@ -99,8 +97,8 @@ def _target_source_files(
             if not line.strip():
                 continue
             node = json.loads(line)
-            project_id = node_projects.get(str(node.get("node_id", "")))
-            if project_id is None:
+            node_project_id = node_projects.get(str(node.get("node_id", "")))
+            if node_project_id is None:
                 continue
             properties = node.get("properties", {})
             if not isinstance(properties, dict):
@@ -110,7 +108,7 @@ def _target_source_files(
             if not isinstance(file_value, str):
                 file_value = properties.get("file")
             if isinstance(file_value, str) and file_value.endswith(".java"):
-                files[project_id].add(file_value)
+                files[node_project_id].add(file_value)
     return {key: tuple(sorted(value)) for key, value in files.items()}
 
 
@@ -172,8 +170,10 @@ def _tailored_build_command(
 def _stabilize_build_environment(
     environment: Mapping[str, str], attempt: Mapping[str, Any]
 ) -> dict[str, str]:
-    """Avoid a known JDK 17 cgroup probe crash in legacy build plugins."""
+    """Make subprocess Java match the pinned JDK and avoid legacy cgroup crashes."""
     result = dict(environment)
+    if java_home := result.get("JAVA_HOME"):
+        result["PATH"] = f"{Path(java_home) / 'bin'}{os.pathsep}{result.get('PATH', '')}"
     option = "-XX:-UseContainerSupport"
     if str(attempt.get("jdk")) == "17" and option not in result.get("JAVA_TOOL_OPTIONS", ""):
         result["JAVA_TOOL_OPTIONS"] = " ".join(
@@ -324,7 +324,9 @@ def prepare(args: argparse.Namespace) -> int:
     config = _mapping(root / "configs/experiments/phase11_static_verification.yaml")
     databases = cast(Mapping[str, Any], config["databases"])
     source_root = root / "data/interim/phase6_project_sources"
-    fixed_root = root / str(databases["fixed_root"])
+    fixed_root = args.fixed_root or Path(str(databases["fixed_root"]))
+    if not fixed_root.is_absolute():
+        fixed_root = root / fixed_root
     fixed_root.mkdir(parents=True, exist_ok=True)
     status_path = fixed_root / "build_status.jsonl"
     records = read_jsonl(status_path)
@@ -385,15 +387,23 @@ def prepare(args: argparse.Namespace) -> int:
                         checkout_method = checkout_detail
                         modules = _maven_modules(checkout, target_files[project_id])
                         compatible = _compatible_attempts(row, toolchain, checkout)
-                        if not compatible:
+                        if not compatible and args.build_mode == "manual":
                             reason = "no compatible pinned build toolchain is available"
-                        for number, attempt in enumerate(compatible, start=1):
+                        modes = (
+                            [(attempt, "manual") for attempt in compatible]
+                            if args.build_mode in {"auto", "manual"}
+                            else []
+                        )
+                        if args.build_mode in {"auto", "none"}:
+                            modes.append((_preferred_attempt(row), "none"))
+                        for number, (attempt, mode) in enumerate(modes, start=1):
                             attempt_started = time.monotonic()
                             if not _reset_checkout(checkout):
                                 attempts.append(
                                     {
                                         "number": number,
                                         "toolchain": attempt,
+                                        "build_mode": mode,
                                         "outcome": "UNAVAILABLE",
                                         "reason": "isolated fixed checkout could not be reset",
                                         "seconds": round(time.monotonic() - attempt_started, 3),
@@ -405,18 +415,22 @@ def prepare(args: argparse.Namespace) -> int:
                                     root, checkout, attempt, toolchain, machine
                                 )
                                 environment = _stabilize_build_environment(environment, attempt)
-                                command = _tailored_build_command(command, attempt, modules)
+                                if mode == "manual":
+                                    command = _tailored_build_command(command, attempt, modules)
                             except ValueError as error:
-                                attempts.append(
-                                    {
-                                        "number": number,
-                                        "toolchain": attempt,
-                                        "outcome": "UNAVAILABLE",
-                                        "reason": str(error),
-                                        "seconds": round(time.monotonic() - attempt_started, 3),
-                                    }
-                                )
-                                continue
+                                if mode == "manual":
+                                    attempts.append(
+                                        {
+                                            "number": number,
+                                            "toolchain": attempt,
+                                            "build_mode": mode,
+                                            "outcome": "UNAVAILABLE",
+                                            "reason": str(error),
+                                            "seconds": round(time.monotonic() - attempt_started, 3),
+                                        }
+                                    )
+                                    continue
+                                environment = dict(os.environ)
                             database = temporary_root / f"database-{number:02d}"
                             codeql_command = [
                                 str(codeql),
@@ -427,8 +441,11 @@ def prepare(args: argparse.Namespace) -> int:
                                 "--threads=4",
                                 "--ram=16384",
                                 f"--source-root={checkout}",
-                                f"--command={shlex.join(command)}",
                             ]
+                            if mode == "manual":
+                                codeql_command.append(f"--command={shlex.join(command)}")
+                            else:
+                                codeql_command.append("--build-mode=none")
                             try:
                                 process = _run(
                                     codeql_command,
@@ -454,19 +471,38 @@ def prepare(args: argparse.Namespace) -> int:
                             (log / f"attempt_{number:02d}.log").write_text(
                                 log_text, encoding="utf-8", newline="\n"
                             )
-                            attempts.append(
-                                {
-                                    "number": number,
-                                    "toolchain": attempt,
-                                    "outcome": ("SUCCESS" if exit_code == 0 else "FAILED"),
-                                    "exit_code": exit_code,
-                                    "seconds": round(time.monotonic() - attempt_started, 3),
-                                }
+                            database_ready = (
+                                exit_code == 0 and (database / "codeql-database.yml").is_file()
                             )
-                            if exit_code == 0 and (database / "codeql-database.yml").is_file():
+                            attempt_record: dict[str, Any] = {
+                                "number": number,
+                                "toolchain": attempt,
+                                "build_mode": mode,
+                                "outcome": "SUCCESS" if database_ready else "FAILED",
+                                "exit_code": exit_code,
+                                "seconds": round(time.monotonic() - attempt_started, 3),
+                            }
+                            if database_ready:
+                                node_files, node_error = _node_files(
+                                    codeql,
+                                    database,
+                                    root / "src/static_analysis/queries/phase7_nodes.ql",
+                                    args.timeout,
+                                )
+                                attempt_record["java_node_files"] = len(node_files)
+                                attempt_record["endpoint_files_matched"] = len(
+                                    node_files & set(target_files[project_id])
+                                )
+                                if node_error or not node_files:
+                                    attempt_record["outcome"] = "NO_JAVA_NODES"
+                                    attempt_record["reason"] = (
+                                        node_error or "no Java nodes extracted"
+                                    )
+                            attempts.append(attempt_record)
+                            if attempt_record["outcome"] == "SUCCESS":
                                 os.replace(database, destination)
                                 success = True
-                                reason = "targeted opaque fixed-revision CodeQL database built"
+                                reason = f"fixed-revision CodeQL database built with {mode}"
                                 break
             by_id[project_id] = {
                 "schema_version": 1,
@@ -495,6 +531,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--project-id")
+    parser.add_argument("--fixed-root", type=Path)
+    parser.add_argument("--build-mode", choices=("auto", "manual", "none"), default="auto")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--timeout", type=int, default=1800)
     parser.add_argument("--fetch-timeout", type=int, default=300)

@@ -396,6 +396,16 @@ def _analyze_version(
     )
     endpoint_csv = result_dir / "endpoints.csv"
     endpoints = _endpoint_counts(codeql, endpoint_bqrs, endpoint_csv)
+    if not endpoints["source"] or not endpoints["sink"]:
+        return {
+            "database": database.as_posix(),
+            "source_endpoints": endpoints["source"],
+            "sink_endpoints": endpoints["sink"],
+            "paths": [],
+            "path_count": 0,
+            "sarif": None,
+            "sarif_sha256": None,
+        }
     _run_query(
         codeql=codeql,
         database=database,
@@ -426,6 +436,14 @@ def _analyze_version(
         "sarif": sarif.relative_to(work).as_posix(),
         "sarif_sha256": sha256_file(sarif),
     }
+
+
+def _needs_fixed_verification(vulnerable: Mapping[str, Any]) -> bool:
+    return (
+        int(vulnerable["source_endpoints"]) > 0
+        and int(vulnerable["sink_endpoints"]) > 0
+        and int(vulnerable["path_count"]) > 0
+    )
 
 
 def _status(vulnerable: Mapping[str, Any], fixed: Mapping[str, Any] | None) -> tuple[str, str]:
@@ -566,6 +584,18 @@ def run(args: argparse.Namespace) -> int:
         raise ValueError("--spec-limit is forbidden in full mode")
     if args.spec_limit is not None and args.spec_limit < 1:
         raise ValueError("--spec-limit must be positive")
+    if args.specification_id is not None:
+        if args.mode != "pilot" or len(selected) != 1 or args.spec_limit is not None:
+            raise ValueError("--specification-id requires one pilot project and no --spec-limit")
+        if not any(
+            row.get("project_id") == selected[0]
+            and row.get("specification_id") == args.specification_id
+            for row in read_jsonl(phase10_root / "specifications.jsonl")
+        ):
+            raise ValueError("--specification-id is absent from the selected project")
+    if args.query_timeout is not None and (args.mode != "pilot" or args.query_timeout < 1):
+        raise ValueError("--query-timeout requires pilot mode and a positive value")
+    query_timeout = args.query_timeout or int(config["execution"]["timeout_seconds_per_query"])
     fixed_root_value = args.fixed_database_root or Path(
         str(cast(Mapping[str, Any], config["databases"])["fixed_root"])
     )
@@ -588,6 +618,7 @@ def run(args: argparse.Namespace) -> int:
             "mode": args.mode,
             "verification_mode": args.verification_mode,
             "specification_limit": args.spec_limit,
+            "specification_id": args.specification_id,
             "created_at": utc_now(),
             "git": collect_git(root),
             "selected_project_ids": selected,
@@ -707,6 +738,10 @@ def run(args: argparse.Namespace) -> int:
         )
         if args.spec_limit is not None:
             project_specs = project_specs[: args.spec_limit]
+        if args.specification_id is not None:
+            project_specs = [
+                spec for spec in project_specs if spec["specification_id"] == args.specification_id
+            ]
         if phase10_by_id[project_id].get("status") != "SUCCESS":
             project_status.update(
                 {
@@ -758,13 +793,15 @@ def run(args: argparse.Namespace) -> int:
                             version="vulnerable",
                             specification=spec,
                             nodes=node_by_id,
-                            timeout=int(execution["timeout_seconds_per_query"]),
+                            timeout=query_timeout,
                             threads=int(execution["threads"]),
                             ram_mb=int(execution["ram_mb"]),
                             max_paths=int(policy["max_paths_per_specification"]),
                         )
                         fixed = None
-                        if args.verification_mode == "differential":
+                        if args.verification_mode == "differential" and _needs_fixed_verification(
+                            vulnerable
+                        ):
                             fixed = _analyze_version(
                                 codeql=codeql,
                                 database=fixed_db,
@@ -773,7 +810,7 @@ def run(args: argparse.Namespace) -> int:
                                 version="fixed",
                                 specification=spec,
                                 nodes=node_by_id,
-                                timeout=int(execution["timeout_seconds_per_query"]),
+                                timeout=query_timeout,
                                 threads=int(execution["threads"]),
                                 ram_mb=int(execution["ram_mb"]),
                                 max_paths=int(policy["max_paths_per_specification"]),
@@ -942,6 +979,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--project-id")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--spec-limit", type=int)
+    parser.add_argument("--specification-id")
+    parser.add_argument("--query-timeout", type=int)
     parser.add_argument("--fixed-database-root", type=Path)
     parser.add_argument("--resume", action="store_true")
     return parser

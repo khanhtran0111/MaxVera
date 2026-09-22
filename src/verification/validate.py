@@ -169,6 +169,7 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
     phase10_statuses = {str(row["project_id"]): row for row in phase10_status_rows}
     phase10_specs = read_jsonl(phase10_root / "specifications.jsonl")
     specification_limit = manifest.get("specification_limit")
+    specification_id = manifest.get("specification_id")
     expected_ids: set[str] = set()
     for project_id in selected:
         if phase10_statuses[project_id].get("status") != "SUCCESS":
@@ -179,6 +180,10 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
         )
         if isinstance(specification_limit, int):
             project_specs = project_specs[:specification_limit]
+        if isinstance(specification_id, str):
+            project_specs = [
+                row for row in project_specs if row["specification_id"] == specification_id
+            ]
         if next(row for row in statuses if row["project_id"] == project_id)["status"] == "SUCCESS":
             expected_ids.update(str(row["specification_id"]) for row in project_specs)
     successful_result_ids = {

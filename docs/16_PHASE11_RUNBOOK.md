@@ -19,10 +19,12 @@ fixed version mới mang trạng thái `VERIFIED_DIFFERENTIAL`.
 - zero LLM calls/tokens; verdict của LLM không có vai trò verifier;
 - raw Phase 9/10 artifacts và mọi Phase 11 run là immutable.
 
-Mỗi spec sinh hai query: endpoint inventory phân biệt descriptor không resolve
+Mỗi spec có hai loại query: endpoint inventory phân biệt descriptor không resolve
 với resolved-but-no-path, và `path-problem` dùng `TaintTracking::Global` để lưu
 full SARIF code flow. Sanitizer là barrier; propagator được thêm như explicit
 flow step. Kết quả được materialize thành USEG iteration 1 mà không tạo cycle.
+Runner bỏ qua `path-problem` khi source hoặc sink không resolve; trong
+differential mode chỉ chạy fixed query khi vulnerable path thực sự tồn tại.
 
 ## 2. Trạng thái finding
 
@@ -66,7 +68,8 @@ Bước này là evaluator-only vì cần đọc fix revision. Script chỉ ch�
 split, kiểm development/test disjointness, tạo một checkout tạm từ local object
 store (fallback upstream), rồi chỉ persist DB dưới opaque project ID. Maven chỉ
 compile các reactor module chứa endpoint Phase 10 cùng dependencies; Gradle chạy
-`classes`. Các attempt không đúng build system bị bỏ qua. Script không sửa
+`classes`. Các attempt không đúng build system bị bỏ qua; nếu chúng thất bại,
+builder có thể thử `build-mode=none`. Script không sửa
 vulnerable checkout và không persist commit ID/identity mapping trong
 status/manifest.
 
@@ -78,6 +81,28 @@ bash scripts/tools/prepare_phase11_fixed_databases.sh \
   --project-id proj_7341ff37e347ec3be4ce
 unset MAXVERA_DATA_ROLE
 ```
+
+Với project đã fail build, thử riêng CodeQL Java `build-mode=none` trong thư mục
+pilot. Preparer chỉ nhận DB khi truy vấn CodeQL tìm được node Java, và status
+ghi số file endpoint Phase 10 còn khớp. Chế độ này có thể giảm độ chính xác
+type/dependency resolution, nên phải chạy differential pilot trước khi dùng
+cho kết quả chính thức:
+
+```bash
+MAXVERA_DATA_ROLE=evaluator bash scripts/tools/prepare_phase11_fixed_databases.sh \
+  --project-id proj_10459fcd88fe353fe011 --build-mode none \
+  --fixed-root data/interim/phase11_fixed_pilots
+
+bash scripts/tools/run_phase11_verification.sh \
+  --mode pilot --verification-mode differential --spec-limit 1 \
+  --project-id proj_10459fcd88fe353fe011 \
+  --fixed-database-root data/interim/phase11_fixed_pilots \
+  --run-id p11_recovery_fixed_pilot_001
+```
+
+Để thử riêng một spec có query nặng mà không thay timeout full đã khóa, pilot
+nhận `--specification-id` và `--query-timeout` (giây); hai tùy chọn này không
+được dùng ở full mode.
 
 Sau khi pilot build pass, build toàn bộ 78 development projects có B9 specs:
 

@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from src.common.provenance import sha256_file
+from src.verification import runner as verification_runner
 from src.verification.prepare_fixed import (
     _checkout_fixed_revision,
     _compatible_attempts,
@@ -13,7 +17,12 @@ from src.verification.prepare_fixed import (
     _tailored_build_command,
 )
 from src.verification.query import query_id, render_endpoint_query, render_path_query
-from src.verification.runner import _fixed_database_status, _status
+from src.verification.runner import (
+    _fixed_database_status,
+    _needs_fixed_verification,
+    _status,
+    build_parser,
+)
 
 
 def _spec() -> dict[str, object]:
@@ -38,6 +47,60 @@ def _nodes() -> dict[str, dict[str, object]]:
             "properties": {"fact_properties": {"callable": "exec", "type": "Runtime"}},
         },
     }
+
+
+def test_unresolved_endpoints_skip_taint_query(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+
+    def record_query(**kwargs: object) -> None:
+        calls.append(str(kwargs["query_kind"]))
+
+    monkeypatch.setattr(verification_runner, "_run_query", record_query)
+    monkeypatch.setattr(
+        verification_runner,
+        "_endpoint_counts",
+        lambda *_args: {"source": 0, "sink": 1},
+    )
+    result = verification_runner._analyze_version(
+        codeql=tmp_path / "codeql",
+        database=tmp_path / "database",
+        work=tmp_path,
+        project_id="proj_example",
+        version="vulnerable",
+        specification=_spec(),
+        nodes=_nodes(),
+        timeout=30,
+        threads=2,
+        ram_mb=1024,
+        max_paths=2,
+    )
+    assert calls == ["endpoint_inventory"]
+    assert result["path_count"] == 0
+    assert result["sarif"] is None
+    assert not _needs_fixed_verification(result)
+    assert not _needs_fixed_verification(
+        {"source_endpoints": 1, "sink_endpoints": 1, "path_count": 0}
+    )
+    assert _needs_fixed_verification({"source_endpoints": 1, "sink_endpoints": 1, "path_count": 1})
+
+
+def test_phase11_pilot_accepts_single_spec_and_timeout() -> None:
+    args = build_parser().parse_args(
+        [
+            "--run-id",
+            "pilot_001",
+            "--project-id",
+            "proj_example",
+            "--specification-id",
+            "spec_example_001",
+            "--query-timeout",
+            "1200",
+        ]
+    )
+    assert args.specification_id == "spec_example_001"
+    assert args.query_timeout == 1200
 
 
 def test_rendered_queries_use_global_taint_tracking_and_valid_ids() -> None:
@@ -158,11 +221,12 @@ def test_gradle_wrapper_runs_classes_instead_of_only_clean() -> None:
 
 def test_jdk17_builds_disable_legacy_container_detection() -> None:
     environment = _stabilize_build_environment(
-        {"JAVA_TOOL_OPTIONS": "-Dfile.encoding=UTF-8"},
+        {"JAVA_HOME": "/jdk/17", "PATH": "/tools", "JAVA_TOOL_OPTIONS": "-Dfile.encoding=UTF-8"},
         {"jdk": "17", "maven": "3.9.8"},
     )
 
     assert environment["JAVA_TOOL_OPTIONS"] == ("-Dfile.encoding=UTF-8 -XX:-UseContainerSupport")
+    assert environment["PATH"].startswith(f"/jdk/17/bin{os.pathsep}")
     assert _stabilize_build_environment({}, {"jdk": "8u202"}) == {}
 
 

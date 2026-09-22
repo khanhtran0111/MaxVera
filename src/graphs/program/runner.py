@@ -79,13 +79,21 @@ def _terminate_process_group(
     return stdout, stderr
 
 
-def _run_command(command: Sequence[str], *, timeout: int) -> subprocess.CompletedProcess[str]:
+def _run_command(
+    command: Sequence[str],
+    *,
+    timeout: int,
+    cwd: Path | None = None,
+    env: Mapping[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     process = subprocess.Popen(
         list(command),
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
         start_new_session=True,
+        cwd=cwd,
+        env=env,
     )
     try:
         stdout, stderr = process.communicate(timeout=timeout)
@@ -404,6 +412,15 @@ def run(args: argparse.Namespace) -> int:
     selected_ids = [row["project_id"] for row in selected]
     dataset = cast(Mapping[str, Any], config["dataset"])
     extractor = cast(Mapping[str, Any], config["extractor"])
+    if args.database_root is not None and args.mode == "full":
+        raise ValueError("--database-root is only available in pilot mode")
+    database_root = (
+        args.database_root
+        if args.database_root is not None
+        else Path(str(dataset["database_root"]))
+    )
+    if not database_root.is_absolute():
+        database_root = root / database_root
     preparation = root / str(dataset["database_preparation_manifest"])
     if not preparation.is_file():
         raise FileNotFoundError("run scripts/tools/prepare_phase7_databases.sh first")
@@ -474,8 +491,7 @@ def run(args: argparse.Namespace) -> int:
                 "network_called": False,
                 "selected_projects": len(selected_ids),
                 "database_available": sum(
-                    (root / str(dataset["database_root"]) / project_id).is_dir()
-                    for project_id in selected_ids
+                    (database_root / project_id).is_dir() for project_id in selected_ids
                 ),
             },
         )
@@ -490,7 +506,6 @@ def run(args: argparse.Namespace) -> int:
         with resource_path.open(encoding="utf-8", newline="") as handle:
             resources = [dict(row) for row in csv.DictReader(handle)]
     status_by_id = {str(row["project_id"]): row for row in statuses}
-    database_root = root / str(dataset["database_root"])
     node_query = root / str(extractor["node_query"])
     edge_query = root / str(extractor["edge_query"])
     phase6_run_root = root / str(cast(Mapping[str, Any], config["phase6_lock"])["run_root"])
@@ -669,6 +684,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--mode", choices=("pilot", "full"), default="pilot")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--project-id")
+    parser.add_argument("--database-root", type=Path)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--output-root", type=Path, default=Path("results/graphs/program"))

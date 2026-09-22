@@ -9,11 +9,20 @@ from pathlib import Path
 import pytest
 import yaml
 
+from src.graphs.program.build_databases import (
+    _build_command,
+    _build_environment,
+    _compatible_attempts,
+    _output_path,
+    _preferred_attempt,
+    _seed_node_coverage,
+)
 from src.graphs.program.model import EDGE_KINDS, graph_digest, node_id, normalize_graph
 from src.graphs.program.prepare import prepare_databases
 from src.graphs.program.query import query_graph, select_seed
 from src.graphs.program.runner import (
     _assert_database_cache_unlocked,
+    _parser,
     _run_command,
     _validate_extracted_graph,
 )
@@ -21,6 +30,96 @@ from src.graphs.program.validate import validate_project_graph
 from src.reproduction.common import atomic_json, atomic_jsonl
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_phase7_builder_targets_seed_modules_and_compiles_tests(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    (source / "module-a").mkdir(parents=True)
+    (source / "module-a/pom.xml").write_text("<project />\n", encoding="utf-8")
+    maven = _build_command(
+        ["mvn", "clean", "package", "-B"],
+        {"jdk": "17", "maven": "3.9.8"},
+        source,
+        ["module-a/src/test/java/ExampleTest.java"],
+    )
+    assert maven[:5] == ["mvn", "-pl", "module-a", "-am", "test-compile"]
+    assert "package" not in maven
+
+    (source / "module-b").mkdir()
+    (source / "module-b/build.gradle.kts").write_text("plugins {}\n", encoding="utf-8")
+    gradle = _build_command(
+        ["gradle", "--no-daemon", "build", "-x", "test"],
+        {"jdk": "17", "gradle": "8.9"},
+        source,
+        ["module-b/src/main/java/Main.java", "module-b/src/test/java/Test.java"],
+    )
+    assert gradle == [
+        "gradle",
+        "--no-daemon",
+        ":module-b:classes",
+        ":module-b:testClasses",
+    ]
+    (source / "spring-web").mkdir()
+    (source / "spring-web/spring-web.gradle").write_text("apply plugin: 'java'\n")
+    spring = _build_command(
+        ["./gradlew", "--no-daemon", "clean"],
+        {"jdk": "17", "gradlew": True},
+        source,
+        ["spring-web/src/main/java/Request.java"],
+    )
+    assert spring == ["./gradlew", "--no-daemon", ":spring-web:classes"]
+
+
+def test_phase7_builder_uses_declared_build_system_and_java_on_path(tmp_path: Path) -> None:
+    (tmp_path / "build.gradle").write_text("plugins {}\n", encoding="utf-8")
+    row = {
+        "jdk_version": "17",
+        "maven_version": "n/a",
+        "gradle_version": "n/a",
+        "use_gradlew": "1",
+    }
+    assert _preferred_attempt(row) == {"jdk": "17", "gradlew": True}
+    attempts = _compatible_attempts(
+        row,
+        {"build_attempts": [{"jdk": "8u202", "maven": "3.5.0"}]},
+        tmp_path,
+    )
+    assert attempts == [{"jdk": "17", "gradlew": True}]
+    environment = _build_environment({"JAVA_HOME": "/jdk/17", "PATH": "/tools"}, {"jdk": "17"})
+    assert environment["PATH"].startswith("/jdk/17/bin:")
+    assert "-XX:-UseContainerSupport" in environment["JAVA_TOOL_OPTIONS"]
+    assert _output_path(tmp_path, Path("pilots/db"), tmp_path / "default") == (
+        tmp_path / "pilots/db"
+    )
+
+
+def test_phase7_builder_checks_nodes_in_seed_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        if command[1:3] == ["bqrs", "decode"]:
+            output = next(
+                value.split("=", 1)[1] for value in command if value.startswith("--output=")
+            )
+            Path(output).write_text(
+                '"TYPE","Class","src/Example.java",1,1,1,7,"Example","Example"\n',
+                encoding="utf-8",
+            )
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr("src.graphs.program.build_databases._run_command", fake_run)
+    matched, reason = _seed_node_coverage(
+        tmp_path / "codeql",
+        tmp_path / "database",
+        tmp_path / "nodes.ql",
+        ["src/Example.java", "src/Other.java"],
+        30,
+    )
+    assert matched == 1
+    assert reason == "1/2 seed files have CodeQL nodes"
+    assert _parser().parse_args(
+        ["--run-id", "pilot_001", "--database-root", "pilots/db"]
+    ).database_root == Path("pilots/db")
 
 
 def _node_row(prefix: str, *, file: str, line: int, subkind: str) -> dict[str, str]:

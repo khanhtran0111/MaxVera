@@ -55,6 +55,34 @@ chỉ ra một số project vẫn không build được. Sau builder, refresh pr
 bash scripts/tools/prepare_phase7_databases.sh
 ```
 
+### Recovery pilot cho các database failed
+
+Builder hiện chọn đúng build system và module chứa Phase 6 seed, chỉ chạy
+`compile`/`test-compile` (hoặc Gradle `classes`/`testClasses`). Nếu các build
+attempt vẫn thất bại, chế độ `auto` thử CodeQL Java `build-mode=none`. Mỗi DB
+chỉ được nhận khi truy vấn node Phase 7 tìm thấy ít nhất một file seed; status
+ghi `build_mode` và số file seed có node. Chế độ không build có thể thiếu type
+hoặc dependency resolution, nên cần so sánh graph/verification trước khi dùng
+cho run chính thức.
+
+Để kiểm tra một project mà không thay database hoặc run canonical:
+
+```bash
+bash scripts/tools/build_phase7_databases.sh \
+  --project-id proj_c0671d1e1ead3158466b --build-mode none \
+  --database-root data/interim/phase7_database_pilots \
+  --status-path data/interim/phase7_database_pilots/build_status.jsonl \
+  --log-root data/interim/phase7_database_pilots/logs
+
+bash scripts/tools/run_phase7_program_graph.sh \
+  --mode pilot --project-id proj_c0671d1e1ead3158466b \
+  --database-root data/interim/phase7_database_pilots \
+  --run-id p7_recovery_pilot_001
+```
+
+`--database-root` của graph runner chỉ cho phép ở pilot. Mỗi lần kiểm tra dùng
+run ID mới; không ghi đè `p7_pg_dev_full_004` hay tự động đổi downstream lock.
+
 ## 2. Dry-run và pilot
 
 Mỗi run ID immutable. Dry-run và pilot thật phải dùng ID riêng:
