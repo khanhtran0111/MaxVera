@@ -5,6 +5,8 @@
 > `4b898bfe9a3f16c494ec1942caf95f51e29db221`
 > Phase 11 development lock commit:
 > `faff962b48998ad6f2e596297f9b424810398be4`
+> Phase 12 development lock commit:
+> `faa06a1176320eb133d26a06c368d6181932fa16`
 > Hiện trạng: Phase 0–11 đã khóa cho development; Phase 11 canonical
 > differential full run đã validated với 28 `VERIFIED_DIFFERENTIAL`; Phase 12
 > đã khóa cho Phase 13 bằng full calibration run; `test_locked` chưa mở/chạy.
