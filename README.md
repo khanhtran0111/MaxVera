@@ -49,13 +49,17 @@ These metrics are not static verification. Outputs remain
 Phase 11 is implemented as deterministic CodeQL global-taint verification. It
 records endpoint resolution, SARIF taint paths, explicit negative evidence and
 an acyclic USEG iteration-1 delta. Vulnerable-only results remain unverified;
-only vulnerable-path/fixed-no-path differential results may be verified. See
+only vulnerable-path/fixed-no-path differential results may be verified. The
+locked development run `p11_diff_dev_full_002` covers all 96 projects, retains
+18 inherited analysis misses, and produces 28 `VERIFIED_DIFFERENTIAL` plus 748
+explicit unverified specification states with zero LLM calls. See
 [`docs/16_PHASE11_RUNBOOK.md`](docs/16_PHASE11_RUNBOOK.md).
 The frozen 120-row release has 120 final build statuses and 104 successful
 CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw
 context, B4 text-RAG, and B5 static hypotheses. B6-B8 and B9 synthesis are
-locked for development; B9 final findings remain fail-closed until Phase 11
-differential verification and Phase 12 calibration are locked.
+locked for development; Phase 11 differential findings are locked as Phase 12
+input, while final routed decisions remain fail-closed until calibration is
+locked.
 Every entrypoint fails closed if any smoke artifact remains.
 
 ## Bootstrap

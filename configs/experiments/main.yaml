@@ -115,7 +115,7 @@ development_stages:
       checksums_index_sha256: cf15847234351ce21c390879cedbbac56d351914e6fe9438a43f80b9e398bc5a
     next_gate: phase11_static_verification
   phase11_static_verification:
-    status: implemented_differential_pilot_validated_pending_full_fixed_databases
+    status: locked_for_phase12_development
     protocol_version: "1.8.0"
     verifier_version: phase11-static-verification-v1
     phase9_run_id: p9_useg_dev_full_003
@@ -126,10 +126,37 @@ development_stages:
     max_iterations: 1
     llm_calls: 0
     final_finding_requires: vulnerable_path_absent_in_fixed_database
-    implementation_commit: 4705c03f2b6efe38bcab469a10dbe43b08aa2466
+    implementation_commit: 4b898bfe9a3f16c494ec1942caf95f51e29db221
     clean_vulnerable_pilot: p11_vuln_pilot_004
     clean_differential_pilot: p11_diff_pilot_002
-    next_gate: full_fixed_database_preparation_and_differential_run
+    canonical_run:
+      run_id: p11_diff_dev_full_002
+      run_commit: 4b898bfe9a3f16c494ec1942caf95f51e29db221
+      run_git_dirty: false
+      verification_mode: differential
+      selected_projects: 96
+      analysis_successes: 78
+      analysis_failures: 18
+      specifications: 776
+      verified_differential: 28
+      unverified_findings: 748
+      taint_paths: 213
+      query_invocations: 1513
+      llm_calls: 0
+      aggregate_status: FAILED
+      validator_status: PASS_WITH_ANALYSIS_FAILURES
+      manifest_sha256: 6d22442cb41877b79c274e23aa2a3d4b0a97f2400384e14ebbc6a8c5262467f7
+      summary_sha256: 98b035896755b6f82051db38a629cf5bc664c1d9599560afa80bf40424f1002d
+      project_status_sha256: 2eba44a54ff9ff7ecdb6519912d480403883934c68525eaabc19219ca12df6fe
+      verification_results_sha256: 12d6a882690eeaf65b9c984cbfe7936598a222c984a3f938d76f18a309d5e656
+      checksums_index_sha256: 5c5e9b1054b667ce3ec55f9c693866840375a8385277a8bcb0f8340d085efeaa
+    fixed_databases:
+      required: 78
+      successful: 78
+      failed: 0
+      preparation_manifest_sha256: 945f4acb11a154cf6c63c7d4e9aba636dd5671a3aada0f2a369e8aafc41a5edc
+      build_status_sha256: fc20f535da33bf275b058c1bf212dde03586c4cefd6fce9d8858bf3373505754
+    next_gate: phase12_calibration_and_selective_routing
 scope:
   language: Java
   static_analyzer: CodeQL

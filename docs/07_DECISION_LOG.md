@@ -654,6 +654,43 @@ dùng no-build database bị bác vì có thể biến extraction thiếu thành
 negative evidence. Đây là sửa implementation để thực thi policy đã khóa, không
 đổi split, evidence threshold, query budget hay metric, nên protocol giữ `1.8.0`.
 
+## D-032 — Khóa Phase 11 differential verification (2026-09-30)
+
+Canonical development run là `p11_diff_dev_full_002`, tạo từ clean commit
+`4b898bfe9a3f16c494ec1942caf95f51e29db221`. Evaluator-only fixed preparation
+account đủ 78 Phase 10-success projects và tạo 78/78 opaque fixed CodeQL
+databases; 12 database mà ordinary build không tạo được chỉ được nhận sau
+`build-mode=none` khi database có Java nodes và còn match các endpoint file đã
+khóa ở Phase 10. Recovery này được pilot differential trước full run;
+không persist identity mapping/fix revision và không mở `test_locked`.
+
+Run ghi đủ 96 final project statuses: 78 `SUCCESS` và 18 inherited Phase 10
+`ANALYSIS_FAILED` được tính là intention-to-analyze misses. Trên 776 frozen
+specifications, run materialize 28 `VERIFIED_DIFFERENTIAL`, 748 explicit
+`UNVERIFIED_*`, 213 taint paths và 1.513 query invocations, với zero LLM
+calls/tokens. `STATUS=FAILED` là aggregate status dự kiến khi còn recorded
+project misses; gate có thẩm quyền là validator
+`PASS_WITH_ANALYSIS_FAILURES`, checksum và exact dependency locks.
+
+Full 001 được giữ immutable là diagnostic predecessor vì còn 12 fixed DB
+unavailable. Full 002 được pin trong `configs/experiments/main.yaml` là input
+duy nhất của Phase 12 development. Chỉ `VERIFIED_DIFFERENTIAL` được coi
+là verified-positive input; `UNVERIFIED_*` và project failure không được
+chuyển thành negative label. Quyết định này materialize gate D-030/D-031,
+không đổi threshold, budget, split hay metric, nên protocol giữ `1.8.0`.
+Main experiment vẫn `draft` cho tới khi Phase 12 fit và khóa calibration
+thresholds chỉ trên development.
+
+Exact Phase 11 locks:
+
+- manifest: `6d22442cb41877b79c274e23aa2a3d4b0a97f2400384e14ebbc6a8c5262467f7`;
+- summary: `98b035896755b6f82051db38a629cf5bc664c1d9599560afa80bf40424f1002d`;
+- project statuses: `2eba44a54ff9ff7ecdb6519912d480403883934c68525eaabc19219ca12df6fe`;
+- verification results: `12d6a882690eeaf65b9c984cbfe7936598a222c984a3f938d76f18a309d5e656`;
+- checksum index: `5c5e9b1054b667ce3ec55f9c693866840375a8385277a8bcb0f8340d085efeaa`;
+- fixed preparation/status: `945f4acb11a154cf6c63c7d4e9aba636dd5671a3aada0f2a369e8aafc41a5edc` /
+  `fc20f535da33bf275b058c1bf212dde03586c4cefd6fce9d8858bf3373505754`.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

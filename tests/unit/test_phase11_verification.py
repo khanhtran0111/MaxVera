@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from src.common.provenance import sha256_file
 from src.verification import runner as verification_runner
@@ -23,6 +24,31 @@ from src.verification.runner import (
     _status,
     build_parser,
 )
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_phase11_canonical_selection_is_locked_for_phase12() -> None:
+    main = yaml.safe_load(
+        (REPO_ROOT / "configs/experiments/main.yaml").read_text(encoding="utf-8")
+    )
+    lock = main["development_stages"]["phase11_static_verification"]
+    canonical = lock["canonical_run"]
+    fixed = lock["fixed_databases"]
+
+    assert lock["status"] == "locked_for_phase12_development"
+    assert canonical["run_id"] == "p11_diff_dev_full_002"
+    assert canonical["run_commit"] == "4b898bfe9a3f16c494ec1942caf95f51e29db221"
+    assert canonical["run_git_dirty"] is False
+    assert canonical["selected_projects"] == 96
+    assert canonical["verified_differential"] == 28
+    assert canonical["validator_status"] == "PASS_WITH_ANALYSIS_FAILURES"
+    assert canonical["manifest_sha256"] == (
+        "6d22442cb41877b79c274e23aa2a3d4b0a97f2400384e14ebbc6a8c5262467f7"
+    )
+    assert fixed["required"] == fixed["successful"] == 78
+    assert fixed["failed"] == 0
+    assert lock["next_gate"] == "phase12_calibration_and_selective_routing"
 
 
 def _spec() -> dict[str, object]:

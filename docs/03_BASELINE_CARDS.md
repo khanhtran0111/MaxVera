@@ -16,10 +16,10 @@ nhất, B9 là proposed method chứ không phải external baseline.
 | B3 | Java chunks breadth-first | GPT-OSS 20B | Phase 5 runnable | Không security-aware retrieval |
 | B4 | Java chunks xếp hạng bằng security terms | GPT-OSS 20B | Phase 5 runnable | Text retrieval, không program graph |
 | B5 | Regex/static API signals trên toàn source Java | Không | Phase 5 runnable | Hypothesis, chưa static verification |
-| B6 | Evidence anchors + Program Graph | GPT-OSS 20B | Phase 10 implemented; chờ API pilot/full | Compile-only spec, chưa static verification |
-| B7 | Evidence anchors + Security KG | GPT-OSS 20B | Phase 10 implemented; chờ API pilot/full | Knowledge-only ablation, compile-only spec |
-| B8 | USEG connected component không pruning | GPT-OSS 20B | Phase 10 implemented; chờ API pilot/full | Đo structural pruning; vẫn chịu token cap |
-| B9 | USEG pruned + verification/calibration | GPT-OSS 20B | Synthesis implemented; Phase 11/12 còn blocked | Chưa có verified finding hoặc calibrated decision |
+| B6 | Evidence anchors + Program Graph | GPT-OSS 20B | Phase 10 development lock | Compile-only spec, không static verification |
+| B7 | Evidence anchors + Security KG | GPT-OSS 20B | Phase 10 development lock | Knowledge-only ablation, compile-only spec |
+| B8 | USEG connected component không pruning | GPT-OSS 20B | Phase 10 development lock | Đo structural pruning; vẫn chịu token cap |
+| B9 | USEG pruned + verification/calibration | GPT-OSS 20B | Phase 11 development lock; Phase 12 pending | 28 differential verified specs; chưa có calibrated decision |
 
 ## Hợp đồng công bằng B3/B4
 

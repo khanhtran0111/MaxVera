@@ -140,7 +140,7 @@ Full development run chỉ chạy từ clean commit và cấm `--limit`, `--proj
 `--spec-limit`:
 
 ```bash
-bash scripts/tools/run_phase11_full.sh p11_diff_dev_full_001
+bash scripts/tools/run_phase11_full.sh <new-run-id>
 ```
 
 Wrapper chấp nhận preparation status `1` (database failures đã được accounting),
@@ -182,3 +182,20 @@ immutable fixed-dependency snapshot: 1 spec, 4 query invocations, zero LLM. Cả
 vulnerable/fixed database đều
 resolve 5 source và 0 sink, nên kết quả đúng vẫn là
 `UNVERIFIED_UNRESOLVED_SINK`, không phải verified finding.
+
+## 7. Canonical development lock
+
+Phase 11 đã khóa cho Phase 12 bằng `p11_diff_dev_full_002`, tạo từ clean
+commit `4b898bf`. Fixed preparation hoàn tất 78/78 database; full run có đủ
+96 project statuses, gồm 78 `SUCCESS` và 18 inherited Phase 10
+`ANALYSIS_FAILED`. Run ghi 776 specification states, 28
+`VERIFIED_DIFFERENTIAL`, 748 `UNVERIFIED_*`, 213 taint paths, 1.513 query
+invocations và zero LLM calls/tokens.
+
+`STATUS=FAILED` là đúng theo aggregate semantics khi 18 intention-to-analyze
+misses được giữ trong denominator. Lệnh validator authoritative trả
+`PASS_WITH_ANALYSIS_FAILURES: Phase 11 differential (776 specs, 28 verified)`.
+Canonical run, fixed dependency hashes và output hashes được pin trong
+`configs/experiments/main.yaml`; full 001 và các recovery pilot chỉ là immutable
+diagnostics. Phase 12 không được coi `UNVERIFIED_*` là negative label và
+không được mở `test_locked` khi fit threshold.

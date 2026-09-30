@@ -1,12 +1,11 @@
 # MaxVera — Project Memory
 
-> Cập nhật: 2026-09-20 (Asia/Bangkok)
-> Phase 9 canonical implementation/run commit:
-> `2395d219789ad5401e1fecdb26cee9030208c19b`
-> Hiện trạng: Phase 0–10 đã khóa cho development; Phase 10 full B6–B9 và
-> evaluator-only annotated gate đã validated; Phase 11 implemented và
-> vulnerable-only và differential pilot pass, đang chờ full fixed DB preparation/run;
-> `test_locked` chưa mở/chạy.
+> Cập nhật: 2026-09-30 (Asia/Bangkok)
+> Phase 11 canonical run commit:
+> `4b898bfe9a3f16c494ec1942caf95f51e29db221`
+> Hiện trạng: Phase 0–11 đã khóa cho development; Phase 11 canonical
+> differential full run đã validated với 28 `VERIFIED_DIFFERENTIAL`; Phase 12
+> calibration/selective routing là phase tiếp theo; `test_locked` chưa mở/chạy.
 
 ## Mục đích và cách dùng
 
@@ -52,10 +51,10 @@ evaluator-only.
 | Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
 | Phase 9 lock | `p9_useg_dev_full_003`, 81/96 graph success |
 | Phase 10 | Locked: B6–B9 full 001 + annotated gate 003 |
-| Phase 11 | Implemented; clean vulnerable pilot 004 + differential pilot 002 pass |
+| Phase 11 lock | `p11_diff_dev_full_002`, 78/96 success, 28 differential verified |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase tiếp theo | Phase 11 full fixed DB preparation → differential full |
+| Phase tiếp theo | Phase 12 calibration và selective routing trên development |
 
 `configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 khóa
 calibration thresholds. Phase 11 dùng protocol `1.8.0`; Phase 9/10 artifacts giữ
@@ -317,6 +316,17 @@ sửa synthesis artifact. B9 có 14/762 paper-compatible proxy-positive specs v�
 phát hiện 6/91 projects. Đây không phải verified path; kết quả được đóng băng để
 Phase 11 kiểm chứng, không dùng sửa prompt/retrieval/specification.
 
+### Phase 11 — Static differential verification
+
+Canonical `p11_diff_dev_full_002` được tạo từ clean commit `4b898bf` sau
+khi evaluator-only fixed preparation hoàn tất 78/78 opaque databases. Run có
+đủ 96 final project statuses: 78 `SUCCESS` và 18 inherited Phase 10 misses;
+776 specification states gồm 28 `VERIFIED_DIFFERENTIAL` và 748 explicit
+`UNVERIFIED_*`; 213 taint paths, 1.513 query invocations, zero LLM calls/tokens.
+`STATUS=FAILED` là aggregate failure-as-miss expected; validator authoritative
+trả `PASS_WITH_ANALYSIS_FAILURES`. Chỉ 28 verified-positive được chuyển sang
+Phase 12; `UNVERIFIED_*` không phải negative label.
+
 ## Canonical artifacts và code map
 
 - Phase 4: `results/reproduction/phase4_gptoss20b_full_001__*`;
@@ -327,6 +337,7 @@ Phase 11 kiểm chứng, không dùng sửa prompt/retrieval/specification.
 - Phase 9: `results/graphs/useg/p9_useg_dev_full_003/`;
 - Phase 10 run root: `results/specifications/phase10/<baseline>/<run-id>/`;
 - Phase 10 evaluator: `results/evaluations/phase10/p10_dev_spec_eval_003/`;
+- Phase 11: `results/verification/phase11/p11_diff_dev_full_002/`;
 - configs/locks: `configs/experiments/`;
 - Phase 5/6/7/8/9/10/11 code: `src/baselines/`, `src/hypotheses/`,
   `src/graphs/program/`, `src/graphs/knowledge/`, `src/graphs/evidence/`,
@@ -355,21 +366,23 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
   candidate path.
 - Phase 9 full 001/full 002 chỉ là dirty-tree diagnostics; downstream phải pin
   full 003. Hai trong 81 graph success không có incident candidate path.
-- Phase 10 compile-only không phải static verification; B9 final findings vẫn bị
-  chặn đến Phase 11/12. Dry-run không chứng minh provider/schema behavior thật.
-- Phase 11 vulnerable-only path không phải verified finding; canonical lock cần
-  full fixed databases và differential full run. Pilot 004/diff 002 chỉ kiểm
-  runtime, fixed boundary và status semantics trên một spec.
+- Phase 10 compile-only không phải static verification; chỉ Phase 11
+  `VERIFIED_DIFFERENTIAL` được chuyển sang calibration. Dry-run không chứng
+  minh provider/schema behavior thật.
+- Phase 11 có 18 inherited Phase 10 misses và 748 `UNVERIFIED_*`; không được
+  drop misses hay coi unverified là negative. 12/78 fixed DB dùng validated
+  `build-mode=none`, nên cần giữ provenance này trong sensitivity analysis.
 - Hosted model không có project-controlled weight hash.
 - `test_locked` chưa mở; chưa được claim final paper performance.
 
-## Handoff Phase 11
+## Handoff Phase 12
 
-Phase 11 implementation và hai clean pilots đã pass. Tiếp theo dùng evaluator
-process dựng opaque fixed databases cho toàn development rồi chạy differential
-full từ clean commit. Chỉ `VERIFIED_DIFFERENTIAL` được chuyển downstream; mọi
-`UNVERIFIED_*` giữ fail-closed. Không mở `test_locked` và không dùng LLM verdict
-hoặc Phase 10 proxy làm verifier.
+Phase 11 đã khóa cho development bằng `p11_diff_dev_full_002`. Phase 12 phải
+đọc đúng canonical lock/checksum trong `configs/experiments/main.yaml`, tạo
+feature và fit calibration chỉ trên development, so sánh các calibrator đã nêu
+trong protocol, rồi khóa `tau_accept`, `tau_verify`, `tau_abstain` trước test.
+Chỉ `VERIFIED_DIFFERENTIAL` là verified-positive; `UNVERIFIED_*` và failure
+không được ép thành negative. Không mở `test_locked` trong development.
 
 ## Checklist agent
 
@@ -391,6 +404,5 @@ uv run --frozen mypy src
 uv run --frozen pytest -q
 ```
 
-Tại Phase 11 implementation: targeted Ruff/mypy pass, Phase 10/11 unit tests pass,
-query compile test và vulnerable-only pilot validator pass. Full suite phải chạy
-lại trước clean implementation commit.
+Tại Phase 11 lock: canonical differential validator và full quality suite pass;
+exact command/kết quả được ghi trong experiment log và lock commit.
