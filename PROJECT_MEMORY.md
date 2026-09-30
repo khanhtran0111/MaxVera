@@ -7,7 +7,8 @@
 > `faff962b48998ad6f2e596297f9b424810398be4`
 > Hiện trạng: Phase 0–11 đã khóa cho development; Phase 11 canonical
 > differential full run đã validated với 28 `VERIFIED_DIFFERENTIAL`; Phase 12
-> calibration/selective routing là phase tiếp theo; `test_locked` chưa mở/chạy.
+> đã implemented và đang chờ clean full calibration run; `test_locked` chưa
+> mở/chạy.
 
 ## Mục đích và cách dùng
 
@@ -44,7 +45,7 @@ evaluator-only.
 |---|---|
 | Bài toán | Zero-hint, repository-level vulnerability research |
 | Ngôn ngữ / static engine | Java / CodeQL |
-| Protocol hiện hành | `1.8.0` |
+| Protocol hiện hành | `1.9.0` |
 | Dataset chính | `D_extended`: 120 rows, 77 repository groups, 4 CWE |
 | Development | 96 opaque projects |
 | Locked test | 24 opaque projects, chưa được analyzer truy cập |
@@ -56,11 +57,12 @@ evaluator-only.
 | Phase 11 lock | `p11_diff_dev_full_002`, 78/96 success, 28 differential verified |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase tiếp theo | Phase 12 calibration và selective routing trên development |
+| Phase 12 | Implemented; dirty-tree diagnostic pilot pass, clean pilot/full pending |
+| Phase tiếp theo | Phase 12 clean pilot → full development threshold lock |
 
-`configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 khóa
-calibration thresholds. Phase 11 dùng protocol `1.8.0`; Phase 9/10 artifacts giữ
-historical contracts `1.6.0`/`1.7.0`.
+`configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 clean full
+run khóa calibration thresholds. Phase 11 dùng historical protocol `1.8.0`;
+Phase 9/10 artifacts giữ contracts `1.6.0`/`1.7.0`.
 
 ## Invariant không được phá
 
@@ -340,6 +342,7 @@ Phase 12; `UNVERIFIED_*` không phải negative label.
 - Phase 10 run root: `results/specifications/phase10/<baseline>/<run-id>/`;
 - Phase 10 evaluator: `results/evaluations/phase10/p10_dev_spec_eval_003/`;
 - Phase 11: `results/verification/phase11/p11_diff_dev_full_002/`;
+- Phase 12: `results/calibration/phase12/<run-id>/`;
 - configs/locks: `configs/experiments/`;
 - Phase 5/6/7/8/9/10/11 code: `src/baselines/`, `src/hypotheses/`,
   `src/graphs/program/`, `src/graphs/knowledge/`, `src/graphs/evidence/`,
@@ -379,12 +382,12 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
 
 ## Handoff Phase 12
 
-Phase 11 đã khóa cho development bằng `p11_diff_dev_full_002`. Phase 12 phải
-đọc đúng canonical lock/checksum trong `configs/experiments/main.yaml`, tạo
-feature và fit calibration chỉ trên development, so sánh các calibrator đã nêu
-trong protocol, rồi khóa `tau_accept`, `tau_verify`, `tau_abstain` trước test.
-Chỉ `VERIFIED_DIFFERENTIAL` là verified-positive; `UNVERIFIED_*` và failure
-không được ép thành negative. Không mở `test_locked` trong development.
+Phase 12 implementation/config/validator đã có. Diagnostic pilot 001 trên 28
+differential findings chọn Platt nhưng không đủ precision 0.8 để auto-accept;
+fail-closed `tau_accept=1.0`. Pilot này chạy trên dirty implementation tree và
+chưa materialize abstention tier, nên không được promote. Tiếp theo commit
+implementation, chạy clean pilot 002, sau đó full `p12_calibration_dev_full_001`
+từ clean commit và pin model/threshold hashes. Không mở `test_locked`.
 
 ## Checklist agent
 

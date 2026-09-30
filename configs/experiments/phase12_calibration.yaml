@@ -1,0 +1,98 @@
+schema_version: 1
+protocol_version: "1.9.0"
+experiment_id: phase12_calibration
+status: frozen_phase_12_development
+purpose: development_only_confidence_calibration_and_selective_routing
+
+development_dependencies:
+  phase9_nodes:
+    path: results/graphs/useg/p9_useg_dev_full_003/useg/nodes.jsonl
+    sha256: fe4cf6f41ca45916c4610f0b241277b61eaf90ba5ce7785e7492c106ebffc0aa
+  phase10:
+    run_id: p10_b9_dev_full_001
+    run_root: results/specifications/phase10/full_useg/p10_b9_dev_full_001
+    manifest_sha256: 3943d6af3cfdd373ae4619d2cf3e43a06b0d896e536c19dbd88562845fdcc45f
+    specifications_sha256: ee48f6b6169449887e773309f9369cb3d9ad869fb65d621d715525e606557611
+    contexts_sha256: 23039f5d775e50cc9d388bbcddcbaa4793fa087cc2e7473f93b733e487d779d5
+    checksums_index_sha256: 5c79f46ad6adeb952980fe5233738a8b7d9d437c115c1dc1a7d8383b78defd9e
+  phase11:
+    run_id: p11_diff_dev_full_002
+    run_root: results/verification/phase11/p11_diff_dev_full_002
+    manifest_sha256: 6d22442cb41877b79c274e23aa2a3d4b0a97f2400384e14ebbc6a8c5262467f7
+    verification_results_sha256: 12d6a882690eeaf65b9c984cbfe7936598a222c984a3f938d76f18a309d5e656
+    project_status_sha256: 2eba44a54ff9ff7ecdb6519912d480403883934c68525eaabc19219ca12df6fe
+    checksums_index_sha256: 5c5e9b1054b667ce3ec55f9c693866840375a8385277a8bcb0f8340d085efeaa
+
+dataset:
+  development_split: data/processed/splits/development.csv
+  development_split_sha256: f534192c4272320f358602d66caf094b2d479ae4aa83a338b3f2389d0ad183ce
+  forbidden_test_split: data/processed/splits/test_locked.csv
+  forbidden_test_split_sha256: 7e948c65be2896c0eaec680ad2c3a709b8a3f4b7b0e759dcccd2af2086945b6a
+  labels: data/processed/evaluator_only/D_extended_labels.csv
+  labels_sha256: 2ed7a442d65980085d64c27660c4e4d82e10448023446d520e01193622c032c0
+  split_groups: data/processed/evaluator_only/D_extended_split_groups.csv
+  split_groups_sha256: 0a057922fb115d4ab4eaaa1702f4a9180f5ce37d28c76d5565cde02fed8dbf7d
+  required_split: development
+  locked_test_allowed: false
+
+label_policy:
+  eligible_phase11_status: VERIFIED_DIFFERENTIAL
+  positive_definition: candidate_cwe_equals_development_ground_truth_cwe
+  unverified_is_negative: false
+  project_failure_is_negative: false
+
+features:
+  version: phase12-features-v1
+  names:
+    - path_count_score
+    - path_compactness
+    - source_resolution_score
+    - sink_resolution_score
+    - sanitizer_evidence
+    - kg_role_coverage
+    - provenance_score
+    - hypothesis_score
+    - hypothesis_rank_score
+    - cwe_agreement
+    - program_grounding
+  caps:
+    paths: 4
+    endpoints: 8
+    sanitizers: 3
+  raw_score_weights:
+    path_count_score: 0.16
+    path_compactness: 0.10
+    source_resolution_score: 0.10
+    sink_resolution_score: 0.10
+    sanitizer_evidence: 0.06
+    kg_role_coverage: 0.10
+    provenance_score: 0.08
+    hypothesis_score: 0.10
+    hypothesis_rank_score: 0.06
+    cwe_agreement: 0.08
+    program_grounding: 0.06
+
+calibration:
+  candidates: [platt, isotonic, logistic]
+  validation: leave_one_repository_group_out
+  selection_order: [brier, ece_equal_width, aurc, model_name]
+  ece_bins: 10
+  optimization:
+    l2: 0.05
+    iterations: 3000
+    learning_rate: 0.1
+
+routing:
+  target_accept_precision: 0.8
+  target_verify_recall: 0.8
+  max_abstain_positive_rate: 0.05
+  minimum_accept_count: 2
+  decisions: [ACCEPT, VERIFY, ABSTAIN]
+  abstain_is_negative: false
+
+execution:
+  seed: 1234
+  llm_calls: 0
+  network_calls: 0
+  atomic_finalization: true
+  full_result_overwrite: false

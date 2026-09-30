@@ -19,7 +19,7 @@ nhất, B9 là proposed method chứ không phải external baseline.
 | B6 | Evidence anchors + Program Graph | GPT-OSS 20B | Phase 10 development lock | Compile-only spec, không static verification |
 | B7 | Evidence anchors + Security KG | GPT-OSS 20B | Phase 10 development lock | Knowledge-only ablation, compile-only spec |
 | B8 | USEG connected component không pruning | GPT-OSS 20B | Phase 10 development lock | Đo structural pruning; vẫn chịu token cap |
-| B9 | USEG pruned + verification/calibration | GPT-OSS 20B | Phase 11 development lock; Phase 12 pending | 28 differential verified specs; chưa có calibrated decision |
+| B9 | USEG pruned + verification/calibration | GPT-OSS 20B | Phase 11 locked; Phase 12 implemented/pending clean full | 28 differential findings; threshold chưa khóa |
 
 ## Hợp đồng công bằng B3/B4
 

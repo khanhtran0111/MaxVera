@@ -691,6 +691,38 @@ Exact Phase 11 locks:
 - fixed preparation/status: `945f4acb11a154cf6c63c7d4e9aba636dd5671a3aada0f2a369e8aafc41a5edc` /
   `fc20f535da33bf275b058c1bf212dde03586c4cefd6fce9d8858bf3373505754`.
 
+## D-033 — Phase 12 calibration cohort, grouped validation và routing (2026-09-30)
+
+Phase 12 fit chỉ trên 28 canonical Phase 11 rows có
+`VERIFIED_DIFFERENTIAL`. Development evaluator gán target 1 khi candidate CWE
+khớp ground-truth CWE, target 0 khi differential finding mang CWE sai. 748
+`UNVERIFIED_*` và 18 inherited project failures không được dùng là negative;
+alternative coi absence of verification là negative bị bác vì trộn unresolved,
+no-path và fixed-persistence với false finding.
+
+Feature vector `phase12-features-v1` chỉ dùng evidence đã có trước label:
+path quality, source/sink resolution, sanitizer evidence, Security-KG role
+coverage, provenance, hypothesis score/rank, contextual CWE agreement và Program
+grounding. So sánh dependency-free Platt, isotonic PAV và L2 multivariate
+logistic. Mọi metric chọn model/threshold dùng leave-one-repository-group-out
+predictions; không dùng in-sample refit probability. Thứ tự chọn deterministic
+là Brier, ECE equal-width 10 bins, AURC, tên model; ECE equal-mass được báo
+là sensitivity.
+
+Routing có ba decision: `ACCEPT` khi `p >= tau_accept`, `VERIFY` khi
+`tau_verify <= p < tau_accept`, còn lại `ABSTAIN`. `tau_abstain` phân tầng
+high-confidence abstention trong nhóm abstain; mọi abstain đều không được
+tính là negative. Development targets là precision 0.8 cho auto-accept (tối
+thiểu hai rows), recall 0.8 cho verify coverage và positive rate 0.05 cho
+high-confidence abstention. Nếu không đủ bằng chứng accept, `tau_accept=1.0`
+và model fail-closed với zero auto-accept.
+
+Runner bắt buộc evaluator role, exact Phase 9/10/11 checksums, development-only
+split và grouped folds; `test_locked` bị cấm. Full run cấm subset và yêu cầu
+clean Git worktree. Quyết định này khóa calibration/routing semantics mới nên
+protocol tăng `1.8.0` lên `1.9.0`; main config vẫn `draft` cho tới clean full
+run, validator pass và exact threshold/model checksum được pin.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

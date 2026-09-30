@@ -2,7 +2,8 @@
 
 **Mục đích:** khóa câu hỏi khoa học, điều kiện đầu vào và tiêu chí thành công trước khi phát triển phương pháp.
 
-**Protocol:** `1.7.0` — cập nhật và frozen ngày 17/09/2026.
+**Protocol:** `1.9.0` — Phase 12 development calibration contract cập nhật
+ngày 30/09/2026; main config chỉ frozen sau clean full threshold lock.
 
 **Phạm vi:** Java, CodeQL, CWE-Bench-Java và `openai/gpt-oss-20b` qua OpenRouter.
 

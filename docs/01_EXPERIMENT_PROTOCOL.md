@@ -1,9 +1,9 @@
-# Experimental Protocol 1.8.0
+# Experimental Protocol 1.9.0
 
 **Mục đích:** định nghĩa dataset view, baseline, evaluation unit, metric, budget,
 failure policy và kiểm định thống kê áp dụng cho mọi kết quả chính. Protocol này
-được cập nhật và frozen ngày 20/09/2026; `configs/experiments/main.yaml` còn
-`draft` vì threshold calibration Phase 12 chưa tồn tại.
+được cập nhật ngày 30/09/2026; `configs/experiments/main.yaml` còn
+`draft` tới khi Phase 12 clean full run khóa calibration thresholds.
 
 ## Dataset và label firewall
 
@@ -89,6 +89,12 @@ review phải mù với cấu hình phương pháp.
 - Calibration: ECE equal-width (10 bins canonical; equal-mass sensitivity),
   Brier Score, AURC/selective risk, coverage ở risk targets, post-abstention
   precision/recall và routing cost. `ABSTAIN` không phải negative.
+
+Phase 12 chỉ fit trên Phase 11 `VERIFIED_DIFFERENTIAL`; target cho calibration
+là candidate CWE khớp development ground truth. `UNVERIFIED_*` và project
+failure không được chuyển thành negative. Model selection dùng
+leave-one-repository-group-out predictions và so sánh Platt, isotonic,
+multivariate logistic theo thứ tự Brier, ECE equal-width, AURC, tên model.
 - Efficiency: input/output/reasoning tokens, calls, retries/schema failures,
   wall/API latency, CPU time và peak RSS phía client, DB/query/indexing time,
   disk, API cost/project và cost/verified finding.

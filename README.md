@@ -60,6 +60,10 @@ context, B4 text-RAG, and B5 static hypotheses. B6-B8 and B9 synthesis are
 locked for development; Phase 11 differential findings are locked as Phase 12
 input, while final routed decisions remain fail-closed until calibration is
 locked.
+Phase 12 implements development-only grouped calibration over differential
+findings, compares Platt/isotonic/logistic models, reports ECE/Brier/AURC and
+materializes `ACCEPT`/`VERIFY`/`ABSTAIN` without treating abstention as a
+negative. See [`docs/17_PHASE12_RUNBOOK.md`](docs/17_PHASE12_RUNBOOK.md).
 Every entrypoint fails closed if any smoke artifact remains.
 
 ## Bootstrap
