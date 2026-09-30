@@ -3,6 +3,8 @@
 > Cập nhật: 2026-09-30 (Asia/Bangkok)
 > Phase 11 canonical run commit:
 > `4b898bfe9a3f16c494ec1942caf95f51e29db221`
+> Phase 11 development lock commit:
+> `faff962b48998ad6f2e596297f9b424810398be4`
 > Hiện trạng: Phase 0–11 đã khóa cho development; Phase 11 canonical
 > differential full run đã validated với 28 `VERIFIED_DIFFERENTIAL`; Phase 12
 > calibration/selective routing là phase tiếp theo; `test_locked` chưa mở/chạy.
