@@ -63,9 +63,7 @@ Full run cấm `--limit`, yêu cầu clean worktree và run ID mới:
 tmux new-session -s phase12_calibration
 cd /home/khanhtg/Documents/MaxVera
 export MAXVERA_DATA_ROLE=evaluator
-bash scripts/tools/run_phase12_calibration.sh \
-  --mode full \
-  --run-id p12_calibration_dev_full_001
+bash scripts/tools/run_phase12_full.sh p12_calibration_dev_full_001
 ```
 
 Detach bằng `Ctrl-b`, sau đó nhấn `d`. Theo dõi hoặc quay lại:
@@ -75,7 +73,7 @@ tmux ls
 tmux attach -t phase12_calibration
 ```
 
-Sau khi runner xong:
+Wrapper tự chạy validator sau runner. Có thể kiểm tra lại thủ công:
 
 ```bash
 bash scripts/tools/validate_phase12.sh \
