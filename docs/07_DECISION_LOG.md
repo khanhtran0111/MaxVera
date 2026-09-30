@@ -759,6 +759,28 @@ nguyên model/thresholds này cho full experiments, ablation và robustness;
 không tune lại sau khi mở test. Quyết định materialize gate đã frozen ở
 D-033 nên protocol giữ `1.9.0`.
 
+## D-035 — Tách Phase 13 thành analyzer/evaluator process boundary (2026-09-30)
+
+Phase 13 dùng hai pass tuần tự. Analyzer pass chỉ được đọc 24 opaque test IDs,
+vulnerable source, CodeQL databases và các dependency đã khóa; evaluator labels,
+advisory, patch/fix và true CWE vẫn đóng. Chỉ sau khi B0/B3-B9 analyzer outputs
+được materialize bất biến mới chuyển process/role sang evaluator cho B1/B2,
+fixed-version differential verification, áp dụng nguyên calibration/threshold
+Phase 12, metrics và robustness.
+
+Ma trận A0-A5/Full, canonical seed `1234`, temperature `0`, budget-matched và
+năm robustness seeds đã được materialize trong
+`configs/experiments/phase13.yaml`; không được đổi dựa trên test output.
+Analyzer pipeline chạy tuần tự, resumable, failure-counts-as-miss vì giới hạn
+32 GB RAM. Preflight không đọc evaluator labels. Một static one-project plumbing
+pilot đã được chạy sau Phase 12 lock để kiểm tra split/manifest firewall; pilot
+không gọi LLM/network, không được dùng để tune và không phải paper artifact.
+
+Alternatives bị bác: đổi tên test thành development để tái dùng runner (làm mờ
+provenance/leakage boundary), mở evaluator labels cùng process với analyzer, và
+chạy nhiều CodeQL/LLM jobs song song. Protocol giữ `1.9.0` vì không đổi RQ,
+model, threshold, metric hay budget; đây là materialization của gate đã khóa.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

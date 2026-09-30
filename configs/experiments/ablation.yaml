@@ -1,5 +1,13 @@
-schema_version: 1
+schema_version: 2
 experiment_id: ablation
-status: scheduled_phase_13
+status: frozen_phase_13
 parent_config: configs/experiments/main.yaml
-cells: [A0, A1, A2, A3, A4, A5, Full]
+phase13_config: configs/experiments/phase13.yaml
+cells:
+  A0: {program_graph: 0, security_kg: 0, evidence_graph: 0, pruning: 0, llm_specs: 0, static_verify: 0, calibration: 0}
+  A1: {program_graph: 1, security_kg: 0, evidence_graph: 0, pruning: 0, llm_specs: 1, static_verify: 0, calibration: 0}
+  A2: {program_graph: 0, security_kg: 1, evidence_graph: 0, pruning: 0, llm_specs: 1, static_verify: 0, calibration: 0}
+  A3: {program_graph: 1, security_kg: 1, evidence_graph: 1, pruning: 0, llm_specs: 1, static_verify: 0, calibration: 0}
+  A4: {program_graph: 1, security_kg: 1, evidence_graph: 1, pruning: 1, llm_specs: 1, static_verify: 0, calibration: 0}
+  A5: {program_graph: 1, security_kg: 1, evidence_graph: 1, pruning: 1, llm_specs: 1, static_verify: 1, calibration: 0}
+  Full: {program_graph: 1, security_kg: 1, evidence_graph: 1, pruning: 1, llm_specs: 1, static_verify: 1, calibration: 1}

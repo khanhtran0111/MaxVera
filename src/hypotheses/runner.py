@@ -19,6 +19,7 @@ from typing import Any, cast
 import yaml
 
 from src.baselines.context import estimate_tokens
+from src.common.analysis_scope import analysis_scope, selected_rows, split_paths
 from src.common.envfile import effective_env
 from src.common.provenance import (
     assert_secret_free,
@@ -44,7 +45,7 @@ from src.llm.prompts.phase6 import (
     user_prompt,
 )
 from src.llm.providers.openrouter import OpenRouterClient, OpenRouterSettings
-from src.reproduction.common import atomic_json, atomic_jsonl, read_csv, read_jsonl, write_checksums
+from src.reproduction.common import atomic_json, atomic_jsonl, read_jsonl, write_checksums
 
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 FINAL_PROJECT_STATUSES = {"SUCCESS", "ANALYSIS_FAILED"}
@@ -156,8 +157,14 @@ def _validate_config(config: Mapping[str, Any]) -> None:
     leaked = sorted(word for word in FORBIDDEN_ANALYSIS_WORDS if word in serialized)
     if leaked:
         raise ValueError(f"Phase 6 analysis config crosses the label firewall: {leaked}")
-    if config.get("status") != "frozen_phase_6_development":
-        raise ValueError("Phase 6 experiment config is not frozen for development")
+    scope = analysis_scope(config)
+    expected_status = (
+        "frozen_phase_6_development"
+        if scope == "development"
+        else "frozen_phase_13_test_analysis"
+    )
+    if config.get("status") != expected_status:
+        raise ValueError(f"Phase 6 experiment config is not frozen for {scope}")
     if config.get("dataset", {}).get("id") != "D_extended":
         raise ValueError("Phase 6 requires D_extended")
     generator = config.get("generator", {})
@@ -177,29 +184,8 @@ def _validate_config(config: Mapping[str, Any]) -> None:
 
 
 def _development_rows(root: Path, config: Mapping[str, Any]) -> list[dict[str, str]]:
-    dataset = cast(Mapping[str, Any], config["dataset"])
-    projects = read_csv(root / str(dataset["analysis_manifest"]))
-    allowed_columns = {
-        "project_id",
-        "source_dir",
-        "source_required",
-        "jdk_version",
-        "maven_version",
-        "gradle_version",
-        "use_gradlew",
-    }
-    if any(set(row) - allowed_columns for row in projects):
-        raise ValueError("Phase 6 analysis manifest contains protected columns")
-    development_path = root / str(dataset["development_split"])
-    development_ids = [row["project_id"] for row in read_csv(development_path)]
-    test_ids = {row["project_id"] for row in read_csv(root / str(dataset["forbidden_test_split"]))}
-    if set(development_ids) & test_ids:
-        raise ValueError("development and locked-test splits overlap")
-    by_id = {row["project_id"]: row for row in projects}
-    missing = set(development_ids) - set(by_id)
-    if missing:
-        raise ValueError(f"development split contains {len(missing)} unknown projects")
-    return [by_id[project_id] for project_id in development_ids]
+    rows, _, _ = selected_rows(root, config)
+    return rows
 
 
 def _resolved_config(args: argparse.Namespace, config: Mapping[str, Any]) -> dict[str, Any]:
@@ -225,8 +211,10 @@ def _manifest(
     selected_ids: Sequence[str],
 ) -> dict[str, Any]:
     dataset = cast(Mapping[str, Any], config["dataset"])
-    development_path = root / str(dataset["development_split"])
-    test_path = root / str(dataset["forbidden_test_split"])
+    selected_split, holdout_split = split_paths(config)
+    development_path = root / selected_split
+    test_path = root / holdout_split
+    scope = analysis_scope(config)
     preparation = root / str(dataset["source_preparation_manifest"])
     model_config_path = root / str(cast(Mapping[str, Any], config["llm"])["model_config"])
     model = _mapping(model_config_path)
@@ -237,6 +225,7 @@ def _manifest(
         "experiment_id": str(config["experiment_id"]),
         "run_id": args.run_id,
         "mode": args.mode,
+        "analysis_scope": scope,
         "generator": args.generator,
         "created_at": utc_now(),
         "git": collect_git(root),
@@ -244,16 +233,18 @@ def _manifest(
             "id": str(dataset["id"]),
             "analysis_manifest": str(dataset["analysis_manifest"]),
             "analysis_manifest_sha256": sha256_file(root / str(dataset["analysis_manifest"])),
-            "split": str(dataset["development_split"]),
+            "split": selected_split,
             "split_sha256": sha256_file(development_path),
-            "locked_test_sha256": sha256_file(test_path),
+            "holdout_split": holdout_split,
+            "holdout_split_sha256": sha256_file(test_path),
+            "locked_test_sha256": sha256_file(test_path) if scope == "development" else None,
             "source_preparation_sha256": sha256_file(preparation)
             if preparation.is_file()
             else None,
         },
         "selected_project_count": len(selected_ids),
         "selected_project_ids": list(selected_ids),
-        "data_access": "opaque development IDs and vulnerable Java source only",
+        "data_access": f"opaque {scope} IDs and vulnerable Java source only; no labels",
         "top_k": int(cast(Mapping[str, Any], config["generator"])["top_k"]),
         "pattern_version": PATTERN_VERSION,
         "ranking_version": RANKING_VERSION,
@@ -412,7 +403,7 @@ def run(args: argparse.Namespace) -> int:
                 "schema_version": 1,
                 "project_id": project_id,
                 "status": "PENDING",
-                "reason": "selected development project waiting for analysis",
+                "reason": f"selected {analysis_scope(config)} project waiting for analysis",
                 "updated_at": utc_now(),
             }
             for project_id in selected_ids
@@ -437,7 +428,7 @@ def run(args: argparse.Namespace) -> int:
                 "network_called": False,
                 "generator": args.generator,
                 "selected_projects": len(selected_ids),
-                "split": "development",
+                "split": analysis_scope(config),
             },
         )
         _write_text(work / "STATUS", "DRY_RUN\n")

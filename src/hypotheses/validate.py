@@ -11,9 +11,10 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from src.common.analysis_scope import validate_manifest_selection
 from src.common.provenance import sha256_file
 from src.hypotheses.signals import LEGACY_RANKING_VERSION, PATTERN_VERSION, RANKING_VERSION
-from src.reproduction.common import read_csv, read_jsonl
+from src.reproduction.common import read_jsonl
 
 REQUIRED_FILES = {
     "STATUS",
@@ -157,17 +158,7 @@ def validate(run_root: Path, *, repo_root: Path, require_metrics: bool) -> str:
     ranking_version = str(manifest.get("ranking_version", LEGACY_RANKING_VERSION))
     if ranking_version not in {LEGACY_RANKING_VERSION, RANKING_VERSION}:
         raise ValueError("Phase 6 ranking version is unsupported")
-    development = {
-        row["project_id"] for row in read_csv(repo_root / "data/processed/splits/development.csv")
-    }
-    locked = {
-        row["project_id"] for row in read_csv(repo_root / "data/processed/splits/test_locked.csv")
-    }
-    selected = {str(item) for item in manifest.get("selected_project_ids", [])}
-    if not selected or not selected <= development or selected & locked:
-        raise ValueError("Phase 6 selection is not development-only")
-    if manifest.get("mode") == "full" and selected != development:
-        raise ValueError("full Phase 6 run does not cover the complete development split")
+    selected, scope = validate_manifest_selection(repo_root, manifest)
     statuses = read_jsonl(run_root / "project_status.jsonl")
     if len({row.get("project_id") for row in statuses}) != len(statuses):
         raise ValueError("Phase 6 status project IDs are duplicated")
@@ -276,7 +267,7 @@ def validate(run_root: Path, *, repo_root: Path, require_metrics: bool) -> str:
             f"PASS_WITH_ANALYSIS_FAILURES: Phase 6 {manifest['generator']} "
             f"({successes}/{len(statuses)} successful; {failures} miss(es))"
         )
-    return f"PASS: Phase 6 {manifest['generator']} ({len(statuses)} development projects)"
+    return f"PASS: Phase 6 {manifest['generator']} ({len(statuses)} {scope} projects)"
 
 
 def main(argv: Sequence[str] | None = None) -> int:

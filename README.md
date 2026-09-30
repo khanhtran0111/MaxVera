@@ -66,6 +66,13 @@ materializes `ACCEPT`/`VERIFY`/`ABSTAIN` without treating abstention as a
 negative. Canonical run `p12_calibration_dev_full_001` locks Platt calibration
 and fail-closed thresholds for Phase 13: zero `ACCEPT`, 25 `VERIFY`, and 3
 `ABSTAIN`. See [`docs/17_PHASE12_RUNBOOK.md`](docs/17_PHASE12_RUNBOOK.md).
+Phase 13 now has a frozen A0-A5/Full matrix and a resumable, role-separated
+locked-test analyzer pass for B0 and B3-B9. Its preflight verifies all 24 opaque
+test projects plus the exact Phase 12 model/threshold locks before any long
+job. The evaluator pass (B1/B2, differential verification, frozen calibration,
+statistics and five-seed robustness) intentionally remains closed until the
+analyzer snapshot is immutable. See
+[`docs/18_PHASE13_RUNBOOK.md`](docs/18_PHASE13_RUNBOOK.md).
 Every entrypoint fails closed if any smoke artifact remains.
 
 ## Bootstrap

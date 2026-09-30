@@ -1,0 +1,79 @@
+# Phase 13 Runbook
+
+## Trạng thái và ranh giới dữ liệu
+
+Phase 13 là workload dài và được chia thành hai process boundary:
+
+1. **Analyzer pass** mở danh sách 24 opaque `test_locked` IDs, source và CodeQL
+   database, nhưng không được đọc evaluator labels. Pass này chạy B0, B3-B9 và
+   materialize Program Graph/USEG/specifications thành immutable run roots.
+2. **Evaluator pass** chỉ bắt đầu sau khi analyzer snapshot hoàn tất. Pass này
+   chạy B1/B2 oracle, fixed-version verification, áp dụng nguyên model/threshold
+   Phase 12, metrics/bootstrap và robustness. Không được tune lại model,
+   threshold, prompt, retrieval hoặc budget sau khi test đã mở.
+
+Config ma trận đã khóa tại `configs/experiments/phase13.yaml` và
+`configs/experiments/ablation.yaml`. Canonical run dùng temperature `0`, seed
+`1234`, `budget_matched`; robustness dùng năm seed `1234, 2345, 3456, 4567,
+5678` cho Full và baseline mạnh nhất được chọn chỉ từ development.
+
+## Preflight ngắn
+
+```bash
+bash scripts/tools/preflight_phase13.sh
+```
+
+Kết quả hợp lệ phải là `READY_FOR_LONG_ANALYZER_RUN`, 24 test projects, 24
+source aliases, CodeQL/OpenRouter configured, và đúng hash model/threshold của
+`p12_calibration_dev_full_001`. Preflight không mở evaluator labels và không
+gọi API.
+
+## Chạy analyzer pass trong tmux
+
+Chỉ chạy từ clean commit. Job chạy tuần tự vì máy 32 GB RAM và có thể kéo dài
+nhiều giờ (ba database có thể cần build; B0 và B6-B9 gọi CodeQL; B3/B4/B6-B9
+gọi OpenRouter):
+
+```bash
+tmux new -s maxvera-p13
+cd ~/Documents/MaxVera
+bash scripts/tools/run_phase13_analyzer.sh p13_test_analysis_001 all \
+  2>&1 | tee logs/p13_test_analysis_001.log
+```
+
+Detach bằng `Ctrl-b`, rồi `d`. Gắn lại:
+
+```bash
+tmux attach -t maxvera-p13
+```
+
+Xem log mà không attach:
+
+```bash
+tail -f logs/p13_test_analysis_001.log
+```
+
+Pipeline có thể resume theo immutable stage. Nếu dừng giữa chừng, chạy lại cùng
+command/run ID; stage đã hoàn tất sẽ được bỏ qua. Nếu một runner còn thư mục
+`.inprogress`, dùng chính runner đó với `--resume` theo lỗi được in trong log,
+không xóa output hoặc đổi run ID trước khi audit nguyên nhân.
+
+Có thể chạy tách stage để dễ theo dõi:
+
+```bash
+bash scripts/tools/run_phase13_analyzer.sh p13_test_analysis_001 foundations
+bash scripts/tools/run_phase13_analyzer.sh p13_test_analysis_001 specifications
+bash scripts/tools/run_phase13_analyzer.sh p13_test_analysis_001 baselines
+```
+
+`foundations` không gọi LLM; `specifications` chạy B6-B9; `baselines` chạy B0,
+B5 rồi B3/B4. Wrapper truyền xác nhận mở locked test và API spend một cách
+explicit. Mọi stage vẫn fail-closed nếu role không phải `analyzer`.
+
+## Sau analyzer pass
+
+Không tự mở/chấm evaluator labels ngay. Gửi lại cuối log và file
+`results/phase13/p13_test_analysis_001/analyzer_status.json` để kiểm tra run
+IDs/checksums và khóa analyzer snapshot trước khi khởi động evaluator pass.
+Phase 13 chỉ hoàn tất sau evaluator pass, toàn bộ B0-B9, A0-A5/Full, năm seed
+robustness và project-level bootstrap đều trỏ đến immutable run IDs.

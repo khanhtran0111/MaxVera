@@ -7,9 +7,11 @@
 > `faff962b48998ad6f2e596297f9b424810398be4`
 > Phase 12 development lock commit:
 > `faa06a1176320eb133d26a06c368d6181932fa16`
-> Hiện trạng: Phase 0–11 đã khóa cho development; Phase 11 canonical
+> Hiện trạng: Phase 0–12 đã khóa cho development; Phase 11 canonical
 > differential full run đã validated với 28 `VERIFIED_DIFFERENTIAL`; Phase 12
-> đã khóa cho Phase 13 bằng full calibration run; `test_locked` chưa mở/chạy.
+> đã khóa cho Phase 13 bằng full calibration run. Phase 13 analyzer pipeline đã
+> implemented/preflight pass; analyzer đã chạy một plumbing pilot trên một
+> opaque test ID, evaluator labels vẫn chưa mở và canonical full chưa chạy.
 
 ## Mục đích và cách dùng
 
@@ -49,7 +51,7 @@ evaluator-only.
 | Protocol hiện hành | `1.9.0` |
 | Dataset chính | `D_extended`: 120 rows, 77 repository groups, 4 CWE |
 | Development | 96 opaque projects |
-| Locked test | 24 opaque projects, chưa được analyzer truy cập |
+| Locked test | 24 opaque projects; analyzer pass đã bắt đầu, evaluator labels vẫn đóng |
 | Phase 6 lock | `p6_static_v2_dev_full_001`, static Top-10 |
 | Phase 7 lock | `p7_pg_dev_full_004`, 81/96 graph success |
 | Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
@@ -59,7 +61,8 @@ evaluator-only.
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
 | Phase 12 lock | `p12_calibration_dev_full_001`, Platt, 25 VERIFY / 3 ABSTAIN |
-| Phase tiếp theo | Phase 13 full experiments, ablation và robustness |
+| Phase 13 | Analyzer ready; cần chạy `p13_test_analysis_001` trong tmux |
+| Phase tiếp theo | Phase 13 canonical analyzer, rồi evaluator/robustness pass |
 
 `configs/experiments/main.yaml` đã `frozen` sau Phase 12 threshold lock. Phase 11
 dùng historical protocol `1.8.0`; Phase 9/10 artifacts giữ contracts

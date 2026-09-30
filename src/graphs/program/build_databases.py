@@ -66,8 +66,7 @@ def _attempts(row: Mapping[str, str], toolchain: Mapping[str, Any]) -> list[dict
     return unique
 
 
-def _seed_files(repo_root: Path) -> dict[str, tuple[str, ...]]:
-    config = _mapping(repo_root / "configs/experiments/phase7_program_graph.yaml")
+def _seed_files(repo_root: Path, config: Mapping[str, Any]) -> dict[str, tuple[str, ...]]:
     phase6 = cast(Mapping[str, Any], config["phase6_lock"])
     path = repo_root / str(phase6["run_root"]) / "hypotheses.jsonl"
     by_project: dict[str, set[str]] = {}
@@ -239,15 +238,20 @@ def build_missing(
     status_path_override: Path | None = None,
     log_root_override: Path | None = None,
     build_mode: str = "auto",
+    config_path: Path | None = None,
 ) -> dict[str, int]:
     if build_mode not in {"auto", "manual", "none"}:
         raise ValueError("--build-mode must be auto, manual, or none")
-    config = _mapping(repo_root / "configs/experiments/phase7_program_graph.yaml")
+    resolved_config = config_path or repo_root / "configs/experiments/phase7_program_graph.yaml"
+    if not resolved_config.is_absolute():
+        resolved_config = repo_root / resolved_config
+    config = _mapping(resolved_config)
     dataset = cast(Mapping[str, Any], config["dataset"])
     rows = read_csv(repo_root / str(dataset["analysis_manifest"]))
-    development = [
-        row["project_id"] for row in read_csv(repo_root / str(dataset["development_split"]))
-    ]
+    split_value = dataset.get("analysis_split", dataset.get("development_split"))
+    if not isinstance(split_value, str):
+        raise ValueError("Phase 7 database build requires an analysis split")
+    development = [row["project_id"] for row in read_csv(repo_root / split_value)]
     by_id = {row["project_id"]: row for row in rows}
     selected = [by_id[project_id] for project_id in development]
     database_root = _output_path(
@@ -277,7 +281,7 @@ def build_missing(
     log_root = _output_path(
         repo_root, log_root_override, repo_root / "data/interim/phase7_database_logs"
     )
-    seeds = _seed_files(repo_root)
+    seeds = _seed_files(repo_root, config)
     records = read_jsonl(status_path)
     by_status_id = {str(record["project_id"]): record for record in records}
     successes = 0
@@ -432,6 +436,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--log-root", type=Path)
     parser.add_argument("--build-mode", choices=("auto", "manual", "none"), default="auto")
     parser.add_argument("--timeout", type=int, default=1800)
+    parser.add_argument(
+        "--config", type=Path, default=Path("configs/experiments/phase7_program_graph.yaml")
+    )
     args = parser.parse_args(argv)
     try:
         result = build_missing(
@@ -443,6 +450,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             status_path_override=args.status_path,
             log_root_override=args.log_root,
             build_mode=args.build_mode,
+            config_path=args.config,
         )
     except (OSError, RuntimeError, ValueError) as error:
         print(f"ERROR: {error}")

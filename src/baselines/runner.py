@@ -305,8 +305,8 @@ def _validate_config(
     if config.get("status") != "implemented_phase_5":
         raise ValueError("baseline is not marked implemented_phase_5")
     _assert_analysis_config_safe(config)
-    if experiment.get("status") != "frozen_phase_5":
-        raise ValueError("Phase 5 experiment config must be frozen_phase_5")
+    if experiment.get("status") not in {"frozen_phase_5", "frozen_phase_13_test_analysis"}:
+        raise ValueError("baseline experiment config is not frozen for this analysis scope")
     if config.get("llm_enabled"):
         llm = experiment.get("llm", {})
         if not isinstance(llm, Mapping):

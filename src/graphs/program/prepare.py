@@ -23,6 +23,7 @@ def prepare_databases(
     target_database_root: Path,
     phase2_status_path: Path,
     preparation_manifest: Path,
+    analysis_scope: str = "development",
 ) -> dict[str, object]:
     source_rows = read_csv(source_manifest)
     target_rows = read_csv(target_manifest)
@@ -91,12 +92,16 @@ def prepare_databases(
         ),
         "source_manifest_sha256": sha256_file(source_manifest),
         "target_manifest_sha256": sha256_file(target_manifest),
-        "development_split_sha256": sha256_file(development_split),
+        "analysis_scope": analysis_scope,
+        "analysis_split_sha256": sha256_file(development_split),
+        "development_split_sha256": (
+            sha256_file(development_split) if analysis_scope == "development" else None
+        ),
         "phase2_status_sha256": sha256_file(phase2_status_path),
         "target_root": target_database_root.relative_to(repo_root).as_posix(),
         "identity_fields_used_by_preparation_only": ["project_slug", "buggy_commit_id"],
         "identity_mapping_persisted": False,
-        "locked_test_prepared": False,
+        "locked_test_prepared": analysis_scope == "test_locked",
     }
     atomic_json(preparation_manifest, result)
     return result
@@ -105,17 +110,37 @@ def prepare_databases(
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    parser.add_argument("--analysis-split", type=Path)
+    parser.add_argument("--target-database-root", type=Path)
+    parser.add_argument("--preparation-manifest", type=Path)
+    parser.add_argument(
+        "--analysis-scope", choices=("development", "test_locked"), default="development"
+    )
     args = parser.parse_args(argv)
     root = args.repo_root.resolve()
     result = prepare_databases(
         root,
         source_manifest=root / "data/processed/manifests/cwe_bench_v1.csv",
         target_manifest=root / "data/processed/manifests/cwe_bench_extended.csv",
-        development_split=root / "data/processed/splits/development.csv",
+        development_split=(
+            args.analysis_split
+            if args.analysis_split and args.analysis_split.is_absolute()
+            else root / (args.analysis_split or "data/processed/splits/development.csv")
+        ),
         source_database_root=root / "data/interim/codeql_databases",
-        target_database_root=root / "data/interim/phase7_codeql_databases",
+        target_database_root=(
+            args.target_database_root
+            if args.target_database_root and args.target_database_root.is_absolute()
+            else root / (args.target_database_root or "data/interim/phase7_codeql_databases")
+        ),
         phase2_status_path=root / "data/interim/build_info/build_status.jsonl",
-        preparation_manifest=root / "data/interim/phase7_database_preparation.json",
+        preparation_manifest=(
+            args.preparation_manifest
+            if args.preparation_manifest and args.preparation_manifest.is_absolute()
+            else root
+            / (args.preparation_manifest or "data/interim/phase7_database_preparation.json")
+        ),
+        analysis_scope=args.analysis_scope,
     )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0

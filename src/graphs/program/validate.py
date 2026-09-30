@@ -10,9 +10,10 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from src.common.analysis_scope import validate_manifest_selection
 from src.common.provenance import sha256_file
 from src.graphs.program.model import EDGE_KINDS, EXTRACTOR_VERSION, edge_id, graph_digest, node_id
-from src.reproduction.common import read_csv, read_jsonl
+from src.reproduction.common import read_jsonl
 
 REQUIRED_FILES = {
     "STATUS",
@@ -170,17 +171,7 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
     extractor = manifest.get("extractor")
     if not isinstance(extractor, Mapping) or extractor.get("version") != EXTRACTOR_VERSION:
         raise ValueError("Phase 7 extractor provenance mismatch")
-    development = {
-        row["project_id"] for row in read_csv(repo_root / "data/processed/splits/development.csv")
-    }
-    locked = {
-        row["project_id"] for row in read_csv(repo_root / "data/processed/splits/test_locked.csv")
-    }
-    selected = {str(value) for value in manifest.get("selected_project_ids", [])}
-    if not selected or not selected <= development or selected & locked:
-        raise ValueError("Phase 7 selection is not development-only")
-    if manifest.get("mode") == "full" and selected != development:
-        raise ValueError("full Phase 7 run does not cover all development projects")
+    selected, scope = validate_manifest_selection(repo_root, manifest)
     statuses = read_jsonl(run_root / "project_status.jsonl")
     status_by_id = {str(row.get("project_id")): str(row.get("status")) for row in statuses}
     if len(status_by_id) != len(statuses) or set(status_by_id) != selected:
@@ -240,7 +231,7 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
             f"({len(successes)}/{len(selected)} successful; edge references {reference_ratio:.3%})"
         )
     return (
-        f"PASS: Phase 7 program graph ({len(successes)} development projects; "
+        f"PASS: Phase 7 program graph ({len(successes)} {scope} projects; "
         f"edge references {reference_ratio:.3%})"
     )
 

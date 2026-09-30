@@ -24,11 +24,12 @@ from typing import Any, cast
 
 import yaml
 
+from src.common.analysis_scope import analysis_scope, selected_rows, split_paths
 from src.common.envfile import effective_env
 from src.common.provenance import collect_environment, collect_git, sha256_file, utc_now
 from src.graphs.program.model import EXTRACTOR_VERSION, graph_digest, normalize_graph
 from src.hypotheses.validate import validate as validate_phase6
-from src.reproduction.common import atomic_json, atomic_jsonl, read_csv, read_jsonl, write_checksums
+from src.reproduction.common import atomic_json, atomic_jsonl, read_jsonl, write_checksums
 
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 FINAL_STATUSES = {"SUCCESS", "ANALYSIS_FAILED"}
@@ -135,8 +136,14 @@ def _codeql_version(binary: Path) -> str:
 
 
 def _validate_config(config: Mapping[str, Any]) -> None:
-    if config.get("status") != "frozen_phase_7_development":
-        raise ValueError("Phase 7 experiment config is not frozen for development")
+    scope = analysis_scope(config)
+    expected_status = (
+        "frozen_phase_7_development"
+        if scope == "development"
+        else "frozen_phase_13_test_analysis"
+    )
+    if config.get("status") != expected_status:
+        raise ValueError(f"Phase 7 experiment config is not frozen for {scope}")
     if config.get("dataset", {}).get("id") != "D_extended":
         raise ValueError("Phase 7 requires D_extended")
     phase6 = config.get("phase6_lock", {})
@@ -152,31 +159,8 @@ def _validate_config(config: Mapping[str, Any]) -> None:
 
 
 def _development_rows(root: Path, config: Mapping[str, Any]) -> list[dict[str, str]]:
-    dataset = cast(Mapping[str, Any], config["dataset"])
-    analysis_rows = read_csv(root / str(dataset["analysis_manifest"]))
-    allowed_columns = {
-        "project_id",
-        "source_dir",
-        "source_required",
-        "jdk_version",
-        "maven_version",
-        "gradle_version",
-        "use_gradlew",
-    }
-    if any(set(row) - allowed_columns for row in analysis_rows):
-        raise ValueError("Phase 7 analysis manifest contains protected columns")
-    development_ids = [
-        row["project_id"] for row in read_csv(root / str(dataset["development_split"]))
-    ]
-    locked_ids = {
-        row["project_id"] for row in read_csv(root / str(dataset["forbidden_test_split"]))
-    }
-    if set(development_ids) & locked_ids:
-        raise ValueError("Phase 7 development and locked-test splits overlap")
-    by_id = {row["project_id"]: row for row in analysis_rows}
-    if set(development_ids) - set(by_id):
-        raise ValueError("Phase 7 development split contains unknown projects")
-    return [by_id[project_id] for project_id in development_ids]
+    rows, _, _ = selected_rows(root, config)
+    return rows
 
 
 def _select_rows(
@@ -189,7 +173,7 @@ def _select_rows(
     if args.project_id is not None:
         selected = [row for row in development if row["project_id"] == args.project_id]
         if not selected:
-            raise ValueError("--project-id is not in the development split")
+            raise ValueError("--project-id is not in the selected analysis split")
         return selected
     limit = args.limit if args.limit is not None else 1
     if limit < 1:
@@ -200,19 +184,31 @@ def _select_rows(
 def _phase6_dependency(root: Path, config: Mapping[str, Any]) -> dict[str, str]:
     phase6 = cast(Mapping[str, Any], config["phase6_lock"])
     run_root = root / str(phase6["run_root"])
-    validate_phase6(run_root, repo_root=root, require_metrics=True)
+    final_test = analysis_scope(config) == "test_locked"
+    validate_phase6(run_root, repo_root=root, require_metrics=not final_test)
     manifest_sha = sha256_file(run_root / "manifest.json")
-    metrics_sha = sha256_file(run_root / "metrics_aggregate.json")
-    if (
-        manifest_sha != phase6["manifest_sha256"]
-        or metrics_sha != phase6["metrics_aggregate_sha256"]
-    ):
+    if manifest_sha != phase6["manifest_sha256"]:
         raise ValueError("locked Phase 6 dependency checksum mismatch")
-    return {
+    result = {
         "run_id": str(phase6["run_id"]),
         "manifest_sha256": manifest_sha,
-        "metrics_aggregate_sha256": metrics_sha,
     }
+    if final_test:
+        for key, filename in (
+            ("hypotheses_sha256", "hypotheses.jsonl"),
+            ("project_status_sha256", "project_status.jsonl"),
+            ("checksums_index_sha256", "checksums.sha256"),
+        ):
+            actual = sha256_file(run_root / filename)
+            if actual != phase6[key]:
+                raise ValueError("locked Phase 6 dependency checksum mismatch")
+            result[key] = actual
+    else:
+        metrics_sha = sha256_file(run_root / "metrics_aggregate.json")
+        if metrics_sha != phase6["metrics_aggregate_sha256"]:
+            raise ValueError("locked Phase 6 dependency checksum mismatch")
+        result["metrics_aggregate_sha256"] = metrics_sha
+    return result
 
 
 def _run_query(
@@ -347,6 +343,8 @@ def _manifest(
     edge_query = root / str(extractor["edge_query"])
     preparation = root / str(dataset["database_preparation_manifest"])
     build_status = root / str(dataset["database_build_status"])
+    selected_split, holdout_split = split_paths(config)
+    scope = analysis_scope(config)
     return {
         "schema_version": 1,
         "phase": 7,
@@ -354,13 +352,18 @@ def _manifest(
         "experiment_id": str(config["experiment_id"]),
         "run_id": args.run_id,
         "mode": args.mode,
+        "analysis_scope": scope,
         "created_at": utc_now(),
         "git": collect_git(root),
         "dataset": {
             "id": str(dataset["id"]),
-            "split": str(dataset["development_split"]),
-            "split_sha256": sha256_file(root / str(dataset["development_split"])),
-            "locked_test_sha256": sha256_file(root / str(dataset["forbidden_test_split"])),
+            "split": selected_split,
+            "split_sha256": sha256_file(root / selected_split),
+            "holdout_split": holdout_split,
+            "holdout_split_sha256": sha256_file(root / holdout_split),
+            "locked_test_sha256": (
+                sha256_file(root / holdout_split) if scope == "development" else None
+            ),
             "database_preparation_sha256": sha256_file(preparation),
             "database_build_status_sha256": sha256_file(build_status)
             if build_status.is_file()
@@ -369,7 +372,7 @@ def _manifest(
         "selected_project_count": len(selected_ids),
         "selected_project_ids": list(selected_ids),
         "data_access": (
-            "opaque development IDs, source-backed CodeQL database, locked Phase 6 output"
+            f"opaque {scope} IDs, source-backed CodeQL database, locked Phase 6 output"
         ),
         "phase6_dependency": dict(phase6),
         "extractor": {
@@ -453,7 +456,9 @@ def run(args: argparse.Namespace) -> int:
                 "schema_version": 1,
                 "project_id": project_id,
                 "status": "PENDING",
-                "reason": "selected development project waiting for graph extraction",
+                "reason": (
+                    f"selected {analysis_scope(config)} project waiting for graph extraction"
+                ),
                 "updated_at": utc_now(),
             }
             for project_id in selected_ids

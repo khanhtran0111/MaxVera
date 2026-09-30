@@ -1,0 +1,50 @@
+schema_version: 1
+protocol_version: "1.9.0"
+experiment_id: phase13_full_experiments_ablation_robustness
+status: analyzer_ready
+parent_config: configs/experiments/main.yaml
+analysis_scope: test_locked
+split:
+  analysis: data/processed/splits/test_locked.csv
+  holdout_for_analyzer: data/processed/splits/development.csv
+  expected_projects: 24
+firewall:
+  analyzer_role: analyzer
+  evaluator_role: evaluator
+  labels_open_only_after_analyzer_snapshot: true
+  tune_after_test_open: forbidden
+canonical:
+  temperature: 0.0
+  seed: 1234
+  budget_mode: budget_matched
+  calibration_run_id: p12_calibration_dev_full_001
+matrix:
+  A0: {entrypoint: B0, static_verify: false, calibration: false}
+  A1: {entrypoint: B6, static_verify: false, calibration: false}
+  A2: {entrypoint: B7, static_verify: false, calibration: false}
+  A3: {entrypoint: B8, static_verify: false, calibration: false}
+  A4: {entrypoint: B9, static_verify: false, calibration: false}
+  A5: {entrypoint: B9, static_verify: true, calibration: false}
+  Full: {entrypoint: B9, static_verify: true, calibration: true}
+comparison_entrypoints: [B0, B1, B2, B3, B4, B5, B6, B7, B8, B9]
+robustness:
+  seeds: [1234, 2345, 3456, 4567, 5678]
+  methods: [Full, strongest_baseline]
+  strongest_baseline_selection: development_only
+  bootstrap_unit: repository_project
+  paired_bootstrap_samples: 10000
+execution:
+  analyzer_script: scripts/tools/run_phase13_analyzer.sh
+  project_workers: 1
+  graph_build_workers: 1
+  llm_parallel_requests: 1
+  concurrent_codeql_and_llm: false
+  resumable: true
+  immutable_outputs: true
+pending_evaluator_pass:
+  - B1_oracle_cwe
+  - B2_iris_oracle_cwe
+  - A5_static_verification
+  - Full_frozen_calibration_application
+  - project_level_metrics_and_statistics
+  - five_seed_robustness

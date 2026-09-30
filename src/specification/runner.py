@@ -107,8 +107,17 @@ def _validate_config(
         raise ValueError("Phase 10 supports only matching B6-B9 configs")
     if baseline.get("status") != expected_status:
         raise ValueError(f"{baseline_id} is not marked {expected_status}")
-    if experiment.get("status") != "frozen_phase_10_development":
-        raise ValueError("Phase 10 experiment config is not frozen for development")
+    scope = str(experiment.get("analysis_scope", "development"))
+    expected_experiment_status = (
+        "frozen_phase_10_development"
+        if scope == "development"
+        else "frozen_phase_13_test_analysis"
+    )
+    if (
+        scope not in {"development", "test_locked"}
+        or experiment.get("status") != expected_experiment_status
+    ):
+        raise ValueError(f"Phase 10 experiment config is not frozen for {scope}")
     if experiment.get("protocol_version") != "1.7.0":
         raise ValueError("Phase 10 requires protocol 1.7.0")
     strategies = cast(
@@ -163,7 +172,10 @@ def dependency_status(root: Path, experiment: Mapping[str, Any]) -> dict[str, An
         "phase9": {"run_id": str(expected["run_id"]), **actual},
         "analysis_successes": successes,
         "analysis_failures": failures,
-        "data_access": "canonical Phase 9 development USEG only; evaluator/test data forbidden",
+        "data_access": (
+            f"canonical Phase 9 {experiment.get('analysis_scope', 'development')} USEG only; "
+            "evaluator labels forbidden"
+        ),
     }
 
 
@@ -177,7 +189,7 @@ def _selected_projects(
         return all_ids
     if args.project_id:
         if args.project_id not in all_ids:
-            raise ValueError("--project-id is not in the locked Phase 9 development set")
+            raise ValueError("--project-id is not in the locked Phase 9 analysis set")
         return [str(args.project_id)]
     success_ids = [
         str(row["project_id"]) for row in phase9_statuses if row.get("status") == "SUCCESS"
@@ -307,13 +319,14 @@ def _manifest(
         "retrieval_strategy": baseline["retrieval"],
         "run_id": args.run_id,
         "mode": args.mode,
+        "analysis_scope": str(experiment.get("analysis_scope", "development")),
         "budget_mode": args.budget_mode,
         "created_at": utc_now(),
         "git": collect_git(root),
         "selected_project_ids": list(selected),
         "selected_project_count": len(selected),
         "development_dependency": dict(dependency),
-        "data_access": "canonical Phase 9 development USEG only; no evaluator/test labels",
+        "data_access": "canonical Phase 9 analysis USEG only; no evaluator labels",
         "baseline_config": {
             "path": baseline_path.relative_to(root).as_posix(),
             "sha256": sha256_file(baseline_path),

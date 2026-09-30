@@ -39,8 +39,14 @@ def _json(path: Path) -> dict[str, Any]:
 
 
 def _validate_config(config: Mapping[str, Any]) -> None:
-    if config.get("status") != "frozen_phase_9_development":
-        raise ValueError("Phase 9 experiment config is not frozen for development")
+    scope = str(config.get("analysis_scope", "development"))
+    expected_status = (
+        "frozen_phase_9_development"
+        if scope == "development"
+        else "frozen_phase_13_test_analysis"
+    )
+    if scope not in {"development", "test_locked"} or config.get("status") != expected_status:
+        raise ValueError(f"Phase 9 experiment config is not frozen for {scope}")
     if config.get("protocol_version") != "1.6.0":
         raise ValueError("Phase 9 requires protocol 1.6.0")
     if config.get("useg_version") != USEG_VERSION or config.get("analysis_iteration") != 0:
@@ -84,8 +90,8 @@ def dependency_status(root: Path, config: Mapping[str, Any]) -> dict[str, Any]:
     result: dict[str, Any] = {
         "schema_version": 1,
         "data_access": (
-            "canonical development hypotheses/program graph/security KG only; "
-            "no evaluator, advisory, patch, or locked-test content"
+            f"canonical {config.get('analysis_scope', 'development')} hypotheses/program "
+            "graph/security KG only; no evaluator labels, advisory, or patch content"
         ),
     }
     for phase_number, key in ((6, "phase6"), (7, "phase7"), (8, "phase8")):
@@ -103,8 +109,13 @@ def dependency_status(root: Path, config: Mapping[str, Any]) -> dict[str, Any]:
     phase6_root = root / str(cast(Mapping[str, Any], locks["phase6"])["run_root"])
     phase6_manifest = _json(phase6_root / "manifest.json")
     selected = phase6_manifest.get("selected_project_ids")
-    if not isinstance(selected, list) or len(selected) != 96 or len(set(selected)) != 96:
-        raise ValueError("locked Phase 6 project selection is not the 96-project development set")
+    expected_projects = int(cast(Mapping[str, Any], config["coverage"])["expected_full_projects"])
+    if (
+        not isinstance(selected, list)
+        or len(selected) != expected_projects
+        or len(set(selected)) != expected_projects
+    ):
+        raise ValueError("locked Phase 6 project selection does not match configured coverage")
     phase7_root = root / str(cast(Mapping[str, Any], locks["phase7"])["run_root"])
     phase7_statuses = read_jsonl(phase7_root / "project_status.jsonl")
     if {str(row["project_id"]) for row in phase7_statuses} != set(selected):
@@ -134,7 +145,7 @@ def _selected_projects(
         return development
     if args.project_id is not None:
         if args.project_id not in development:
-            raise ValueError("--project-id is not in the locked development selection")
+            raise ValueError("--project-id is not in the locked analysis selection")
         return [str(args.project_id)]
     phase7_root = root / str(cast(Mapping[str, Any], locks["phase7"])["run_root"])
     success_ids = {
@@ -192,6 +203,7 @@ def _manifest(
     root: Path,
     args: argparse.Namespace,
     config_path: Path,
+    config: Mapping[str, Any],
     dependencies: Mapping[str, Any],
     selected: Sequence[str],
 ) -> dict[str, Any]:
@@ -209,13 +221,14 @@ def _manifest(
         "experiment_id": "phase9_evidence_graph_useg",
         "run_id": args.run_id,
         "mode": args.mode,
+        "analysis_scope": str(config.get("analysis_scope", "development")),
         "created_at": utc_now(),
         "git": collect_git(root),
         "useg_version": USEG_VERSION,
         "analysis_iteration": 0,
         "selected_project_ids": list(selected),
         "selected_project_count": len(selected),
-        "data_access": "canonical Phase 6/7/8 analysis artifacts only",
+        "data_access": "canonical Phase 6/7/8 analysis artifacts only; no labels",
         "network_calls": 0,
         "llm_calls": 0,
         "development_dependencies": dict(dependencies),
@@ -254,6 +267,7 @@ def run(args: argparse.Namespace) -> int:
             root=root,
             args=args,
             config_path=config_path,
+            config=config,
             dependencies=dependencies,
             selected=selected,
         ),
