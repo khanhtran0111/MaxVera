@@ -22,13 +22,13 @@ def test_baseline_matrix_and_configs_are_consistent() -> None:
         assert config["baseline_id"] == baseline_id
 
 
-def test_main_protocol_is_draft_for_explicit_phase_blockers() -> None:
+def test_main_protocol_is_frozen_after_phase12_threshold_lock() -> None:
     config = yaml.safe_load(
         (REPO_ROOT / "configs/experiments/main.yaml").read_text(encoding="utf-8")
     )
     assert config["protocol_version"] == "1.9.0"
-    assert config["status"] == "draft"
-    assert config["draft_blockers"]
+    assert config["status"] == "frozen"
+    assert config["draft_blockers"] == []
     assert config["leakage_firewall"]["enabled"] is True
 
 

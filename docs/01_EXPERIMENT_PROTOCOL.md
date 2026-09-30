@@ -2,8 +2,8 @@
 
 **Mục đích:** định nghĩa dataset view, baseline, evaluation unit, metric, budget,
 failure policy và kiểm định thống kê áp dụng cho mọi kết quả chính. Protocol này
-được cập nhật ngày 30/09/2026; `configs/experiments/main.yaml` còn
-`draft` tới khi Phase 12 clean full run khóa calibration thresholds.
+được cập nhật và frozen ngày 30/09/2026 sau Phase 12 clean full
+calibration/threshold lock.
 
 ## Dataset và label firewall
 

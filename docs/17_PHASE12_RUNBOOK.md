@@ -109,3 +109,29 @@ Gate Phase 12 yêu cầu checksum coverage đầy đủ; exact Phase 9/10/11 loc
 sensitivity, Brier và AURC; ordered thresholds; `locked_test_used=false`; và
 validator `PASS`. Chỉ sau full clean run + validator pass mới pin canonical
 hash và chuyển `configs/experiments/main.yaml` từ `draft` sang `frozen`.
+
+## 6. Canonical development lock
+
+`p12_calibration_dev_full_001` là canonical Phase 12 run. Artifact được tạo
+từ clean commit `581f0dc`, ghi `locked_test_used=false`, checksum coverage pass
+và validator trả:
+
+```text
+PASS: Phase 12 platt calibration (28 differential findings, 5 positives)
+```
+
+Platt được chọn theo frozen order với Brier `0.18275788681173383`,
+ECE equal-width `0.2377189350288208`, ECE equal-mass
+`0.30785991131202645`, AURC `0.9666066487572699`. Thresholds canonical:
+
+```text
+tau_accept  = 1.0
+tau_verify  = 0.08891881554651841
+tau_abstain = 0.08868497505852474
+```
+
+Kết quả zero `ACCEPT`, 25 `VERIFY`, 3 `ABSTAIN` là fail-closed scientific
+result, không phải lỗi vận hành. Model, thresholds, metrics, features, OOF
+predictions, routing, risk-coverage và checksum index được pin trong
+`configs/experiments/main.yaml`. Main config đã `frozen`; Phase 13 không được
+tune lại model/threshold sau khi quan sát `test_locked`.

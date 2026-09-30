@@ -1,9 +1,8 @@
 schema_version: 1
 protocol_version: "1.9.0"
 experiment_id: main_zero_hint
-status: draft
-draft_blockers:
-  - Phase 12 clean full run and development-only calibration thresholds are validated and frozen.
+status: frozen
+draft_blockers: []
 development_locks:
   phase6_hypotheses:
     run_id: p6_static_v2_dev_full_001
@@ -158,7 +157,7 @@ development_stages:
       build_status_sha256: fc20f535da33bf275b058c1bf212dde03586c4cefd6fce9d8858bf3373505754
     next_gate: phase12_calibration_and_selective_routing
   phase12_calibration_selective_routing:
-    status: implemented_clean_pilot_validated_pending_full
+    status: locked_for_phase13_experiments
     protocol_version: "1.9.0"
     feature_version: phase12-features-v1
     implementation_commit: 9fd1661fdbc13cccc20fe8bf171c7704aabe3d8b
@@ -186,7 +185,37 @@ development_stages:
       thresholds_sha256: 67ba06be74da15ac16de6b3c68e62865717a9abaf314c3c014c5b966ef93d760
       summary_sha256: 30ac5781844303d76b932d89e9e2b6f839efdb7faeac3b98098fa22ef74493b5
       checksums_index_sha256: dc039b40374edd9a19e1971490648b238d53c34724eda4b937f9c0cdd57883a3
-    next_gate: clean_full_development_calibration_and_threshold_lock
+    canonical_run:
+      run_id: p12_calibration_dev_full_001
+      run_commit: 581f0dcaf1883bb03613532c398bfe11fea1ea8e
+      run_git_dirty: false
+      findings: 28
+      positives: 5
+      negatives: 23
+      repository_groups: 8
+      selected_model: platt
+      oof_metrics:
+        brier: 0.18275788681173383
+        ece_equal_width: 0.2377189350288208
+        ece_equal_mass: 0.30785991131202645
+        aurc: 0.9666066487572699
+      thresholds:
+        tau_accept: 1.0
+        tau_verify: 0.08891881554651841
+        tau_abstain: 0.08868497505852474
+      decisions: {ACCEPT: 0, VERIFY: 25, ABSTAIN: 3}
+      locked_test_used: false
+      validator_status: PASS
+      manifest_sha256: 926dd9b2f396c8ccd918e5330165c182eb5f93f81de9a8f7050347f15b71fdf9
+      model_sha256: 45d3939f0fc751912cc2603457b8390e8c624c93e3635be910502aeb563a4674
+      thresholds_sha256: 67ba06be74da15ac16de6b3c68e62865717a9abaf314c3c014c5b966ef93d760
+      summary_sha256: 97061fcc1a42d629b66992e80112a6ae90c482a91d053e948474f57595b15ce3
+      features_sha256: 49ca783a5f31e1c17c8f5d82ad3d6047c4d1b7a370f638e8bb9d5462c9fe6f08
+      oof_predictions_sha256: 5be59d241f3894aef0f16f2ee68ce343ab7dd8db05f94bd90c35dc27c323468a
+      routing_decisions_sha256: 70c67a276441898b199a2e97e2ade1df1e7dd7e400f9ebab242beae606d91eba
+      risk_coverage_sha256: 2dc7f05792ec9e3d82294aa8d39c61130a8369a55082bf468b5227255a9c426e
+      checksums_index_sha256: a860d5a8ea41557bcbf755651be49f5586de0b8498cda79c81d092a23b875964
+    next_gate: phase13_full_experiments_ablation_and_robustness
 scope:
   language: Java
   static_analyzer: CodeQL

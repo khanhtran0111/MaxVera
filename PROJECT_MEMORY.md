@@ -7,8 +7,7 @@
 > `faff962b48998ad6f2e596297f9b424810398be4`
 > Hiện trạng: Phase 0–11 đã khóa cho development; Phase 11 canonical
 > differential full run đã validated với 28 `VERIFIED_DIFFERENTIAL`; Phase 12
-> đã implemented, clean pilot validated và đang chờ full calibration run;
-> `test_locked` chưa mở/chạy.
+> đã khóa cho Phase 13 bằng full calibration run; `test_locked` chưa mở/chạy.
 
 ## Mục đích và cách dùng
 
@@ -57,12 +56,12 @@ evaluator-only.
 | Phase 11 lock | `p11_diff_dev_full_002`, 78/96 success, 28 differential verified |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase 12 | Implemented; clean pilot `p12_calibration_pilot_003` validated |
-| Phase tiếp theo | Phase 12 full development run → threshold lock |
+| Phase 12 lock | `p12_calibration_dev_full_001`, Platt, 25 VERIFY / 3 ABSTAIN |
+| Phase tiếp theo | Phase 13 full experiments, ablation và robustness |
 
-`configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 clean full
-run khóa calibration thresholds. Phase 11 dùng historical protocol `1.8.0`;
-Phase 9/10 artifacts giữ contracts `1.6.0`/`1.7.0`.
+`configs/experiments/main.yaml` đã `frozen` sau Phase 12 threshold lock. Phase 11
+dùng historical protocol `1.8.0`; Phase 9/10 artifacts giữ contracts
+`1.6.0`/`1.7.0`.
 
 ## Invariant không được phá
 
@@ -380,15 +379,16 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
 - Hosted model không có project-controlled weight hash.
 - `test_locked` chưa mở; chưa được claim final paper performance.
 
-## Handoff Phase 12
+## Handoff Phase 13
 
-Phase 12 implementation/config/validator đã có tại commit `9fd1661`. Clean
-pilot `p12_calibration_pilot_003` trên 28 differential findings chọn Platt nhưng
-không đủ precision 0.8 để auto-accept; fail-closed `tau_accept=1.0`, 25
-`VERIFY`, 3 `ABSTAIN`, zero `ACCEPT`. Tiếp theo chạy full
-`p12_calibration_dev_full_001` từ clean commit, validate, rồi pin
-model/threshold hashes và chuyển main config sang frozen. Không mở
-`test_locked`.
+Phase 12 đã khóa bằng `p12_calibration_dev_full_001` từ clean commit
+`581f0dc`. Grouped OOF chọn Platt trên 28 differential findings (5 positive,
+23 negative, 8 repository groups): Brier 0.182758, ECE-width 0.237719,
+ECE-mass 0.307860, AURC 0.966607. Thresholds là `tau_accept=1.0`,
+`tau_verify=0.08891881554651841`, `tau_abstain=0.08868497505852474`; routing
+fail-closed: zero `ACCEPT`, 25 `VERIFY`, 3 `ABSTAIN`. Phase 13 phải dùng đúng
+canonical model/threshold hashes trong main config, giữ abstention tách khỏi
+negative và không tune lại sau khi mở `test_locked`.
 
 ## Checklist agent
 

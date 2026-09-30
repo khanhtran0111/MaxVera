@@ -63,7 +63,9 @@ locked.
 Phase 12 implements development-only grouped calibration over differential
 findings, compares Platt/isotonic/logistic models, reports ECE/Brier/AURC and
 materializes `ACCEPT`/`VERIFY`/`ABSTAIN` without treating abstention as a
-negative. See [`docs/17_PHASE12_RUNBOOK.md`](docs/17_PHASE12_RUNBOOK.md).
+negative. Canonical run `p12_calibration_dev_full_001` locks Platt calibration
+and fail-closed thresholds for Phase 13: zero `ACCEPT`, 25 `VERIFY`, and 3
+`ABSTAIN`. See [`docs/17_PHASE12_RUNBOOK.md`](docs/17_PHASE12_RUNBOOK.md).
 Every entrypoint fails closed if any smoke artifact remains.
 
 ## Bootstrap

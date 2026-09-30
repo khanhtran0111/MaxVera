@@ -723,6 +723,42 @@ clean Git worktree. Quyết định này khóa calibration/routing semantics m�
 protocol tăng `1.8.0` lên `1.9.0`; main config vẫn `draft` cho tới clean full
 run, validator pass và exact threshold/model checksum được pin.
 
+## D-034 — Khóa Phase 12 model và thresholds (2026-09-30)
+
+Canonical run `p12_calibration_dev_full_001` được tạo từ clean commit
+`581f0dcaf1883bb03613532c398bfe11fea1ea8e`, dùng đúng 28 Phase 11
+`VERIFIED_DIFFERENTIAL` findings trong 8 development repository groups. Run có
+5 candidate-CWE-correct và 23 incorrect, không đọc/chạy `test_locked`, không
+gọi LLM hay network. Exact dependency/config checksum, output checksum coverage
+và independent validator đều pass.
+
+Frozen selection order chọn Platt: Brier `0.18275788681173383`, ECE equal-width
+`0.2377189350288208`, ECE equal-mass `0.30785991131202645`, AURC
+`0.9666066487572699`. Development không có threshold nào đạt precision 0.8
+với tối thiểu hai auto-accepted rows; vì vậy `tau_accept=1.0` và zero
+`ACCEPT` là kết quả fail-closed được khóa, không được hạ threshold để
+làm đẹp coverage. `tau_verify=0.08891881554651841` và
+`tau_abstain=0.08868497505852474` tạo 25 `VERIFY`, 3 `ABSTAIN`; abstention
+không phải negative.
+
+Exact canonical locks:
+
+- manifest: `926dd9b2f396c8ccd918e5330165c182eb5f93f81de9a8f7050347f15b71fdf9`;
+- model: `45d3939f0fc751912cc2603457b8390e8c624c93e3635be910502aeb563a4674`;
+- thresholds: `67ba06be74da15ac16de6b3c68e62865717a9abaf314c3c014c5b966ef93d760`;
+- summary: `97061fcc1a42d629b66992e80112a6ae90c482a91d053e948474f57595b15ce3`;
+- features/OOF/routing/risk-coverage:
+  `49ca783a5f31e1c17c8f5d82ad3d6047c4d1b7a370f638e8bb9d5462c9fe6f08`,
+  `5be59d241f3894aef0f16f2ee68ce343ab7dd8db05f94bd90c35dc27c323468a`,
+  `70c67a276441898b199a2e97e2ade1df1e7dd7e400f9ebab242beae606d91eba`,
+  `2dc7f05792ec9e3d82294aa8d39c61130a8369a55082bf468b5227255a9c426e`;
+- checksum index: `a860d5a8ea41557bcbf755651be49f5586de0b8498cda79c81d092a23b875964`.
+
+Main experiment config chuyển từ `draft` sang `frozen`. Phase 13 phải dùng
+nguyên model/thresholds này cho full experiments, ablation và robustness;
+không tune lại sau khi mở test. Quyết định materialize gate đã frozen ở
+D-033 nên protocol giữ `1.9.0`.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và
