@@ -158,9 +158,10 @@ development_stages:
       build_status_sha256: fc20f535da33bf275b058c1bf212dde03586c4cefd6fce9d8858bf3373505754
     next_gate: phase12_calibration_and_selective_routing
   phase12_calibration_selective_routing:
-    status: implemented_pilot_pending_clean_full
+    status: implemented_clean_pilot_validated_pending_full
     protocol_version: "1.9.0"
     feature_version: phase12-features-v1
+    implementation_commit: 9fd1661fdbc13cccc20fe8bf171c7704aabe3d8b
     phase11_run_id: p11_diff_dev_full_002
     eligible_status: VERIFIED_DIFFERENTIAL
     unverified_is_negative: false
@@ -169,7 +170,22 @@ development_stages:
     metrics: [ece_equal_width_10, ece_equal_mass, brier, aurc]
     decisions: [ACCEPT, VERIFY, ABSTAIN]
     locked_test_allowed: false
-    clean_pilot: pending
+    clean_pilot:
+      run_id: p12_calibration_pilot_003
+      run_commit: 9fd1661fdbc13cccc20fe8bf171c7704aabe3d8b
+      run_git_dirty: false
+      findings: 28
+      positives: 5
+      repository_groups: 8
+      selected_model: platt
+      tau_accept: 1.0
+      decisions: {ACCEPT: 0, VERIFY: 25, ABSTAIN: 3}
+      validator_status: PASS
+      manifest_sha256: 9a95fde15b262821868fb1b1298ec24a5c553d11286163c52c93992c54a8b016
+      model_sha256: 45d3939f0fc751912cc2603457b8390e8c624c93e3635be910502aeb563a4674
+      thresholds_sha256: 67ba06be74da15ac16de6b3c68e62865717a9abaf314c3c014c5b966ef93d760
+      summary_sha256: 30ac5781844303d76b932d89e9e2b6f839efdb7faeac3b98098fa22ef74493b5
+      checksums_index_sha256: dc039b40374edd9a19e1971490648b238d53c34724eda4b937f9c0cdd57883a3
     next_gate: clean_full_development_calibration_and_threshold_lock
 scope:
   language: Java

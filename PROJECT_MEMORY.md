@@ -7,8 +7,8 @@
 > `faff962b48998ad6f2e596297f9b424810398be4`
 > Hiện trạng: Phase 0–11 đã khóa cho development; Phase 11 canonical
 > differential full run đã validated với 28 `VERIFIED_DIFFERENTIAL`; Phase 12
-> đã implemented và đang chờ clean full calibration run; `test_locked` chưa
-> mở/chạy.
+> đã implemented, clean pilot validated và đang chờ full calibration run;
+> `test_locked` chưa mở/chạy.
 
 ## Mục đích và cách dùng
 
@@ -57,8 +57,8 @@ evaluator-only.
 | Phase 11 lock | `p11_diff_dev_full_002`, 78/96 success, 28 differential verified |
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
-| Phase 12 | Implemented; dirty-tree diagnostic pilot pass, clean pilot/full pending |
-| Phase tiếp theo | Phase 12 clean pilot → full development threshold lock |
+| Phase 12 | Implemented; clean pilot `p12_calibration_pilot_003` validated |
+| Phase tiếp theo | Phase 12 full development run → threshold lock |
 
 `configs/experiments/main.yaml` vẫn là `draft` cho tới khi Phase 12 clean full
 run khóa calibration thresholds. Phase 11 dùng historical protocol `1.8.0`;
@@ -382,12 +382,13 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
 
 ## Handoff Phase 12
 
-Phase 12 implementation/config/validator đã có. Diagnostic pilot 001 trên 28
-differential findings chọn Platt nhưng không đủ precision 0.8 để auto-accept;
-fail-closed `tau_accept=1.0`. Pilot này chạy trên dirty implementation tree và
-chưa materialize abstention tier, nên không được promote. Tiếp theo commit
-implementation, chạy clean pilot 002, sau đó full `p12_calibration_dev_full_001`
-từ clean commit và pin model/threshold hashes. Không mở `test_locked`.
+Phase 12 implementation/config/validator đã có tại commit `9fd1661`. Clean
+pilot `p12_calibration_pilot_003` trên 28 differential findings chọn Platt nhưng
+không đủ precision 0.8 để auto-accept; fail-closed `tau_accept=1.0`, 25
+`VERIFY`, 3 `ABSTAIN`, zero `ACCEPT`. Tiếp theo chạy full
+`p12_calibration_dev_full_001` từ clean commit, validate, rồi pin
+model/threshold hashes và chuyển main config sang frozen. Không mở
+`test_locked`.
 
 ## Checklist agent
 

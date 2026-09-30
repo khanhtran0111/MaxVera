@@ -41,9 +41,12 @@ def test_phase12_config_pins_phase11_and_forbids_locked_test() -> None:
     )
     stage = main["development_stages"]["phase12_calibration_selective_routing"]
     assert main["protocol_version"] == "1.9.0"
-    assert stage["status"] == "implemented_pilot_pending_clean_full"
+    assert stage["status"] == "implemented_clean_pilot_validated_pending_full"
     assert stage["phase11_run_id"] == "p11_diff_dev_full_002"
     assert stage["locked_test_allowed"] is False
+    assert stage["clean_pilot"]["run_id"] == "p12_calibration_pilot_003"
+    assert stage["clean_pilot"]["run_git_dirty"] is False
+    assert stage["clean_pilot"]["tau_accept"] == 1.0
 
 
 def test_isotonic_predictions_are_monotone() -> None:

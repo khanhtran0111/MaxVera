@@ -48,8 +48,12 @@ bash scripts/tools/validate_phase12.sh \
 unset MAXVERA_DATA_ROLE
 ```
 
-Pilot 001 là diagnostic trước khi output materialize abstention tier; không
-được promote. Pilot 002 phải có đủ 28 rows và cả hai target classes.
+Pilot 001 là diagnostic trước khi output materialize abstention tier; pilot 002
+là post-tier dirty-tree diagnostic. Cả hai không được promote. Selected clean
+pilot `p12_calibration_pilot_003` tại commit `9fd1661` có đủ 28 rows, 5
+positive/23 negative trong 8 repository groups, chọn Platt và validator pass.
+Development không đủ bằng chứng precision 0.8 cho auto-accept, nên pilot
+fail-closed với `tau_accept=1.0`, 25 `VERIFY`, 3 `ABSTAIN`, zero `ACCEPT`.
 
 ## 4. Full development run trong tmux
 
