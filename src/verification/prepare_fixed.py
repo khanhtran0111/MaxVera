@@ -28,6 +28,7 @@ from src.graphs.program.build_databases import (
 )
 from src.graphs.program.runner import _run_command
 from src.reproduction.common import atomic_json, atomic_jsonl, read_csv, read_jsonl
+from src.verification.runner import _dependency_status, _validate_config
 
 PHASE10_STATUS = Path(
     "results/specifications/phase10/full_useg/p10_b9_dev_full_001/project_status.jsonl"
@@ -238,20 +239,29 @@ def _reset_checkout(checkout: Path) -> bool:
     return reset.returncode == 0 and clean.returncode == 0
 
 
-def _selected_rows(root: Path, args: argparse.Namespace) -> list[dict[str, str]]:
+def _selected_rows(
+    root: Path, args: argparse.Namespace, config: Mapping[str, Any] | None = None,
+) -> list[dict[str, str]]:
     development_path = root / "data/processed/splits/development.csv"
     test_path = root / "data/processed/splits/test_locked.csv"
     labels_path = root / "data/processed/evaluator_only/D_extended_labels.csv"
     analysis_path = root / "data/processed/analysis_input/D_extended_projects.csv"
+    test = config is not None and config.get("analysis_scope") == "test_locked"
     phase10_status_path = root / PHASE10_STATUS
+    if test:
+        assert config is not None
+        dependencies = cast(Mapping[str, Any], config["development_dependencies"])
+        phase10 = cast(Mapping[str, Any], dependencies["phase10"])
+        phase10_status_path = root / str(phase10["run_root"]) / "project_status.jsonl"
     development = [row["project_id"] for row in read_csv(development_path)]
     locked = {row["project_id"] for row in read_csv(test_path)}
     if set(development) & locked:
         raise ValueError("development and locked-test splits overlap")
+    selected = sorted(locked) if test else development
     labels = {row["project_id"]: row for row in read_csv(labels_path)}
     analysis = {row["project_id"]: row for row in read_csv(analysis_path)}
-    if set(development) - labels.keys() or set(development) - analysis.keys():
-        raise ValueError("development projects do not resolve to fixed labels/build metadata")
+    if set(selected) - labels.keys() or set(selected) - analysis.keys():
+        raise ValueError("selected projects do not resolve to fixed labels/build metadata")
     phase10_successes = {
         str(row["project_id"])
         for row in read_jsonl(phase10_status_path)
@@ -262,7 +272,7 @@ def _selected_rows(root: Path, args: argparse.Namespace) -> list[dict[str, str]]
             **analysis[project_id],
             "fix_commit_ids": labels[project_id]["fix_commit_ids"],
         }
-        for project_id in development
+        for project_id in selected
         if project_id in phase10_successes
     ]
     if args.project_id:
@@ -280,14 +290,22 @@ def _write_preparation_state(
     root: Path,
     fixed_root: Path,
     by_id: Mapping[str, Mapping[str, Any]],
+    config: Mapping[str, Any] | None = None, config_path: Path | None = None,
 ) -> dict[str, Any]:
     """Atomically checkpoint statuses, then bind a fresh manifest to their hash."""
     status_path = fixed_root / "build_status.jsonl"
     atomic_jsonl(status_path, [by_id[key] for key in sorted(by_id)])
     counts = Counter(str(row["status"]) for row in by_id.values())
+    test = config is not None and config.get("analysis_scope") == "test_locked"
+    phase10_status = root / PHASE10_STATUS
+    if test:
+        assert config is not None
+        dependencies = cast(Mapping[str, Any], config["development_dependencies"])
+        phase10 = cast(Mapping[str, Any], dependencies["phase10"])
+        phase10_status = root / str(phase10["run_root"]) / "project_status.jsonl"
     eligible_ids = {
         str(row["project_id"])
-        for row in read_jsonl(root / PHASE10_STATUS)
+        for row in read_jsonl(phase10_status)
         if row.get("status") == "SUCCESS"
     }
     completed = sum(project_id in by_id for project_id in eligible_ids)
@@ -295,23 +313,28 @@ def _write_preparation_state(
         "schema_version": 1,
         "created_at": utc_now(),
         "strategy": "evaluator_only_targeted_fixed_revision_to_opaque_project_database",
-        "development_only": True,
-        "locked_test_prepared": False,
+        "development_only": not test,
+        "locked_test_prepared": test,
         "identity_mapping_persisted": False,
         "labels_sha256": sha256_file(root / "data/processed/evaluator_only/D_extended_labels.csv"),
         "development_split_sha256": sha256_file(root / "data/processed/splits/development.csv"),
-        "phase10_project_status_sha256": sha256_file(root / PHASE10_STATUS),
+        "phase10_project_status_sha256": sha256_file(phase10_status),
         "eligible_phase10_projects": len(eligible_ids),
         "accounted_projects": completed,
         "preparation_complete": completed == len(eligible_ids),
         "status_sha256": sha256_file(status_path),
         "phase11_config_sha256": sha256_file(
-            root / "configs/experiments/phase11_static_verification.yaml"
+            config_path or root / "configs/experiments/phase11_static_verification.yaml"
         ),
         "implementation_sha256": sha256_file(root / "src/verification/prepare_fixed.py"),
         "successful_databases": counts["SUCCESS"],
         "failed_databases": counts["CODEQL_DB_FAILED"],
     }
+    if test:
+        assert config is not None
+        manifest["analysis_scope"] = "test_locked"
+        manifest["analyzer_snapshot_sha256"] = config["analyzer_snapshot_sha256"]
+        manifest["test_split_sha256"] = sha256_file(root / "data/processed/splits/test_locked.csv")
     atomic_json(fixed_root / "preparation_manifest.json", manifest)
     return manifest
 
@@ -320,8 +343,14 @@ def prepare(args: argparse.Namespace) -> int:
     root = args.repo_root.resolve()
     if os.environ.get("MAXVERA_DATA_ROLE") != "evaluator":
         raise RuntimeError("fixed-revision preparation requires MAXVERA_DATA_ROLE=evaluator")
-    rows = _selected_rows(root, args)
-    config = _mapping(root / "configs/experiments/phase11_static_verification.yaml")
+    config_path = root / getattr(
+        args, "config", Path("configs/experiments/phase11_static_verification.yaml")
+    )
+    config = _mapping(config_path)
+    _validate_config(config)
+    if config.get("analysis_scope") == "test_locked":
+        _dependency_status(root, config)
+    rows = _selected_rows(root, args, config)
     databases = cast(Mapping[str, Any], config["databases"])
     source_root = root / "data/interim/phase6_project_sources"
     fixed_root = args.fixed_root or Path(str(databases["fixed_root"]))
@@ -336,7 +365,7 @@ def prepare(args: argparse.Namespace) -> int:
     machine = effective_env(root / ".env")
     codeql = _codeql_binary(machine)
     toolchain = _mapping(root / "configs/toolchains/cwe_bench_java.yaml")
-    manifest = _write_preparation_state(root, fixed_root, by_id)
+    manifest = _write_preparation_state(root, fixed_root, by_id, config, config_path)
     try:
         for position, row in enumerate(rows, start=1):
             project_id = row["project_id"]
@@ -351,7 +380,9 @@ def prepare(args: argparse.Namespace) -> int:
                         "attempts": [],
                         "updated_at": utc_now(),
                     }
-                    manifest = _write_preparation_state(root, fixed_root, by_id)
+                    manifest = _write_preparation_state(
+                        root, fixed_root, by_id, config, config_path
+                    )
                 continue
             if destination.exists() or destination.is_symlink():
                 raise ValueError(f"invalid fixed database destination: {project_id}")
@@ -515,13 +546,13 @@ def prepare(args: argparse.Namespace) -> int:
                 "seconds": round(time.monotonic() - started, 3),
                 "updated_at": utc_now(),
             }
-            manifest = _write_preparation_state(root, fixed_root, by_id)
+            manifest = _write_preparation_state(root, fixed_root, by_id, config, config_path)
             print(
                 f"[{position}/{len(rows)}] {project_id}: {by_id[project_id]['status']}",
                 flush=True,
             )
     except KeyboardInterrupt:
-        _write_preparation_state(root, fixed_root, by_id)
+        _write_preparation_state(root, fixed_root, by_id, config, config_path)
         raise
     print(json.dumps(manifest, indent=2, sort_keys=True))
     return 1 if any(by_id[row["project_id"]]["status"] != "SUCCESS" for row in rows) else 0
@@ -530,6 +561,9 @@ def prepare(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path("."))
+    parser.add_argument(
+        "--config", type=Path, default=Path("configs/experiments/phase11_static_verification.yaml")
+    )
     parser.add_argument("--project-id")
     parser.add_argument("--fixed-root", type=Path)
     parser.add_argument("--build-mode", choices=("auto", "manual", "none"), default="auto")

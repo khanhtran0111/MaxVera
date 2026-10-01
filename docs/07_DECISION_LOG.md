@@ -781,6 +781,19 @@ provenance/leakage boundary), mở evaluator labels cùng process với analyzer
 chạy nhiều CodeQL/LLM jobs song song. Protocol giữ `1.9.0` vì không đổi RQ,
 model, threshold, metric hay budget; đây là materialization của gate đã khóa.
 
+## D-036 — Khóa analyzer snapshot và materialize test verification (2026-10-01)
+
+Audit đủ Phase 6/7/9, B0 và B3-B9 trước evaluator access; checksum, scope và
+project coverage phải hợp lệ, các analysis failures giữ nguyên và tính là miss.
+`analyzer_snapshot.json` khóa toàn bộ run roots, split, database metadata và
+Phase 12 model/threshold. Test verification dùng scope `test_locked` explicit,
+role evaluator và snapshot hash; development contract không được đổi tên hay
+nới scope ngầm. Differential policy/query budget giữ nguyên Phase 11, calibration
+chỉ predict/route bằng model đã fit trên development. Metrics/routing ghi vào
+output riêng, không thay analyzer artifacts. B1/B2 oracle, robustness/bootstrap
+và final ablation report là workload riêng, chưa được pass này đánh dấu hoàn tất.
+Protocol giữ `1.9.0`; không thay model, prompt, threshold, split hoặc budget.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và

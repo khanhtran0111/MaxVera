@@ -102,10 +102,13 @@ def _run_command(command: Sequence[str], *, timeout: int) -> subprocess.Complete
 
 
 def _validate_config(config: Mapping[str, Any]) -> None:
-    if config.get("status") != "frozen_phase_11_development":
-        raise ValueError("Phase 11 config is not frozen for development")
-    if config.get("protocol_version") != "1.8.0":
-        raise ValueError("Phase 11 requires protocol 1.8.0")
+    test = config.get("analysis_scope") == "test_locked"
+    status = "frozen_phase_13_test_verification" if test else "frozen_phase_11_development"
+    protocol = "1.9.0" if test else "1.8.0"
+    if config.get("status") != status or config.get("protocol_version") != protocol:
+        raise ValueError("verification config is not frozen for the requested scope/protocol")
+    if test and not config.get("analyzer_snapshot_sha256"):
+        raise ValueError("test verification requires a sealed analyzer snapshot")
     policy = config.get("verification")
     if not isinstance(policy, Mapping):
         raise ValueError("Phase 11 verification policy is missing")
@@ -114,7 +117,9 @@ def _validate_config(config: Mapping[str, Any]) -> None:
     if int(policy.get("max_paths_per_specification", 0)) < 1:
         raise ValueError("Phase 11 max path budget must be positive")
     serialized = json.dumps(config, sort_keys=True).casefold()
-    forbidden = ["advisory_text", "ground_truth_cwe", "test_locked"]
+    forbidden = ["advisory_text", "ground_truth_cwe"]
+    if not test:
+        forbidden.append("test_locked")
     leaked = [word for word in forbidden if word in serialized]
     if leaked:
         raise ValueError(f"Phase 11 analyzer config crosses label firewall: {', '.join(leaked)}")
@@ -123,6 +128,24 @@ def _validate_config(config: Mapping[str, Any]) -> None:
 def _dependency_status(root: Path, config: Mapping[str, Any]) -> dict[str, Any]:
     dependencies = cast(Mapping[str, Any], config["development_dependencies"])
     checked: dict[str, Any] = {"schema_version": 1}
+    test = config.get("analysis_scope") == "test_locked"
+    if test:
+        from src.experiments.phase13_snapshot import validate_snapshot
+
+        snapshot = validate_snapshot(
+            root, root / str(config["analyzer_snapshot"]),
+            str(config["analyzer_snapshot_sha256"]),
+        )
+        template = _mapping(root / "configs/experiments/phase11_static_verification.yaml")
+        for key in ("verification", "execution", "useg_update"):
+            if config.get(key) != template[key]:
+                raise ValueError(f"test verification changed the frozen policy: {key}")
+        for key, name in (("phase9", "phase9"), ("phase10", "B9")):
+            lock = cast(Mapping[str, Any], dependencies[key])
+            sealed = snapshot["analysis_runs"][name]
+            if lock["run_root"] != sealed["run_root"] or lock["run_id"] != sealed["run_id"]:
+                raise ValueError(f"test verification dependency is outside the snapshot: {key}")
+        checked["analyzer_snapshot_sha256"] = config["analyzer_snapshot_sha256"]
     for key in ("phase9", "phase10"):
         expected = cast(Mapping[str, Any], dependencies[key])
         run_root = root / str(expected["run_root"])
@@ -151,9 +174,20 @@ def _dependency_status(root: Path, config: Mapping[str, Any]) -> dict[str, Any]:
     database_wanted = {name: str(databases[name]) for name in database_files}
     if database_actual != database_wanted:
         raise ValueError("locked vulnerable CodeQL database preparation checksum mismatch")
+    if test:
+        run_id = str(snapshot["run_id"])
+        expected_databases = {
+            "vulnerable_root": f"data/interim/phase13_codeql_databases/{run_id}",
+            "preparation_manifest": f"data/interim/phase13_database_manifests/{run_id}.json",
+            "build_status": f"data/interim/phase13_database_status/{run_id}.jsonl",
+            "fixed_root": f"data/interim/phase13_fixed_codeql_databases/{run_id}",
+        }
+        if any(databases.get(key) != value for key, value in expected_databases.items()):
+            raise ValueError("test verification database roots are outside the sealed run")
     checked["vulnerable_databases"] = database_actual
     checked["data_access"] = (
-        "frozen Phase 9/10 development artifacts and opaque CodeQL databases only"
+        "sealed Phase 13 test artifacts and opaque CodeQL databases only"
+        if test else "frozen Phase 9/10 development artifacts and opaque CodeQL databases only"
     )
     return checked
 
@@ -177,23 +211,36 @@ def _select_projects(statuses: Sequence[Mapping[str, Any]], args: argparse.Names
     return successful[:limit]
 
 
+def _validate_fixed_manifest(
+    manifest: Mapping[str, Any], status_path: Path,
+    analysis_scope: str = "development", snapshot_sha256: str | None = None,
+) -> None:
+    test = analysis_scope == "test_locked"
+    if (
+        manifest.get("development_only") is not (not test)
+        or manifest.get("locked_test_prepared") is not test
+        or manifest.get("identity_mapping_persisted") is not False
+        or manifest.get("status_sha256") != sha256_file(status_path)
+        or (test and (
+            not snapshot_sha256 or manifest.get("analyzer_snapshot_sha256") != snapshot_sha256
+            or manifest.get("analysis_scope") != "test_locked"
+        ))
+    ):
+        raise ValueError("fixed database preparation violates the opaque scope contract")
+
+
 def _fixed_database_status(
     fixed_root: Path,
     selected: Sequence[str],
     phase10_statuses: Sequence[Mapping[str, Any]],
+    analysis_scope: str = "development", snapshot_sha256: str | None = None,
 ) -> dict[str, Any]:
     manifest_path = fixed_root / "preparation_manifest.json"
     status_path = fixed_root / "build_status.jsonl"
     if not manifest_path.is_file() or not status_path.is_file():
         raise FileNotFoundError("run the evaluator-only Phase 11 fixed database preparer first")
     manifest = _json(manifest_path)
-    if (
-        manifest.get("development_only") is not True
-        or manifest.get("locked_test_prepared") is not False
-        or manifest.get("identity_mapping_persisted") is not False
-        or manifest.get("status_sha256") != sha256_file(status_path)
-    ):
-        raise ValueError("fixed database preparation violates the opaque development contract")
+    _validate_fixed_manifest(manifest, status_path, analysis_scope, snapshot_sha256)
     phase10_by_id = {str(row["project_id"]): row for row in phase10_statuses}
     required = [
         project_id
@@ -567,13 +614,17 @@ def _useg_delta(
 
 def run(args: argparse.Namespace) -> int:
     root = args.repo_root.resolve()
-    if os.environ.get("MAXVERA_DATA_ROLE") == "evaluator":
-        raise RuntimeError("refusing analyzer run while MAXVERA_DATA_ROLE=evaluator")
     if not RUN_ID_PATTERN.fullmatch(args.run_id):
         raise ValueError("invalid Phase 11 run ID")
     config_path = args.config if args.config.is_absolute() else root / args.config
     config = _mapping(config_path)
     _validate_config(config)
+    test = config.get("analysis_scope") == "test_locked"
+    role = os.environ.get("MAXVERA_DATA_ROLE")
+    if test and role != "evaluator":
+        raise RuntimeError("sealed test verification requires MAXVERA_DATA_ROLE=evaluator")
+    if not test and role == "evaluator":
+        raise RuntimeError("refusing development analyzer run while MAXVERA_DATA_ROLE=evaluator")
     dependency = _dependency_status(root, config)
     dependencies = cast(Mapping[str, Any], config["development_dependencies"])
     phase10_root = root / str(cast(Mapping[str, Any], dependencies["phase10"])["run_root"])
@@ -602,7 +653,9 @@ def run(args: argparse.Namespace) -> int:
     fixed_root = fixed_root_value if fixed_root_value.is_absolute() else root / fixed_root_value
     if args.verification_mode == "differential":
         dependency["fixed_databases"] = _fixed_database_status(
-            fixed_root, selected, phase10_statuses
+            fixed_root, selected, phase10_statuses,
+            str(config.get("analysis_scope", "development")),
+            str(config["analyzer_snapshot_sha256"]) if test else None,
         )
     if args.mode == "full" and collect_git(root).get("dirty") is not False:
         raise ValueError("Phase 11 full mode requires a clean Git worktree")
@@ -612,7 +665,8 @@ def run(args: argparse.Namespace) -> int:
         manifest = {
             "schema_version": 1,
             "phase": 11,
-            "protocol_version": "1.8.0",
+            "protocol_version": config["protocol_version"],
+            "analysis_scope": "test_locked" if test else "development",
             "experiment_id": config["experiment_id"],
             "run_id": args.run_id,
             "mode": args.mode,
@@ -636,7 +690,11 @@ def run(args: argparse.Namespace) -> int:
                     "src/verification/validate.py",
                 )
             },
-            "data_access": "development artifacts only; evaluator labels and locked test forbidden",
+            "data_access": (
+                "evaluator pass: sealed test artifacts and opaque fixed databases"
+                if test
+                else "development artifacts only; evaluator labels and locked test forbidden"
+            ),
         }
         atomic_json(manifest_path, manifest)
         atomic_json(work / "environment.json", collect_environment(root))

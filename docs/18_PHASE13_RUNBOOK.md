@@ -84,3 +84,33 @@ Không tự mở/chấm evaluator labels ngay. Gửi lại cuối log và file
 IDs/checksums và khóa analyzer snapshot trước khi khởi động evaluator pass.
 Phase 13 chỉ hoàn tất sau evaluator pass, toàn bộ B0-B9, A0-A5/Full, năm seed
 robustness và project-level bootstrap đều trỏ đến immutable run IDs.
+
+## Audit, khóa snapshot và chạy verification trên test
+
+Từ clean commit, audit đủ 11 analyzer outputs (Phase 6/7/9, B0, B3-B9),
+giữ analysis failures làm miss và khóa checksum trước khi mở evaluator labels:
+
+```bash
+uv run --frozen python -m src.experiments.phase13_snapshot \
+  --run-id p13_test_analysis_001
+bash scripts/tools/run_phase13_evaluator.sh p13_test_analysis_001 all
+```
+
+Evaluator wrapper bắt buộc role `evaluator` và xác minh toàn bộ snapshot.
+Nó ghi metrics proxy riêng cho 24 test projects, chuẩn bị fixed database
+chỉ cho B9 `SUCCESS`, chạy differential verification theo nguyên policy Phase 11,
+rồi áp dụng model/threshold Phase 12 mà không fit/tune lại. Source, labels,
+config và database của development giữ scope riêng; không đổi tên test thành
+development. Output nằm trong `results/phase13/<run_id>/evaluation`; không thêm
+metrics hay thay checksum trong analyzer run roots đã chốt.
+
+`analyzer_snapshot.json` là immutable. `evaluator_status.json` theo dõi tiến độ;
+chạy lại wrapper bỏ qua output cuối đã kiểm tra và resume verification còn
+`.inprogress`. Fixed preparation giữ database thành công và checkpoint từng
+project. Nếu lỗi hạ tầng ngăn tạo output cuối, evaluator dừng với status `FAILED`.
+
+Pass này thực hiện metrics proxy, A5 differential verification, frozen routing
+và metrics của từng routing cohort. Cohort `VERIFY` không tự trở thành final
+Full verdict. B1/B2 oracle, năm seed robustness, paired bootstrap và báo cáo
+ablation cuối là workload riêng; `evaluator_status.json` liệt kê phần còn chờ
+và không đánh dấu toàn bộ Phase 13 hoàn tất.

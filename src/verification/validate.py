@@ -14,7 +14,12 @@ import yaml
 from src.common.provenance import sha256_file
 from src.graphs.evidence.model import cycle_nodes, sort_edges, sort_nodes
 from src.reproduction.common import read_jsonl
-from src.verification.runner import FINAL_SPEC_STATUSES, _dependency_status
+from src.verification.runner import (
+    FINAL_SPEC_STATUSES,
+    _dependency_status,
+    _validate_config,
+    _validate_fixed_manifest,
+)
 
 REQUIRED_FILES = {
     "STATUS",
@@ -77,13 +82,21 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
     if missing:
         raise ValueError(f"missing Phase 11 outputs: {', '.join(missing)}")
     manifest = _json(run_root / "manifest.json")
-    if manifest.get("phase") != 11 or manifest.get("protocol_version") != "1.8.0":
-        raise ValueError("not a Phase 11 protocol 1.8.0 artifact")
+    if manifest.get("phase") != 11 or manifest.get("protocol_version") not in {"1.8.0", "1.9.0"}:
+        raise ValueError("not a supported static-verification artifact")
     config_record = cast(Mapping[str, Any], manifest["config"])
     config_path = repo_root / str(config_record["path"])
     if sha256_file(config_path) != config_record["sha256"]:
         raise ValueError("Phase 11 config checksum mismatch")
     config = _mapping(config_path)
+    _validate_config(config)
+    if manifest["protocol_version"] != config["protocol_version"]:
+        raise ValueError("verification manifest protocol mismatch")
+    if (
+        config.get("analysis_scope") == "test_locked"
+        and manifest.get("analysis_scope") != "test_locked"
+    ):
+        raise ValueError("test verification manifest scope mismatch")
     selected = [str(value) for value in cast(Sequence[Any], manifest["selected_project_ids"])]
     if len(selected) != manifest.get("selected_project_count") or len(selected) != len(
         set(selected)
@@ -102,13 +115,12 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
         if not snapshot_manifest_path.is_file() or not snapshot_status_path.is_file():
             raise ValueError("Phase 11 differential dependency snapshot is missing")
         snapshot_manifest = _json(snapshot_manifest_path)
-        if (
-            snapshot_manifest.get("development_only") is not True
-            or snapshot_manifest.get("locked_test_prepared") is not False
-            or snapshot_manifest.get("identity_mapping_persisted") is not False
-            or snapshot_manifest.get("status_sha256") != sha256_file(snapshot_status_path)
-        ):
-            raise ValueError("Phase 11 fixed database snapshot violates the opaque contract")
+        _validate_fixed_manifest(
+            snapshot_manifest, snapshot_status_path,
+            str(config.get("analysis_scope", "development")),
+            str(config["analyzer_snapshot_sha256"])
+            if config.get("analysis_scope") == "test_locked" else None,
+        )
         snapshot_statuses = {
             str(row["project_id"]): row for row in read_jsonl(snapshot_status_path)
         }
