@@ -25,7 +25,7 @@ from src.common.provenance import (
 )
 
 Status = Literal["PASS", "WARN", "FAIL"]
-Profile = Literal["phase1", "phase4", "full", "ci"]
+Profile = Literal["phase1", "phase4", "full", "local"]
 
 
 @dataclass(frozen=True)
@@ -209,7 +209,7 @@ def run_preflight(repo_root: Path, profile: Profile, env_path: Path) -> dict[str
     machine = effective_env(env_path)
     full = profile == "full"
     phase4 = profile == "phase4"
-    ci = profile == "ci"
+    local = profile == "local"
     checks: list[Check] = [
         _python_check(),
         _tool_check("git", ("git", "git.exe"), ["--version"], required=True),
@@ -222,7 +222,7 @@ def run_preflight(repo_root: Path, profile: Profile, env_path: Path) -> dict[str
             expected_pattern=r"uv 0\.11\.32",
         ),
     ]
-    checks.extend(_resource_checks(repo_root, required=not ci))
+    checks.extend(_resource_checks(repo_root, required=not local))
 
     analysis_required = full or phase4
     build_tool_environment: dict[str, str] | None = None
@@ -364,7 +364,7 @@ def run_preflight(repo_root: Path, profile: Profile, env_path: Path) -> dict[str
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--profile", choices=("phase1", "phase4", "full", "ci"), default="phase1"
+        "--profile", choices=("phase1", "phase4", "full", "local"), default="phase1"
     )
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--env-file", type=Path)

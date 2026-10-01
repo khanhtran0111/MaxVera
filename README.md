@@ -86,12 +86,16 @@ bash scripts/tools/setup_environment.sh
 bash scripts/tools/preflight.sh --profile phase1
 ```
 
-Run the quality gate:
+Checks are run manually on the research workstation. This repository has no
+GitHub Actions workflows or automatic build/deployment pipeline.
+
+Run the local checks:
 
 ```bash
 uv run --frozen pytest
 uv run --frozen ruff check .
 uv run --frozen mypy src
+bash scripts/tools/preflight.sh --profile local
 ```
 
 Materialize and validate Phase 2:
