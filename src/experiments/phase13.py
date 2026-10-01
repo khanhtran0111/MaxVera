@@ -21,6 +21,7 @@ from typing import Any, cast
 
 import yaml
 
+from src.baselines.validate import validate as validate_baseline
 from src.common.envfile import effective_env
 from src.common.provenance import collect_git, sha256_file, utc_now
 from src.reproduction.common import atomic_json, read_csv, read_jsonl
@@ -548,6 +549,9 @@ class AnalyzerPipeline:
             if (final.parent / f".{run_id}.inprogress").is_dir():
                 command.append("--resume")
             _run(self.root, command, allow_analysis_failures=True)
+
+            # A recorded project failure is valid; a runner setup error is not.
+            print(validate_baseline(final, require_metrics=False), flush=True)
 
     def snapshot(self, stage: str) -> None:
         self.run_root.mkdir(parents=True, exist_ok=True)

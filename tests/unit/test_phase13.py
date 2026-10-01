@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
 from src.common.analysis_scope import analysis_scope, selected_rows
@@ -55,3 +58,21 @@ def test_phase13_matrix_is_frozen() -> None:
     assert config["status"] == "analyzer_ready"
     assert list(config["matrix"]) == ["A0", "A1", "A2", "A3", "A4", "A5", "Full"]
     assert config["robustness"]["seeds"] == [1234, 2345, 3456, 4567, 5678]
+
+
+def test_phase13_baselines_reject_setup_error_without_final_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    configs = tmp_path / "configs/experiments"
+    configs.mkdir(parents=True)
+    shutil.copyfile(
+        ROOT / "configs/experiments/phase5_baselines.yaml", configs / "phase5_baselines.yaml"
+    )
+    pipeline = AnalyzerPipeline(tmp_path, "p13_setup_error", confirm_api_spend=True)
+    (pipeline.analysis_root / "b0/p13_setup_error_b0").mkdir(parents=True)
+    monkeypatch.setattr(
+        subprocess, "run", lambda *args, **kwargs: subprocess.CompletedProcess(args[0], 1)
+    )
+    with pytest.raises(ValueError, match="missing required outputs"):
+        pipeline.controlled_baselines()
+    assert not (pipeline.run_root / "analyzer_status.json").exists()

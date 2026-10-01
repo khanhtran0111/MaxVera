@@ -70,6 +70,13 @@ bash scripts/tools/run_phase13_analyzer.sh p13_test_analysis_001 baselines
 B5 rồi B3/B4. Wrapper truyền xác nhận mở locked test và API spend một cách
 explicit. Mọi stage vẫn fail-closed nếu role không phải `analyzer`.
 
+B3/B4/B5 chấp nhận source đã chuẩn bị trong `project_sources` hoặc
+`phase6_project_sources`; source alias phải resolve vào một trong hai thư mục
+này. Stage `baselines` kiểm tra output cuối của từng baseline, nên lỗi cấu hình
+không còn bị bỏ qua như một project analysis failure. Project thất bại đã ghi
+nhận trong output cuối vẫn được giữ và tính là miss theo protocol. Chạy lại
+stage chỉ xử lý baseline chưa có output cuối, không retry immutable run.
+
 ## Sau analyzer pass
 
 Không tự mở/chấm evaluator labels ngay. Gửi lại cuối log và file

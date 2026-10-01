@@ -103,7 +103,18 @@ def _all_project_rows(root: Path, experiment: Mapping[str, Any]) -> list[dict[st
 
 def _source_root(root: Path, experiment: Mapping[str, Any], row: Mapping[str, str]) -> Path:
     configured = root / str(experiment["dataset"]["source_root"])
-    return configured / row["project_id"]
+    source = configured / row["project_id"]
+    _validate_source_directory(root, source)
+    return source
+
+
+def _validate_source_directory(root: Path, directory: Path) -> None:
+    prepared_roots = (
+        (root / "data/interim/project_sources").resolve(),
+        (root / "data/interim/phase6_project_sources").resolve(),
+    )
+    if not any(directory.resolve().is_relative_to(prepared) for prepared in prepared_roots):
+        raise ValueError("source root must stay inside the prepared project source directory")
 
 
 def _initial_statuses(
@@ -458,8 +469,7 @@ def run(args: argparse.Namespace) -> int:
     source_directory = (root / str(dataset_config["source_root"])).resolve()
     if not analysis_manifest.is_relative_to((root / "data/processed/analysis_input").resolve()):
         raise ValueError("analysis manifest must stay inside analysis_input")
-    if not source_directory.is_relative_to((root / "data/interim/project_sources").resolve()):
-        raise ValueError("source root must stay inside the prepared project source directory")
+    _validate_source_directory(root, source_directory)
     allowed_split_roots = (
         (root / "data/processed/analysis_input").resolve(),
         (root / "data/processed/splits").resolve(),

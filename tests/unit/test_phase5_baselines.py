@@ -15,11 +15,44 @@ from src.baselines.context import (
     source_chunks,
     static_hypotheses,
 )
+from src.baselines.runner import _source_root, _validate_source_directory
 from src.baselines.schema import findings_sarif, hypotheses_json_schema, parse_hypotheses
 from src.baselines.validate import _selected_outcomes
 from src.llm.prompts.phase5 import PROMPT_VERSION, repair_prompt
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.mark.parametrize("directory", ["project_sources", "phase6_project_sources"])
+def test_runner_accepts_prepared_source_roots(tmp_path: Path, directory: str) -> None:
+    source = tmp_path / "data/interim" / directory / "proj_test"
+    source.mkdir(parents=True)
+    _validate_source_directory(tmp_path, source.parent)
+    experiment = {"dataset": {"source_root": f"data/interim/{directory}"}}
+    assert _source_root(tmp_path, experiment, {"project_id": "proj_test"}) == source
+
+
+def test_runner_accepts_source_alias_to_prepared_checkout(tmp_path: Path) -> None:
+    checkout = tmp_path / "data/interim/project_sources/proj_original"
+    checkout.mkdir(parents=True)
+    aliases = tmp_path / "data/interim/phase6_project_sources"
+    aliases.mkdir()
+    (aliases / "proj_test").symlink_to(checkout, target_is_directory=True)
+    experiment = {"dataset": {"source_root": "data/interim/phase6_project_sources"}}
+    assert _source_root(tmp_path, experiment, {"project_id": "proj_test"}).resolve() == checkout
+
+
+def test_runner_rejects_source_alias_outside_prepared_roots(tmp_path: Path) -> None:
+    outside = tmp_path / "unprepared"
+    outside.mkdir()
+    aliases = tmp_path / "data/interim/phase6_project_sources"
+    aliases.mkdir(parents=True)
+    (aliases / "proj_test").symlink_to(outside, target_is_directory=True)
+    experiment = {"dataset": {"source_root": "data/interim/phase6_project_sources"}}
+    with pytest.raises(ValueError, match="inside the prepared project source directory"):
+        _source_root(tmp_path, experiment, {"project_id": "proj_test"})
+    with pytest.raises(ValueError, match="inside the prepared project source directory"):
+        _validate_source_directory(tmp_path, outside)
 
 
 def test_context_strategies_are_deterministic_and_distinct(tmp_path: Path) -> None:
