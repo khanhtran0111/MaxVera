@@ -1,5 +1,3 @@
-"""Render Phase 11 endpoint and global-taint CodeQL queries."""
-
 from __future__ import annotations
 
 import json
