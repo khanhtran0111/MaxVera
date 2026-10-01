@@ -1,1 +1,1 @@
-"""LLM providers, schemas, and prompts (Phase 5 onward)."""
+"""LLM providers, schemas, and prompts"""
