@@ -114,3 +114,59 @@ và metrics của từng routing cohort. Cohort `VERIFY` không tự trở thàn
 Full verdict. B1/B2 oracle, năm seed robustness, paired bootstrap và báo cáo
 ablation cuối là workload riêng; `evaluator_status.json` liệt kê phần còn chờ
 và không đánh dấu toàn bộ Phase 13 hoàn tất.
+
+## Follow-up sau evaluator pass
+
+Chạy audit, bootstrap/report hiện có và B1/B2 oracle tuần tự:
+
+```bash
+bash scripts/tools/run_phase13_followup.sh p13_test_analysis_001
+```
+
+Wrapper yêu cầu clean Git worktree trước khi tạo canonical oracle output;
+ghi log có timestamp và exit sidecar trong `logs/`. Trạng thái tiến độ nằm tại
+`results/phase13/<run_id>/evaluation/followup_status.json`. B1 rồi B2 chạy một
+project/lần. Khi resume, chỉ project chưa có trạng thái cuối được xử lý; một
+analysis failure đã chốt vẫn tính là miss, không được retry để cải thiện metric.
+Output oracle hoàn tất có checksum, đủ 24 project, SARIF, per-project metrics,
+resource usage và validator tái tính metrics từ raw output.
+
+B1 dùng CodeQL per-CWE. B2 dùng pinned IRIS, GPT-OSS 20B/`akashml`, seed 1234,
+temperature 0 và budget-matched. IRIS chỉ nhận CWE oracle cùng source/database
+opaque; không nhận advisory hay fix-location hints. Internal IRIS evaluation và
+module filtering từ patch đều tắt; parent evaluator chấm SARIF sau analysis.
+Adapter CodeQL chính là toolchain substitution được ghi explicit, không claim
+exact numerical reproduction. Request bị chặn trước API nếu vượt context/call/
+project budget; actual usage cũng được kiểm tra và ghi failure nếu vượt cap.
+
+Audit đọc source archives trong vulnerable/fixed database và ánh xạ chỉ những
+dòng thuộc diff block giữ nguyên. `--check-fixed` chạy query đã remap trong
+artifact diagnostic riêng để kiểm tra line-shift confounding; không sửa query,
+verdict, model hay checksum canonical:
+
+```bash
+MAXVERA_DATA_ROLE=evaluator uv run --frozen python -m src.experiments.phase13_audit \
+  --run-id p13_test_analysis_001 --audit-id verification_audit_001 --check-fixed
+```
+
+Audit ngày 02/10 xác nhận cả 4 canonical differential specifications còn path
+trong fixed database sau remap dòng 306→307 và 308→309. Có 2 nhóm endpoint;
+đây không phải số vulnerability độc lập. `verification_audit_001` giữ query,
+endpoint CSV, SARIF và evidence. Vì vậy canonical validator PASS chỉ xác nhận
+artifact hợp lệ theo verifier cũ, chưa xác nhận scientific correctness.
+
+Report A0–A5 hiện tại giữ nguyên canonical numbers và ghi caveat audit. Bootstrap
+10.000 draws resample cả repository group, giữ toàn bộ project rows và paired
+method alignment; có failures-as-miss và common-success sensitivity. Chỉ so
+sánh Recall giữa method cùng operational positive definition, không trộn
+fix-location proxy với CWE-and-endpoint proxy hay differential verdict. Exact
+McNemar có Holm correction riêng cho từng family/sensitivity. Precision/FDR
+proxy không thay thế adjudication các `UNKNOWN_UNREVIEWED` findings.
+
+`evaluation/robustness_plan.json` liệt kê năm seed cho Full và strongest baseline.
+Robustness chưa chạy khi verifier audit còn confounded hoặc chưa có immutable
+development-only baseline-selection lock. Selection phải có đầy đủ B0/B3–B8
+candidate coverage trên đúng development split; không chọn từ test results.
+Runner `phase13_robustness` hiện là prerequisite/seed-config preparer, chưa phải
+executor Full end-to-end. Full verdict policy, verifier review và các workload
+phụ thuộc được ghi pending; không đánh dấu `phase13_complete=true`.

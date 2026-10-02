@@ -794,6 +794,37 @@ output riêng, không thay analyzer artifacts. B1/B2 oracle, robustness/bootstra
 và final ablation report là workload riêng, chưa được pass này đánh dấu hoàn tất.
 Protocol giữ `1.9.0`; không thay model, prompt, threshold, split hoặc budget.
 
+## D-037 — Audit differential evidence và follow-up evaluator (2026-10-02)
+
+User yêu cầu triển khai follow-up Phase 13 sau khi evaluator pass hoàn tất.
+Audit riêng đọc source archives và chạy lại hai query endpoint-equivalent trên
+fixed DB với exact unchanged-line remapping. Cả bốn canonical specifications
+còn path; original source endpoint dòng 306 đã chuyển sang 307 và sink 308 sang
+309. Bốn specs chia thành hai endpoint groups, không phải bốn vulnerability
+độc lập. Verifier cũ dùng absolute source line nên endpoint-unresolved đã bị
+diễn giải như differential path disappearance. Canonical artifacts vẫn immutable;
+audit `verification_audit_001` là diagnostic, không được promote.
+
+Thêm B1/B2 oracle runner riêng, checkpoint theo project và validator tái tính
+raw metrics. B2 giữ primary model/provider/budget đã frozen và chỉ chuyển CWE
+oracle sang IRIS; patch/advisory hints và upstream internal evaluation bị loại.
+CodeQL compatibility adapter được ghi là toolchain substitution, không claim
+exact numerical reproduction. Request budget failure được persist và tính miss
+kể cả upstream IRIS bắt exception.
+
+Report hiện tại sinh từ canonical artifacts, bootstrap paired 10.000 lần theo
+repository cluster và McNemar/Holm chỉ trong compatible proxy-metric families.
+Full verdict/robustness/final report chưa hoàn tất vì verifier evidence cần review
+và thiếu development-only strongest-baseline selection lock. Seed-config preparer
+giữ nguyên prompt/retrieval/provider/budget, chỉ đổi predeclared seed.
+
+Alternatives bị bác: sửa immutable outputs, dùng test để chọn baseline/tune
+descriptor hoặc threshold, coi VERIFY cohort là final Full verdict, và sao chép
+một LLM response thành năm robustness seeds. Protocol vẫn 1.9.0, không thay
+main/ablation/Phase 11–13 frozen configs hay existing analyzer/verifier code.
+Correction của verifier và Full verdict policy cần decision riêng trước khi có
+scientific replacement run; follow-up không tự tạo một canonical replacement.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và
