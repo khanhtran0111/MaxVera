@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,7 @@ from src.verification.prepare_fixed import (
     _tailored_build_command,
 )
 from src.verification.query import query_id, render_endpoint_query, render_path_query
+from src.verification.remap import remap_nodes_for_fixed, unchanged_line_mapping
 from src.verification.runner import (
     _fixed_database_status,
     _needs_fixed_verification,
@@ -123,10 +125,15 @@ def test_phase11_pilot_accepts_single_spec_and_timeout() -> None:
             "spec_example_001",
             "--query-timeout",
             "1200",
+            "--fixed-endpoint-remapping",
+            "--reuse-vulnerable-from",
+            "results/verification/phase11/full_001",
         ]
     )
     assert args.specification_id == "spec_example_001"
     assert args.query_timeout == 1200
+    assert args.fixed_endpoint_remapping is True
+    assert args.reuse_vulnerable_from == Path("results/verification/phase11/full_001")
 
 
 def test_rendered_queries_use_global_taint_tracking_and_valid_ids() -> None:
@@ -151,6 +158,122 @@ def test_only_vulnerable_fixed_disappearance_is_verified() -> None:
         _status({"source_endpoints": 0, "sink_endpoints": 1, "path_count": 0}, None)[0]
         == "UNVERIFIED_UNRESOLVED_SOURCE"
     )
+
+
+def test_v2_requires_complete_mapping_and_resolved_fixed_endpoints() -> None:
+    path = {"source_endpoints": 1, "sink_endpoints": 1, "path_count": 1}
+    incomplete = {
+        "source_endpoints": 0,
+        "sink_endpoints": 0,
+        "path_count": 0,
+        "endpoint_mapping": {"complete": False},
+    }
+    unresolved = {
+        "source_endpoints": 0,
+        "sink_endpoints": 1,
+        "path_count": 0,
+        "endpoint_mapping": {"complete": True},
+    }
+    resolved = {
+        "source_endpoints": 1,
+        "sink_endpoints": 1,
+        "path_count": 0,
+        "endpoint_mapping": {"complete": True},
+    }
+
+    assert _status(path, incomplete)[0] == "UNVERIFIED_FIXED_ENDPOINT_MAPPING"
+    assert _status(path, unresolved)[0] == "UNVERIFIED_FIXED_ENDPOINT_RESOLUTION"
+    assert _status(path, resolved)[0] == "VERIFIED_DIFFERENTIAL"
+
+
+def test_fixed_endpoint_locations_are_remapped_only_across_unchanged_blocks(
+    tmp_path: Path,
+) -> None:
+    vulnerable = ["class Example {", "  source();", "  sink();", "}"]
+    fixed = ["// header", *vulnerable]
+    assert unchanged_line_mapping(vulnerable, fixed) == {1: 2, 2: 3, 3: 4, 4: 5}
+
+    vulnerable_archive = tmp_path / "vulnerable.zip"
+    fixed_archive = tmp_path / "fixed.zip"
+    for archive, lines in ((vulnerable_archive, vulnerable), (fixed_archive, fixed)):
+        with zipfile.ZipFile(archive, "w") as handle:
+            handle.writestr("src/Example.java", "\n".join(lines) + "\n")
+    nodes = {
+        "source": {
+            "layer": "program",
+            "properties": {
+                "location": {
+                    "file": "src/Example.java",
+                    "start_line": 2,
+                    "end_line": 2,
+                }
+            },
+        },
+        "sink": {
+            "layer": "program",
+            "properties": {
+                "location": {
+                    "file": "src/Example.java",
+                    "start_line": 3,
+                    "end_line": 3,
+                }
+            },
+        },
+    }
+    specification = {
+        "sources": [{"node_id": "source"}],
+        "sinks": [{"node_id": "sink"}],
+        "sanitizers": [],
+        "propagators": [],
+    }
+
+    remapped, record = remap_nodes_for_fixed(
+        specification, nodes, vulnerable_archive, fixed_archive
+    )
+
+    assert record["complete"] is True
+    assert [entry["status"] for entry in record["entries"]] == [
+        "UNCHANGED_BUT_MOVED",
+        "UNCHANGED_BUT_MOVED",
+    ]
+    assert remapped["source"]["properties"]["location"]["start_line"] == 3
+    assert remapped["sink"]["properties"]["location"]["start_line"] == 4
+    assert nodes["source"]["properties"]["location"]["start_line"] == 2
+
+
+def test_changed_fixed_endpoint_fails_closed(tmp_path: Path) -> None:
+    vulnerable_archive = tmp_path / "vulnerable.zip"
+    fixed_archive = tmp_path / "fixed.zip"
+    with zipfile.ZipFile(vulnerable_archive, "w") as handle:
+        handle.writestr("src/Example.java", "class Example {\n  source();\n  sink();\n}\n")
+    with zipfile.ZipFile(fixed_archive, "w") as handle:
+        handle.writestr("src/Example.java", "class Example {\n  safe();\n  sink();\n}\n")
+    nodes = {
+        "source": {
+            "layer": "program",
+            "properties": {
+                "location": {
+                    "file": "src/Example.java",
+                    "start_line": 2,
+                    "end_line": 2,
+                }
+            },
+        }
+    }
+    specification = {
+        "sources": [{"node_id": "source"}],
+        "sinks": [],
+        "sanitizers": [],
+        "propagators": [],
+    }
+
+    remapped, record = remap_nodes_for_fixed(
+        specification, nodes, vulnerable_archive, fixed_archive
+    )
+
+    assert record["complete"] is False
+    assert record["entries"][0]["status"] == "CHANGED_REMOVED_OR_AMBIGUOUS"
+    assert remapped["source"] == nodes["source"]
 
 
 def test_fixed_database_failures_are_counted_instead_of_blocking_run(tmp_path: Path) -> None:

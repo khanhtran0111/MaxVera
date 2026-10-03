@@ -19,6 +19,7 @@ from src.verification.runner import (
     _dependency_status,
     _validate_config,
     _validate_fixed_manifest,
+    _verified_vulnerable_evidence,
 )
 
 REQUIRED_FILES = {
@@ -97,6 +98,30 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
         and manifest.get("analysis_scope") != "test_locked"
     ):
         raise ValueError("test verification manifest scope mismatch")
+    endpoint_remapping = manifest.get("fixed_endpoint_remapping", False)
+    if not isinstance(endpoint_remapping, bool):
+        raise ValueError("Phase 11 fixed-endpoint remapping flag is invalid")
+    resolved = _mapping(run_root / "config.resolved.yaml")
+    arguments = cast(Mapping[str, Any], resolved["arguments"])
+    reuse_argument = arguments.get("reuse_vulnerable_from")
+    source_record = manifest.get("vulnerable_evidence_source")
+    if reuse_argument is not None and not endpoint_remapping:
+        raise ValueError("Phase 11 vulnerable evidence reuse requires endpoint remapping")
+    if reuse_argument is None:
+        if source_record is not None:
+            raise ValueError("Phase 11 vulnerable evidence provenance is inconsistent")
+    else:
+        source_root = Path(str(reuse_argument))
+        if not source_root.is_absolute():
+            source_root = repo_root / source_root
+        expected_source, _ = _verified_vulnerable_evidence(
+            repo_root,
+            source_root,
+            config_path,
+            [str(value) for value in cast(Sequence[Any], manifest["selected_project_ids"])],
+        )
+        if source_record != expected_source:
+            raise ValueError("Phase 11 reused vulnerable evidence checksum mismatch")
     selected = [str(value) for value in cast(Sequence[Any], manifest["selected_project_ids"])]
     if len(selected) != manifest.get("selected_project_count") or len(selected) != len(
         set(selected)
@@ -124,8 +149,8 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
         snapshot_statuses = {
             str(row["project_id"]): row for row in read_jsonl(snapshot_status_path)
         }
-        resolved = _mapping(run_root / "config.resolved.yaml")
-        arguments = cast(Mapping[str, Any], resolved["arguments"])
+        if arguments.get("fixed_endpoint_remapping", False) is not endpoint_remapping:
+            raise ValueError("Phase 11 fixed-endpoint remapping provenance mismatch")
         configured_root = (
             arguments.get("fixed_database_root")
             or cast(Mapping[str, Any], config["databases"])["fixed_root"]
@@ -219,6 +244,13 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
             or result.get("llm_tokens") != 0
         ):
             raise ValueError("Phase 11 deterministic iteration/LLM invariant failed")
+        expected_version = (
+            "phase11-static-verification-v2"
+            if endpoint_remapping
+            else "phase11-static-verification-v1"
+        )
+        if result.get("verification_version") != expected_version:
+            raise ValueError("Phase 11 verification implementation version mismatch")
         expected_stop = (
             "EVIDENCE_THRESHOLD_MET"
             if status == "VERIFIED_DIFFERENTIAL"
@@ -232,8 +264,34 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
             raise ValueError("Phase 11 deterministic stop reason mismatch")
         vulnerable_paths = _path_count(result, "vulnerable")
         fixed_paths = _path_count(result, "fixed")
+        fixed = result.get("fixed")
+        mapping = fixed.get("endpoint_mapping") if isinstance(fixed, Mapping) else None
+        mapping_complete = isinstance(mapping, Mapping) and mapping.get("complete") is True
+        fixed_source_endpoints = (
+            int(fixed.get("source_endpoints", 0)) if isinstance(fixed, Mapping) else 0
+        )
+        fixed_sink_endpoints = (
+            int(fixed.get("sink_endpoints", 0)) if isinstance(fixed, Mapping) else 0
+        )
+        if (
+            endpoint_remapping
+            and vulnerable_paths > 0
+            and status != "ANALYSIS_FAILED"
+            and not isinstance(mapping, Mapping)
+        ):
+            raise ValueError("Phase 11 v2 fixed result lacks endpoint mapping provenance")
         if status == "VERIFIED_DIFFERENTIAL" and not (
-            mode == "differential" and vulnerable_paths > 0 and fixed_paths == 0
+            mode == "differential"
+            and vulnerable_paths > 0
+            and fixed_paths == 0
+            and (
+                not endpoint_remapping
+                or (
+                    mapping_complete
+                    and fixed_source_endpoints > 0
+                    and fixed_sink_endpoints > 0
+                )
+            )
         ):
             raise ValueError(
                 "Phase 11 verified result lacks vulnerable/fixed differential evidence"
@@ -246,6 +304,23 @@ def validate(run_root: Path, *, repo_root: Path) -> str:
             raise ValueError("Phase 11 no-path result contains a vulnerable path")
         if status == "UNVERIFIED_PERSISTS_FIXED" and fixed_paths == 0:
             raise ValueError("Phase 11 fixed-persistence result lacks a fixed path")
+        if status == "UNVERIFIED_FIXED_ENDPOINT_MAPPING" and not (
+            endpoint_remapping
+            and vulnerable_paths > 0
+            and isinstance(mapping, Mapping)
+            and mapping.get("complete") is False
+            and fixed_paths == 0
+        ):
+            raise ValueError("Phase 11 fixed-endpoint mapping result is inconsistent")
+        if status == "UNVERIFIED_FIXED_ENDPOINT_RESOLUTION" and not (
+            endpoint_remapping
+            and vulnerable_paths > 0
+            and mapping_complete
+            and isinstance(fixed, Mapping)
+            and fixed_paths == 0
+            and (fixed_source_endpoints == 0 or fixed_sink_endpoints == 0)
+        ):
+            raise ValueError("Phase 11 fixed-endpoint resolution result is inconsistent")
 
     path_rows = read_jsonl(run_root / "taint_paths.jsonl")
     expected_paths = sum(_path_count(result, "vulnerable") for result in results)

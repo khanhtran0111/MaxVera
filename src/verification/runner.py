@@ -33,6 +33,7 @@ from src.reproduction.common import (
     write_checksums,
 )
 from src.verification.query import query_id, render_endpoint_query, render_path_query
+from src.verification.remap import remap_nodes_for_fixed
 
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 FINAL_SPEC_STATUSES = {
@@ -40,6 +41,8 @@ FINAL_SPEC_STATUSES = {
     "UNVERIFIED_FIXED_NOT_RUN",
     "UNVERIFIED_NO_VULNERABLE_PATH",
     "UNVERIFIED_PERSISTS_FIXED",
+    "UNVERIFIED_FIXED_ENDPOINT_MAPPING",
+    "UNVERIFIED_FIXED_ENDPOINT_RESOLUTION",
     "UNVERIFIED_UNRESOLVED_SOURCE",
     "UNVERIFIED_UNRESOLVED_SINK",
     "ANALYSIS_FAILED",
@@ -58,6 +61,60 @@ def _json(path: Path) -> dict[str, Any]:
     if not isinstance(loaded, dict):
         raise ValueError(f"expected JSON object: {path}")
     return cast(dict[str, Any], loaded)
+
+
+def _verified_vulnerable_evidence(
+    repo_root: Path,
+    source_root: Path,
+    config_path: Path,
+    selected_projects: Sequence[str],
+) -> tuple[dict[str, Any], dict[tuple[str, str], Mapping[str, Any]]]:
+    """Load vulnerable results from an immutable compatible verification artifact."""
+
+    source_root = source_root.resolve()
+    manifest = _json(source_root / "manifest.json")
+    if (
+        manifest.get("phase") != 11
+        or manifest.get("verification_mode") != "differential"
+        or manifest.get("mode") != "full"
+        or cast(Mapping[str, Any], manifest.get("config", {})).get("sha256")
+        != sha256_file(config_path)
+    ):
+        raise ValueError("reused vulnerable evidence is not a compatible full verification run")
+    parent_projects = {
+        str(value) for value in cast(Sequence[Any], manifest.get("selected_project_ids", []))
+    }
+    if not set(selected_projects).issubset(parent_projects):
+        raise ValueError("reused vulnerable evidence does not cover selected projects")
+    indexed: set[str] = set()
+    for line in (source_root / "checksums.sha256").read_text(encoding="utf-8").splitlines():
+        digest, relative = line.split("  ", 1)
+        target = source_root / relative
+        if not target.is_file() or sha256_file(target) != digest:
+            raise ValueError(f"reused vulnerable evidence checksum mismatch: {relative}")
+        indexed.add(relative)
+    if "verification_results.jsonl" not in indexed or "manifest.json" not in indexed:
+        raise ValueError("reused vulnerable evidence checksum coverage is incomplete")
+    results: dict[tuple[str, str], Mapping[str, Any]] = {}
+    for result in read_jsonl(source_root / "verification_results.jsonl"):
+        vulnerable = result.get("vulnerable")
+        if not isinstance(vulnerable, Mapping):
+            continue
+        key = (str(result.get("project_id")), str(result.get("specification_id")))
+        if key in results:
+            raise ValueError("reused vulnerable evidence contains duplicate specifications")
+        results[key] = vulnerable
+    try:
+        path = source_root.relative_to(repo_root).as_posix()
+    except ValueError:
+        path = source_root.as_posix()
+    record = {
+        "path": path,
+        "run_id": manifest["run_id"],
+        "checksums_sha256": sha256_file(source_root / "checksums.sha256"),
+        "verification_results_sha256": sha256_file(source_root / "verification_results.jsonl"),
+    }
+    return record, results
 
 
 def _write_text(path: Path, value: str) -> None:
@@ -412,6 +469,7 @@ def _analyze_version(
     threads: int,
     ram_mb: int,
     max_paths: int,
+    query_variant: str | None = None,
 ) -> dict[str, Any]:
     spec_id = str(specification["specification_id"])
     query_dir = work / "generated_queries" / project_id
@@ -419,8 +477,9 @@ def _analyze_version(
     log_dir = work / "query_logs" / version / project_id
     query_dir.mkdir(parents=True, exist_ok=True)
     result_dir.mkdir(parents=True, exist_ok=True)
-    endpoint_query = query_dir / f"{spec_id}_endpoints.ql"
-    path_query = query_dir / f"{spec_id}_path.ql"
+    variant = f"_{query_variant}" if query_variant else ""
+    endpoint_query = query_dir / f"{spec_id}{variant}_endpoints.ql"
+    path_query = query_dir / f"{spec_id}{variant}_path.ql"
     if not endpoint_query.exists():
         _write_text(endpoint_query, render_endpoint_query(specification, nodes))
         _write_text(path_query, render_path_query(specification, nodes))
@@ -514,6 +573,20 @@ def _status(vulnerable: Mapping[str, Any], fixed: Mapping[str, Any] | None) -> t
             "UNVERIFIED_FIXED_NOT_RUN",
             "vulnerable path exists but fixed-version differential was not run",
         )
+    mapping = fixed.get("endpoint_mapping")
+    if isinstance(mapping, Mapping) and mapping.get("complete") is not True:
+        return (
+            "UNVERIFIED_FIXED_ENDPOINT_MAPPING",
+            "one or more frozen location descriptors could not be mapped exactly "
+            "to unchanged fixed-version source",
+        )
+    if isinstance(mapping, Mapping) and (
+        int(fixed["source_endpoints"]) == 0 or int(fixed["sink_endpoints"]) == 0
+    ):
+        return (
+            "UNVERIFIED_FIXED_ENDPOINT_RESOLUTION",
+            "remapped source or sink descriptor did not resolve in the fixed database",
+        )
     if int(fixed["path_count"]) > 0:
         return (
             "UNVERIFIED_PERSISTS_FIXED",
@@ -539,7 +612,7 @@ def _useg_delta(
         {
             "source_phase": 11,
             "source_run_id": run_id,
-            "producer": "phase11-static-verification-v1",
+            "producer": str(result["verification_version"]),
             "artifact": "verification_results.jsonl",
             "record_id": spec_id,
         }
@@ -657,6 +730,21 @@ def run(args: argparse.Namespace) -> int:
             str(config.get("analysis_scope", "development")),
             str(config["analyzer_snapshot_sha256"]) if test else None,
         )
+    if args.fixed_endpoint_remapping and args.verification_mode != "differential":
+        raise ValueError("fixed endpoint remapping requires differential verification")
+    if args.reuse_vulnerable_from is not None and not args.fixed_endpoint_remapping:
+        raise ValueError("vulnerable evidence reuse requires fixed endpoint remapping")
+    vulnerable_evidence_record: dict[str, Any] | None = None
+    reused_vulnerable: dict[tuple[str, str], Mapping[str, Any]] = {}
+    if args.reuse_vulnerable_from is not None:
+        source_root = (
+            args.reuse_vulnerable_from
+            if args.reuse_vulnerable_from.is_absolute()
+            else root / args.reuse_vulnerable_from
+        )
+        vulnerable_evidence_record, reused_vulnerable = _verified_vulnerable_evidence(
+            root, source_root, config_path, selected
+        )
     if args.mode == "full" and collect_git(root).get("dirty") is not False:
         raise ValueError("Phase 11 full mode requires a clean Git worktree")
     work, final = _prepare_output(root, args)
@@ -671,6 +759,8 @@ def run(args: argparse.Namespace) -> int:
             "run_id": args.run_id,
             "mode": args.mode,
             "verification_mode": args.verification_mode,
+            "fixed_endpoint_remapping": args.fixed_endpoint_remapping,
+            "vulnerable_evidence_source": vulnerable_evidence_record,
             "specification_limit": args.spec_limit,
             "specification_id": args.specification_id,
             "created_at": utc_now(),
@@ -686,6 +776,7 @@ def run(args: argparse.Namespace) -> int:
                 name: sha256_file(root / name)
                 for name in (
                     "src/verification/query.py",
+                    "src/verification/remap.py",
                     "src/verification/runner.py",
                     "src/verification/validate.py",
                 )
@@ -840,32 +931,21 @@ def run(args: argparse.Namespace) -> int:
                     if spec_id in result_ids:
                         continue
                     try:
-                        needed = 4 if args.verification_mode == "differential" else 2
+                        reused = reused_vulnerable.get((project_id, spec_id))
+                        needed = 0 if reused is not None else 2
+                        if args.verification_mode == "differential":
+                            needed += 2
                         if query_count + needed > int(policy["max_query_invocations_per_project"]):
                             raise RuntimeError("per-project CodeQL query budget exhausted")
-                        vulnerable = _analyze_version(
-                            codeql=codeql,
-                            database=vulnerable_db,
-                            work=work,
-                            project_id=project_id,
-                            version="vulnerable",
-                            specification=spec,
-                            nodes=node_by_id,
-                            timeout=query_timeout,
-                            threads=int(execution["threads"]),
-                            ram_mb=int(execution["ram_mb"]),
-                            max_paths=int(policy["max_paths_per_specification"]),
-                        )
-                        fixed = None
-                        if args.verification_mode == "differential" and _needs_fixed_verification(
-                            vulnerable
-                        ):
-                            fixed = _analyze_version(
+                        vulnerable = (
+                            dict(reused)
+                            if reused is not None
+                            else _analyze_version(
                                 codeql=codeql,
-                                database=fixed_db,
+                                database=vulnerable_db,
                                 work=work,
                                 project_id=project_id,
-                                version="fixed",
+                                version="vulnerable",
                                 specification=spec,
                                 nodes=node_by_id,
                                 timeout=query_timeout,
@@ -873,10 +953,57 @@ def run(args: argparse.Namespace) -> int:
                                 ram_mb=int(execution["ram_mb"]),
                                 max_paths=int(policy["max_paths_per_specification"]),
                             )
+                        )
+                        fixed: dict[str, Any] | None = None
+                        if args.verification_mode == "differential" and _needs_fixed_verification(
+                            vulnerable
+                        ):
+                            fixed_nodes: Mapping[str, Mapping[str, Any]] = node_by_id
+                            endpoint_mapping: dict[str, Any] | None = None
+                            query_variant: str | None = None
+                            if args.fixed_endpoint_remapping:
+                                fixed_nodes, endpoint_mapping = remap_nodes_for_fixed(
+                                    spec,
+                                    node_by_id,
+                                    vulnerable_db / "src.zip",
+                                    fixed_db / "src.zip",
+                                )
+                                query_variant = "fixed_remapped"
+                            if endpoint_mapping is not None and not endpoint_mapping["complete"]:
+                                fixed = {
+                                    "database": fixed_db.as_posix(),
+                                    "source_endpoints": 0,
+                                    "sink_endpoints": 0,
+                                    "paths": [],
+                                    "path_count": 0,
+                                    "sarif": None,
+                                    "sarif_sha256": None,
+                                    "analysis_skipped": "incomplete exact endpoint mapping",
+                                    "endpoint_mapping": endpoint_mapping,
+                                }
+                            else:
+                                fixed = _analyze_version(
+                                    codeql=codeql,
+                                    database=fixed_db,
+                                    work=work,
+                                    project_id=project_id,
+                                    version="fixed",
+                                    specification=spec,
+                                    nodes=fixed_nodes,
+                                    timeout=query_timeout,
+                                    threads=int(execution["threads"]),
+                                    ram_mb=int(execution["ram_mb"]),
+                                    max_paths=int(policy["max_paths_per_specification"]),
+                                    query_variant=query_variant,
+                                )
+                                if endpoint_mapping is not None:
+                                    fixed["endpoint_mapping"] = endpoint_mapping
                         verification_status, reason = _status(vulnerable, fixed)
                         result = {
                             "schema_version": 1,
-                            "verification_version": "phase11-static-verification-v1",
+                            "verification_version": "phase11-static-verification-v2"
+                            if args.fixed_endpoint_remapping
+                            else "phase11-static-verification-v1",
                             "project_id": project_id,
                             "hypothesis_id": spec["hypothesis_id"],
                             "specification_id": spec_id,
@@ -898,7 +1025,9 @@ def run(args: argparse.Namespace) -> int:
                         error_text = f"{type(error).__name__}: {str(error)[:500]}"
                         result = {
                             "schema_version": 1,
-                            "verification_version": "phase11-static-verification-v1",
+                            "verification_version": "phase11-static-verification-v2"
+                            if args.fixed_endpoint_remapping
+                            else "phase11-static-verification-v1",
                             "project_id": project_id,
                             "hypothesis_id": spec["hypothesis_id"],
                             "specification_id": spec_id,
@@ -1040,6 +1169,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--specification-id")
     parser.add_argument("--query-timeout", type=int)
     parser.add_argument("--fixed-database-root", type=Path)
+    parser.add_argument(
+        "--fixed-endpoint-remapping",
+        action="store_true",
+        help="map exact unchanged source locations before fixed-version queries",
+    )
+    parser.add_argument(
+        "--reuse-vulnerable-from",
+        type=Path,
+        help="reuse checksum-verified vulnerable results from a compatible full run",
+    )
     parser.add_argument("--resume", action="store_true")
     return parser
 
