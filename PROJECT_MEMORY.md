@@ -1,17 +1,18 @@
 # MaxVera — Project Memory
 
-> Cập nhật: 2026-09-30 (Asia/Bangkok)
+> Cập nhật: 2026-10-05 (Asia/Saigon)
 > Phase 11 canonical run commit:
 > `4b898bfe9a3f16c494ec1942caf95f51e29db221`
 > Phase 11 development lock commit:
 > `faff962b48998ad6f2e596297f9b424810398be4`
 > Phase 12 development lock commit:
 > `faa06a1176320eb133d26a06c368d6181932fa16`
-> Hiện trạng: Phase 0–12 đã khóa cho development; Phase 11 canonical
-> differential full run đã validated với 28 `VERIFIED_DIFFERENTIAL`; Phase 12
-> đã khóa cho Phase 13 bằng full calibration run. Phase 13 analyzer pipeline đã
-> implemented/preflight pass; analyzer đã chạy một plumbing pilot trên một
-> opaque test ID, evaluator labels vẫn chưa mở và canonical full chưa chạy.
+> Hiện trạng: Phase 0–12 giữ historical locks. Phase 13
+> `p13_test_analysis_001` là corrective/incomplete; split đã dùng để debug
+> verifier nên mọi rerun chỉ diagnostic. Development audit Phase 6–10
+> `p6_p10_dev_audit_v2_001` đã hoàn tất; thiết kế pipeline v2/verifier v3 được
+> ghi trong D-038. D-039 triển khai runner `src/pipeline_v2` protocol 2.0.0;
+> full development chạy qua gated controller trong tmux, chưa có confirmatory v2.
 
 ## Mục đích và cách dùng
 
@@ -48,10 +49,10 @@ evaluator-only.
 |---|---|
 | Bài toán | Zero-hint, repository-level vulnerability research |
 | Ngôn ngữ / static engine | Java / CodeQL |
-| Protocol hiện hành | `1.9.0` |
+| Protocol | Historical `1.9.0`; development execution v2 `2.0.0` (D-039), final pipeline lock sau full |
 | Dataset chính | `D_extended`: 120 rows, 77 repository groups, 4 CWE |
 | Development | 96 opaque projects |
-| Locked test | 24 opaque projects; analyzer pass đã bắt đầu, evaluator labels vẫn đóng |
+| Test lịch sử | 24 opaque projects đã được dùng để debug verifier; diagnostic-only |
 | Phase 6 lock | `p6_static_v2_dev_full_001`, static Top-10 |
 | Phase 7 lock | `p7_pg_dev_full_004`, 81/96 graph success |
 | Phase 8 lock | `p8_skg_global_full_002`, 2,619 nodes / 5,285 edges |
@@ -61,9 +62,11 @@ evaluator-only.
 | LLM cho run mới | `openai/gpt-oss-20b` qua OpenRouter/AkashML |
 | CodeQL chính | CLI `2.26.2`, `codeql/java-all@9.2.2` |
 | Phase 12 lock | `p12_calibration_dev_full_001`, Platt, 25 VERIFY / 3 ABSTAIN |
-| Phase 13 | Analyzer ready; cần chạy `p13_test_analysis_001` trong tmux |
-| Phase tiếp theo | Phase 13 canonical analyzer, rồi evaluator/robustness pass |
+| Phase 13 | `p13_test_analysis_001`: corrective/incomplete; giữ nguyên artifacts |
+| Audit development | `p6_p10_dev_audit_v2_001`: complete, zero API/CodeQL calls |
+| Phase tiếp theo | Triển khai inventory/grounding Phase 6–7 v2 trên development |
 
+Các Phase 6–12 rows phía trên là historical locks, không phải v2 locks.
 `configs/experiments/main.yaml` đã `frozen` sau Phase 12 threshold lock. Phase 11
 dùng historical protocol `1.8.0`; Phase 9/10 artifacts giữ contracts
 `1.6.0`/`1.7.0`.
@@ -73,8 +76,9 @@ dùng historical protocol `1.8.0`; Phase 9/10 artifacts giữ contracts
 - Analyzer chỉ thấy source repository, opaque project ID và metadata build tối
   thiểu; không thấy CVE/CWE thật, advisory, patch/fix, identity mapping hay kết
   quả công bố.
-- Split theo repository group. Không dùng `test_locked` để tune prompt, ranking,
-  schema, knowledge, threshold hoặc debug Phase 8–12.
+- Split theo repository group. Holdout confirmatory mới phải chưa được dùng để
+  tune/debug. Split `test_locked` lịch sử chỉ được rerun diagnostic; không dùng
+  nó để chọn prompt, ranking, schema, knowledge hoặc threshold v2.
 - Primary evaluation là intention-to-analyze: mọi selected project phải có final
   status; build/database/analysis failure tính là miss, không bị loại khỏi mẫu.
 - Immutable run không sửa/overwrite. Rerun dùng run ID mới; resume chỉ dành cho
@@ -382,18 +386,59 @@ ignore; clone khác có thể chỉ có compact exports và manifests.
   drop misses hay coi unverified là negative. 12/78 fixed DB dùng validated
   `build-mode=none`, nên cần giữ provenance này trong sensitivity analysis.
 - Hosted model không có project-controlled weight hash.
-- `test_locked` chưa mở; chưa được claim final paper performance.
+- `test_locked` đã dùng để debug verifier; không còn eligible cho confirmatory
+  v2. Chưa đăng ký holdout mới, chưa được claim final paper performance v2.
 
-## Handoff Phase 13
+## Handoff pipeline v2
 
-Phase 12 đã khóa bằng `p12_calibration_dev_full_001` từ clean commit
-`581f0dc`. Grouped OOF chọn Platt trên 28 differential findings (5 positive,
-23 negative, 8 repository groups): Brier 0.182758, ECE-width 0.237719,
-ECE-mass 0.307860, AURC 0.966607. Thresholds là `tau_accept=1.0`,
-`tau_verify=0.08891881554651841`, `tau_abstain=0.08868497505852474`; routing
-fail-closed: zero `ACCEPT`, 25 `VERIFY`, 3 `ABSTAIN`. Phase 13 phải dùng đúng
-canonical model/threshold hashes trong main config, giữ abstention tách khỏi
-negative và không tune lại sau khi mở `test_locked`.
+Theo D-038, người dùng chọn audit và thiết kế trước implementation. Run audit
+`results/audits/p6_p10_dev_audit_v2_001/` đã kiểm checksum trước/sau của tám
+development inputs: 251/956 Phase 6 hypotheses thiếu source; 238/806 vẫn vào
+Phase 9; B9 tạo 233/801 specifications từ hypothesis thiếu source gốc. Có 197
+source/sink assertions không map Program. Phase 6 Recall@10 0.875 chỉ đo CWE
+membership; không chứng minh localization/endpoint correctness. Không mở raw
+labels/test artifacts và không gọi LLM/CodeQL.
+
+`configs/experiments/pipeline_v2.yaml` là design-only, execution disabled; pin
+audit inputs, external historical dispositions và planned run IDs. Code audit:
+`src/experiments/development_audit.py`. Hướng implementation/gates:
+`docs/19_PIPELINE_V2_RESTART.md`. Theo yêu cầu tiếp theo, Phase 6–12 v2 và controller
+đã triển khai trong `src/pipeline_v2`, config thực thi riêng
+`configs/experiments/pipeline_v2_execution.yaml` protocol 2.0.0, quyết định D-039.
+Inventory typed CodeQL, role-specific slots và exact source fingerprints; P7 scope
+selected endpoint/callable graph, P9 grounded model bindings, P10 precise role enums
+và vulnerable query recheck. Historical entrypoints/configs vẫn dùng protocol cũ.
+
+Phase 11 v3 phải reverify development cohort trước Phase 12. Calibration target
+lịch sử là candidate-CWE correctness, không phải vulnerability FDR. Group-support
+minima phải khóa trước fitting; nếu cohort thiếu classes/groups thì bỏ calibrated
+Full và dùng conservative VERIFY/ABSTAIN với ACCEPT tắt. D-039 khóa minimum 8 groups,
+5 records/class, 2 groups/class và mọi OOF training fold có hai classes trước fit.
+Chưa có confirmatory holdout mới; test split lịch sử chỉ diagnostic.
+
+Kiểm tra lượt audit 2026-10-05: full suite 152 tests pass; Ruff toàn repo và mypy
+103 source files pass; checksum audit output hợp lệ.
+
+Autonomous execution: `uv run --frozen python -m src.pipeline_v2 auto --confirm-api-spend`
+trong tmux `maxvera-pipeline-v2-dev`, log `logs/pipeline_v2/development_full.log`.
+Controller root `results/pipeline_v2/.dev_restart_v2_001.inprogress` ghi steps/failure;
+auto chạy P6/7/9 → dry toàn development B6–B9 → API pilots → full → v3 → conditional
+calibration. Gate failure dừng downstream; resume chỉ cùng snapshot. Không mở Phase 13.
+Khi toàn development xong mới final controller và ghi development_lock.json; final
+test claim vẫn cần unopened repository-group split. Không chỉnh tracked code/config
+trong khi controller full đang chạy vì các stage tiếp theo yêu cầu clean snapshot.
+
+Live query diagnostics `results/grounding/v3_query_dev_pilot_v2_*` không gọi API.
+Pilot 001 resolve vulnerable endpoints/path rồi fail-closed ở fixed ambiguous mapping;
+002 resolve cả hai sides và giữ UNVERIFIED_PERSISTS_FIXED; có expression fingerprint
+và role-specific return/argument. Quality suite: 182 tests pass, Ruff toàn repo,
+mypy 113 source files, git diff --check pass. Tám historical input checksums PASS.
+P6 pilot 001 không có hypothesis; các pilot sau có grounded candidates; pilot 004 có
+QL binding compile error và giữ nguyên, các pilot mới kiểm unique internal node count
+và UTF-16 source fingerprints. Pilot 007 dừng aggregate QL nặng; bản cuối dùng
+BQRS internal IDs để reject ambiguity trước API, pilot 008 có 10 hypotheses và
+graph/dry B6–B9 pass. Launcher: `bash scripts/tools/run_pipeline_v2_tmux.sh`.
+Quality suite cuối: 182 tests. Không promote pilots.
 
 ## Checklist agent
 

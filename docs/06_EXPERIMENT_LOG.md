@@ -3,6 +3,31 @@
 **Mục đích:** index các run và thay đổi vận hành; không lưu secret hoặc số liệu
 chép tay.
 
+## Development audit cho pipeline v2 (2026-10-05)
+
+Run `p6_p10_dev_audit_v2_001`, scope 96 development projects, diagnostic-only.
+Entrypoint `src.experiments.development_audit`, config design-only
+`configs/experiments/pipeline_v2.yaml`. Output tại
+`results/audits/p6_p10_dev_audit_v2_001/`: summary, 1.398 observation records,
+input file hashes, manifest và checksum index. Mọi input trong tám historical
+development runs có checksum coverage hợp lệ và không đổi trước/sau audit;
+zero LLM/CodeQL calls, không mở raw evaluator labels hoặc test artifacts.
+
+Các số liệu được tính từ input records: Phase 6 có 251/956 hypotheses thiếu
+source; Phase 9 có 238/806 hypotheses thiếu source gốc và 197 source/sink
+assertions không map Program; B9 có 233/801 specifications từ hypothesis thiếu
+source. Cached annotated evaluator B9 có 254/762 CWE-correct và 14 fix-location
+proxy matches. Nonmatching proxy không được coi là false positive.
+
+D-038 và `docs/19_PIPELINE_V2_RESTART.md` ghi thiết kế/gates và disposition
+corrective/incomplete cho Phase 13 cũ bên ngoài immutable run. Không chạy lại
+pipeline hoặc triển khai Phase 6–11 v2/v3 trong lượt audit này. Kiểm tra audit
+runner: 5 unit tests pass; full suite 152 tests pass; `ruff check .`, `mypy src`
+(103 source files) và `git diff --check` pass. Checksum output audit được kiểm
+tra độc lập sau finalization.
+
+## Historical run index
+
 | Date | Run/phase | Status | Pointer |
 |---|---|---|---|
 | 2026-08-26 | Phase 0 protocol 1.0.0 | frozen | `docs/00_*`, `docs/01_*` |
@@ -157,3 +182,52 @@ ghi `SUCCESS`, nên location lỗi tương lai trở thành recorded
 pilots trên cả năm project từng có invalid nodes đều validator `PASS`, tổng cộng
 22.400 nodes/35.354 edges hợp lệ với 100% edge resolution; các pilot không được
 nhập vào full-run metrics.
+
+## 2026-10-05 — Triển khai development pipeline v2 và verifier v3 (D-039)
+
+Người dùng cho phép tự động triển khai/chạy và dùng tmux cho phiên dài. Runner
+riêng `src/pipeline_v2` và config `pipeline_v2_execution.yaml` đăng ký protocol
+2.0.0; giữ toàn bộ historical artifact/config locks, test cũ diagnostic-only.
+Chạy typed vulnerable endpoint inventory, candidate discovery, semantic endpoint/
+callable graph, grounded USEG, precise B6–B9 role enums, frozen endpoint queries,
+fail-closed semantic differential v3 và conditional group-aware calibration.
+
+P6 pilot 001 phân tích thành công nhưng có 0 eligible hypotheses, giữ empty result
+và downstream miss. Pilot 002/003 có 10 grounded hypotheses, graph và dry B6–B9
+pass; B8 serialization ban đầu làm rơi role endpoints, đã sửa bằng cách giữ các
+binding của hypothesis hiện tại trước context khác. Không gọi API trong plumbing.
+
+Pilot 004 giữ compile failure của QL role-binding function; bản sửa chạy ở 005
+và 006. Source return và consumption sink argument/receiver được mô tả riêng,
+với target signature, exact source fingerprint, UTF-16 columns và source checksum.
+Inventory/query select QL entity để không gộp các internal nodes có cùng descriptor;
+ambiguous endpoint rows bị loại trước hypothesis selection và được lưu riêng.
+
+Diagnostic verifier live `results/grounding/v3_query_dev_pilot_v2_001` đã resolve
+vulnerable endpoints, tìm một path và trả UNVERIFIED_FIXED_ENDPOINT_MAPPING khi
+mapping ambiguous. Diagnostic 002 chạy cả vulnerable/fixed endpoint/path queries
+(5 invocations, 0 LLM), source/sink đều resolve và path vẫn còn ở fixed side:
+UNVERIFIED_PERSISTS_FIXED. Không promote diagnostic thành scientific full output.
+
+Full controller `dev_restart_v2_001` dùng IDs D-038: P6/7/9 → full development dry
+B6–B9 → API pilot từng baseline → full → evaluator P11 v3 → conditional P12.
+Tmux `maxvera-pipeline-v2-dev`, log `logs/pipeline_v2/development_full.log`; stage
+progress/gate failures ghi trong controller artifact. Full chỉ sau clean local
+implementation commit. Không chạy P13 hoặc claim confirmatory performance.
+Calibration minima/target/routing được pin ở D-039 trước cohort/fitting.
+
+Kiểm tra immutable checksums của tám historical development input runs đều PASS;
+không sửa old result roots. Regression test timeout cho orphan process được sửa
+để chờ tối đa 2s cho PID reaping sau SIGKILL, vẫn fail nếu child còn tồn tại.
+
+Pilot 007 aggregate QL quá nặng được dừng, artifact giữ ANALYSIS_FAILED. Bản cuối
+dùng BQRS JSON internal entity IDs, không gộp labels trùng và kiểm uniqueness xuyên
+model bases trong Python. Pilot 008 có 10 hypotheses; graph và dry B6–B9 đều pass,
+0 API. Internal numeric IDs chỉ dùng trong inventory để kiểm uniqueness, không
+dùng như stable IDs hoặc cross-version mapping. Launcher có sẵn:
+`bash scripts/tools/run_pipeline_v2_tmux.sh`; từ chối duplicate session/dirty
+snapshot/completed controller, tự dùng --resume cho controller đang dở.
+
+Validation cuối: 182 tests pass, Ruff toàn repo, mypy 113 source files,
+`bash -n` launcher và `git diff --check` pass. Development full chưa tự khởi chạy
+ở lượt hướng dẫn tmux; người dùng bắt đầu bằng launcher từ clean local snapshot.

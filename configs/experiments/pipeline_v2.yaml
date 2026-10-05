@@ -1,0 +1,112 @@
+schema_version: 1
+protocol_version: "2.0.0-draft"
+experiment_id: pipeline_v2_development_restart
+status: design_only_not_executable
+pipeline_execution_enabled: false
+purpose: development_error_audit_then_grounded_pipeline_redesign
+
+historical_dispositions:
+  phase13:
+    run_id: p13_test_analysis_001
+    status: corrective_incomplete
+    artifacts_immutable: true
+    future_use: diagnostic_only
+    confirmatory_test_eligible: false
+    basis: user_declared_test_used_for_verifier_debugging_and_decision_D037
+  phase6_to_phase12:
+    status: historical_locks_preserved_revalidation_required_for_v2
+    reuse_as_v2_canonical: false
+
+audit_inputs:
+  development_split_sha256: f534192c4272320f358602d66caf094b2d479ae4aa83a338b3f2389d0ad183ce
+  phase6:
+    run_root: results/hypotheses/static/p6_static_v2_dev_full_001
+    run_id: p6_static_v2_dev_full_001
+    manifest_sha256: 11380495eafffe02924beaf9409e7ed343111cc4b74806a4f869e5155b41d2c2
+  phase7:
+    run_root: results/graphs/program/p7_pg_dev_full_004
+    run_id: p7_pg_dev_full_004
+    manifest_sha256: ce5f1d61616f6b990d863f75f94cfca35926a0973a08d5051655d9f35ce2c832
+  phase9:
+    run_root: results/graphs/useg/p9_useg_dev_full_003
+    run_id: p9_useg_dev_full_003
+    manifest_sha256: 83dce921c979db710762bd205588c667033bc10fb6c64c4581fce9a8c84810c7
+  B6:
+    run_root: results/specifications/phase10/program_graph_only/p10_b6_dev_full_001
+    run_id: p10_b6_dev_full_001
+    manifest_sha256: 8686ce9a87126e3625b10ac61ae61bf37e099bbc74d51e5f0fb0a7dd6e8403a0
+  B7:
+    run_root: results/specifications/phase10/security_kg_only/p10_b7_dev_full_001
+    run_id: p10_b7_dev_full_001
+    manifest_sha256: 7f50d7b742f689d82cb8d8dc198712263facaf626e8b713beab7e9764d7684a5
+  B8:
+    run_root: results/specifications/phase10/useg_no_pruning/p10_b8_dev_full_001
+    run_id: p10_b8_dev_full_001
+    manifest_sha256: a5abe8307cc8890882bbf63596c6a2ee49cf3efc99eb32d413574e5d5bbac114
+  B9:
+    run_root: results/specifications/phase10/full_useg/p10_b9_dev_full_001
+    run_id: p10_b9_dev_full_001
+    manifest_sha256: 3943d6af3cfdd373ae4619d2cf3e43a06b0d896e536c19dbd88562845fdcc45f
+  phase10_evaluation:
+    run_root: results/evaluations/phase10/p10_dev_spec_eval_003
+    run_id: p10_dev_spec_eval_003
+    manifest_sha256: e20c5c43d34bab7665c1f0411870c6e1c476d18eac80b9f965595e0b5874bbe6
+
+planned_runs:
+  phase6: p6_hyp_dev_full_v2_001
+  phase7: p7_program_graph_dev_full_v2_001
+  phase9: p9_useg_dev_full_v2_001
+  phase10:
+    B6: p10_b6_dev_full_v2_001
+    B7: p10_b7_dev_full_v2_001
+    B8: p10_b8_dev_full_v2_001
+    B9: p10_b9_dev_full_v2_001
+  phase11: p11_diff_dev_full_v3_001
+  phase12: p12_calibration_dev_v2_001
+  phase13_diagnostic: p13_test_analysis_v2_001
+  phase13_confirmatory: null  # Requires a separately registered, unopened repository-group split.
+
+design_gates:
+  phase6:
+    zero_hint: true
+    require_source_and_sink: true
+    require_file_callable_symbol_and_expression_role: true
+    require_source_evidence_and_provenance: true
+    proximity_is_flow_evidence: false
+    measure_cwe_and_localization_separately: true
+  phase7:
+    separate_instance_id_and_semantic_descriptor: true
+    require_enclosing_qualified_signature: true
+    ambiguous_cross_version_mapping_is_unresolved: true
+  phase9:
+    require_grounding_for_both_roles_before_evidence_chain: true
+    preserve_rejection_reasons: true
+  phase10:
+    require_all_development_dry_runs_before_api: true
+    require_vulnerable_database_endpoint_inventory_before_api: true
+    require_specification_endpoint_recheck_after_synthesis: true
+    require_semantic_descriptors: true
+    program_layer_membership_implies_endpoint_role: false
+  phase11:
+    verifier_version: 3
+    mapping_order: [exact_unchanged_line, file_path_mapping, callable_symbol_mapping]
+    require_fixed_side_semantic_query: true
+    unresolved_or_ambiguous_is_verified: false
+  phase12:
+    require_v3_verified_positive_and_negative_targets: true
+    require_group_support_and_two_class_training_folds: true
+    minimum_group_support: null  # Must be chosen and locked on development before fitting.
+    target: candidate_cwe_correct_on_v3_verified_findings
+    target_is_vulnerability_false_discovery_rate: false
+    unverified_is_negative: false
+    ineligible_action: skip_calibrated_full_and_route_conservatively
+  phase13:
+    require_pipeline_lock_before_new_holdout_access: true
+    current_test_is_diagnostic_only: true
+    require_new_unopened_repository_groups_for_confirmatory_claim: true
+
+implementation_status:
+  audit: implemented
+  phase6_to_phase11_changes: pending
+  phase12_eligibility_policy: pending_development_support_lock
+  new_confirmatory_split: unavailable

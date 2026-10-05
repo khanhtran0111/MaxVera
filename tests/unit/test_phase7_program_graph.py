@@ -4,6 +4,7 @@ import csv
 import json
 import os
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -325,8 +326,16 @@ def test_phase7_command_timeout_terminates_process_group(tmp_path: Path) -> None
             timeout=1,
         )
     child_pid = int(child_pid_path.read_text(encoding="utf-8"))
-    with pytest.raises(ProcessLookupError):
-        os.kill(child_pid, 0)
+    # SIGKILL can finish before init has reaped the orphaned child's PID.
+    deadline = time.monotonic() + 2
+    while True:
+        try:
+            os.kill(child_pid, 0)
+        except ProcessLookupError:
+            break
+        if time.monotonic() >= deadline:
+            pytest.fail("timed-out command left a surviving child process")
+        time.sleep(0.01)
 
 
 def test_phase7_database_cache_lock_is_rejected(

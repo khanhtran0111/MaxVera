@@ -22,11 +22,7 @@ def specification_json_schema(
     max_preconditions: int,
 ) -> dict[str, Any]:
     endpoints = sorted(
-        {
-            node_id
-            for role_ids in allowed_endpoint_ids_by_role.values()
-            for node_id in role_ids
-        }
+        {node_id for role_ids in allowed_endpoint_ids_by_role.values() for node_id in role_ids}
     )
     evidence = sorted(set(allowed_evidence_ids))
     if not endpoints:
@@ -119,6 +115,33 @@ def _external_kind(node: Mapping[str, Any]) -> str:
 def endpoint_role_allowed(role: str, node: Mapping[str, Any]) -> bool:
     if role not in ROLES:
         return False
+    properties = node.get("properties")
+    if isinstance(properties, Mapping) and properties.get("grounding_version") == 2:
+        from src.pipeline_v2.model import validate_descriptor
+
+        descriptor = properties.get("semantic_descriptor")
+        if not isinstance(descriptor, Mapping):
+            return False
+        try:
+            validate_descriptor(descriptor)
+        except ValueError:
+            return False
+        expected_role = {
+            "sources": "source",
+            "sinks": "sink",
+            "sanitizers": "sanitizer",
+            "propagators": "propagator",
+        }[role]
+        return (
+            properties.get("binding_status") == "RESOLVED_VULNERABLE"
+            and expected_role in properties.get("endpoint_roles", [])
+            and any(
+                isinstance(model, Mapping)
+                and model.get("role") == expected_role
+                and model.get("basis")
+                for model in properties.get("models", [])
+            )
+        )
     layer = node.get("layer")
     if layer == "program":
         return True
@@ -220,8 +243,7 @@ def parse_specification(
         if not isinstance(evidence_ids, list) or len(evidence_ids) > 8:
             raise ValueError("precondition evidence_node_ids must be a bounded list")
         if any(
-            not isinstance(value, str) or value not in allowed_node_ids
-            for value in evidence_ids
+            not isinstance(value, str) or value not in allowed_node_ids for value in evidence_ids
         ):
             raise ValueError("precondition references a node outside serialized context")
         preconditions.append(

@@ -147,8 +147,7 @@ def retrieve_context(
             (
                 edge
                 for edge in eligible_edges
-                if str(edge["source_id"]) in selected_ids
-                and str(edge["target_id"]) in selected_ids
+                if str(edge["source_id"]) in selected_ids and str(edge["target_id"]) in selected_ids
             ),
             key=_edge_sort_key,
         )
@@ -198,6 +197,15 @@ def _compact_node(node: Mapping[str, Any]) -> dict[str, Any]:
             "symbol",
             "type_name",
             "upstream_hypothesis_id",
+            "grounding_version",
+            "binding_status",
+            "semantic_descriptor",
+            "endpoint_roles",
+            "models",
+            "hypothesis_ids",
+            "endpoint_id",
+            "evidence_kind",
+            "flow_proven",
         }
         compact["properties"] = {
             str(key): value for key, value in properties.items() if key in allowed
@@ -227,9 +235,7 @@ def _compact_edge(edge: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def serialize_context(
-    context: GraphContext, *, token_budget: int
-) -> tuple[str, dict[str, Any]]:
+def serialize_context(context: GraphContext, *, token_budget: int) -> tuple[str, dict[str, Any]]:
     """Serialize a compact context and deterministically truncate to the token cap."""
     if token_budget < 1:
         raise ValueError("token_budget must be positive")

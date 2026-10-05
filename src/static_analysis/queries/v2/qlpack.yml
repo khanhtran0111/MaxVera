@@ -1,0 +1,4 @@
+name: maxvera/grounded-pipeline-v2
+version: 2.0.0
+dependencies:
+  codeql/java-all: 9.2.2

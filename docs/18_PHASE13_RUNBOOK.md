@@ -1,5 +1,11 @@
 # Phase 13 Runbook
 
+Update 2026-10-05 (D-038): `p13_test_analysis_001` is **corrective/incomplete**.
+Its artifacts remain immutable; reruns on the existing test split are diagnostic
+only. The commands below document the historical workflow. New confirmatory
+claims require pipeline v2 to be frozen and a previously unopened repository-group
+holdout; see [`19_PIPELINE_V2_RESTART.md`](19_PIPELINE_V2_RESTART.md).
+
 ## Trạng thái và ranh giới dữ liệu
 
 Phase 13 là workload dài và được chia thành hai process boundary:

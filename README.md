@@ -3,6 +3,15 @@
 Project state and phase handoff memory:
 [`PROJECT_MEMORY.md`](PROJECT_MEMORY.md).
 
+Current development work is the pipeline v2 restart from Phase 6. The completed
+development-only Phase 6–10 audit and implementation gates are in
+[`docs/19_PIPELINE_V2_RESTART.md`](docs/19_PIPELINE_V2_RESTART.md).
+`p13_test_analysis_001` is corrective/incomplete and future reruns on its test
+split are diagnostic only. The locks described below remain historical.
+The development v2 runner and verifier v3 are implemented in `src/pipeline_v2`,
+with a separate [execution config](configs/experiments/pipeline_v2_execution.yaml).
+Full development outputs and the final pipeline lock must complete before a new holdout is opened.
+
 MaxVera is a reproducible research scaffold for graph-grounded, zero-hint,
 repository-level vulnerability discovery in Java. The analysis pipeline uses
 CodeQL for static verification and `openai/gpt-oss-20b` through a pinned

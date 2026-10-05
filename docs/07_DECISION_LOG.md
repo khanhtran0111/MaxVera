@@ -825,6 +825,102 @@ main/ablation/Phase 11–13 frozen configs hay existing analyzer/verifier code.
 Correction của verifier và Full verdict policy cần decision riêng trước khi có
 scientific replacement run; follow-up không tự tạo một canonical replacement.
 
+## D-038 — Restart development từ Phase 6 bằng pipeline v2 (2026-10-05)
+
+Người dùng quyết định sửa thiết kế trước rerun, bắt đầu bằng development-only
+error audit Phase 6–10; lượt này chỉ hoàn tất audit và thiết kế, chưa triển khai
+generator/graph/specification/verifier mới hoặc chạy API/full pipeline.
+
+Audit `p6_p10_dev_audit_v2_001` đọc tám historical development runs, xác minh
+checksum toàn bộ input trước/sau và ghi 1.398 observation records. Phase 6 có
+251/956 hypotheses thiếu source; 238/806 đi vào Phase 9 và B9 sinh 233/801
+specifications từ hypothesis thiếu source gốc. Phase 9 có 100 source và 97 sink
+location assertions không map Program. Phase 6 Recall@10 0.875 chỉ đo CWE match;
+B9 cached evaluator có 254/762 specs CWE-correct và 14 fix-location proxy matches.
+Các proxy nonmatches không tự động là false positive. Không đọc raw evaluator
+labels hoặc test artifacts; không gọi CodeQL/LLM và không sửa immutable inputs.
+
+Ghi `p13_test_analysis_001` là **corrective/incomplete**, chỉ diagnostic khi
+rerun. Disposition nằm trong `configs/experiments/pipeline_v2.yaml`, không sửa
+historical STATUS/manifest/verdict. Holdout hiện tại đã dùng để debug verifier
+theo D-037 và yêu cầu người dùng, nên không còn eligible cho confirmatory v2.
+Canonical test mới cần repository-group split chưa dùng cho tuning/debugging.
+
+Chốt thiết kế: Phase 6 có source/sink/callable/file/symbol/dataflow-role provenance;
+Phase 7 tách instance ID khỏi semantic descriptor và cross-version equivalence;
+Phase 9 loại insufficient grounding trước evidence chain; Phase 10 inventory
+resolve trên vulnerable DB trước API và recheck frozen endpoints sau synthesis;
+Phase 11 v3 exact-line/path/callable/symbol mapping cùng fixed semantic query,
+fail-closed khi equivalence chưa chứng minh. Phase 12 chỉ fit v3 verified cohort
+có hai target classes và group support được khóa trước fit, nếu không bỏ
+calibrated Full và dùng conservative routing. Target CWE correctness không được
+claim là vulnerability FDR. Toàn pipeline phải khóa trước holdout mới.
+
+Protocol kế tiếp đăng ký `2.0.0-draft` do thay grounding/equivalence, calibration
+eligibility và test-claim policy; chưa frozen. Protocol/configs 1.9.0 và Phase
+6–12 locks giữ nguyên cho historical reproduction, không được dùng như v2 locks.
+Detailed design/gates và namespace:
+`docs/19_PIPELINE_V2_RESTART.md`, `configs/experiments/pipeline_v2.yaml`.
+
+Alternatives bị bác: chỉ vá Phase 11; chạy lại nguyên code/config; overwrite
+historical outputs; dùng test đã debug làm confirmatory mới; chuyển unresolved
+endpoint thành negative; tái dùng calibration từ cohort chưa reverified.
+
+## D-039: Triển khai và tự động chạy development pipeline v2 / verifier v3
+
+Ngày: 2026-10-05. Người dùng cho phép tự động triển khai sau D-038 và dùng tmux
+cho phiên dài. Protocol thực thi mới `2.0.0`; giữ nguyên config, lock và artifact
+lịch sử. Config riêng `configs/experiments/pipeline_v2_execution.yaml` và runner
+`src/pipeline_v2`; chưa có canonical confirmatory result hoặc holdout mới.
+
+Phase 6 discovery chuyển từ regex/proximity sang typed CodeQL source/sink models,
+grounded file/span/callable, role-specific dataflow slot, target signature và source
+fingerprint. CWE families hiện thực 22/78/79/94. Discovery có global taint candidate,
+same-callable và tối đa hai caller/callee steps; structural relation không phải flow
+proof. Family-balanced Top-10 có score 0.9/0.7/0.6, giảm 0.3 cho test/example/sample
+path segments. Quy tắc này không dùng evaluator label hoặc patch/advisory.
+Semantic mapping giữ instance IDs và descriptors riêng, không dùng line-only match.
+
+Phase 7 v2 scope là selected endpoints/enclosing callables; đây là thay đổi graph
+contract so với historical full CPG. Phase 9 dùng global CWE facts đã pin cùng
+project-specific role model bindings. B6–B9 cùng phải qua typed endpoint contract,
+giữ khác biệt retrieval layers/pruning; không claim so sánh trực tiếp historical
+ablation như cùng một implementation. Hypothesis thiếu grounding bị loại trước API.
+Mọi specification phải resolve từng source/sink trên vulnerable DB sau synthesis.
+
+Verifier v3 require unique full semantic equivalence và actual fixed-side endpoint/
+path queries. Exact unchanged lines, safe path/rename, enclosing callable, target
+symbol, expression fingerprint và model semantics đều được audit. Ambiguity,
+changed/deleted endpoints hoặc query failures không được xem là fixed-no-path.
+V3 USEG delta không gán VERIFIED_BY hay negative evidence cho unresolved results.
+
+Đăng ký calibration support **trước full cohort/fitting**: tối thiểu 8 repository
+groups, 5 records mỗi class, 2 groups mỗi class; tất cả leave-one-group-out training
+folds có hai classes. Minima là gate kỹ thuật, không khẳng định statistical power.
+Target chỉ là candidate-CWE correctness trên VERIFIED_DIFFERENTIAL v3 cohort,
+không phải vulnerability correctness/FDR. So sánh Platt/isotonic/logistic theo
+OOF Brier/ECE/AURC. ACCEPT cần >=20 accepted OOF records, >=3 groups, Wilson lower
+95% >=0.8; observation-level bound không chứng minh group independence.
+Thiếu eligibility: không fit hoặc xuất calibrated Full, ACCEPT tắt, verified →
+VERIFY và unverified → ABSTAIN. Không lấy misses/unverified làm negative.
+
+Model/provider route, 8.192 input tokens/call, 2.048 output tokens/call, 30 synthesis
+attempts/project và 160.000 input tokens/project giữ contract lịch sử. Resume reserve
+attempt/input budget trước request. Provider HTTP retries vẫn được log riêng và bị
+giới hạn bởi pinned model config. CodeQL 2.26.2, java-all 9.2.2, 2 threads, 8.192 MiB,
+1 project worker, timeout 1.800s; verifier tối đa 40 attempted queries/project gồm
+timeouts/failures. Không chạy CodeQL và API concurrently trong controller.
+
+Controller chạy toàn development P6/7/9, dry cả B6–B9 trước API, API pilots trước
+full, rồi evaluator v3/calibration tách process. Full chỉ từ clean local commit,
+immutable artifacts, hashed implementation/config/dependencies; không overwrite.
+Historical Phase 13 vẫn corrective/incomplete, diagnostic-only. Controller không
+mở test và final development lock ghi new unopened repository-group holdout còn thiếu.
+
+Alternative bị bác: tái dùng permissive endpoint roles; generic Security API làm
+resolved occurrence; đổi CWE theo labels; gọi LLM để sửa unresolved mapping;
+reset budget khi resume; tự fit cohort một class hoặc dùng test đã mở làm holdout mới.
+
 ## Quy trình thay đổi
 
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và
