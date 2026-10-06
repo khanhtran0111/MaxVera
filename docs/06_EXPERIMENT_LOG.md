@@ -231,3 +231,24 @@ snapshot/completed controller, tự dùng --resume cho controller đang dở.
 Validation cuối: 182 tests pass, Ruff toàn repo, mypy 113 source files,
 `bash -n` launcher và `git diff --check` pass. Development full chưa tự khởi chạy
 ở lượt hướng dẫn tmux; người dùng bắt đầu bằng launcher từ clean local snapshot.
+
+## 2026-10-06 — Development recovery v2, D-040
+
+Recovery config `pipeline_v2_recovery.yaml`; launcher
+`scripts/tools/run_pipeline_v2_recovery_tmux.sh`; controller `dev_restart_v2_002`.
+Historical controller001 giữ nguyên STOPPED_AT_GATE. Read-only audit xác nhận hai
+P6 failures đều No space left on device; 14 missing DB đều có opaque source tree.
+15 zero-hypothesis successes gồm 5 thiếu một/hai modeled roles, 10 có source/sink
+nhưng không supported candidate relation. B6 pilot rejected request là upstream
+HTTP429; chín specs trước đó đã resolve vulnerable endpoints. Không mở test/labels.
+
+Recovery triển khai separate DB root/no-build provenance, science-compatible P6
+inheritance, P10 exact context/schema/frozen binding revalidation và inherited API
+reservations. Transient API giữ unfinished checkpoint/exit75, bounded cooldown;
+nonretryable API/budget được tách khỏi grounding rejection. Pilots bắt buộc trước
+full, full kế thừa pilot budgets. Query cache/debug cleanup sau mỗi project.
+
+Validation trước launch: 187 tests pass, Ruff toàn repository pass, mypy 114 source
+files pass, bash syntax và git diff checks pass. Snapshot/checksum của legacy P6,
+B6 pilot và P9 đã xác minh; cả 10 legacy pilot context text/schema còn tương thích.
+Actual vulnerable re-resolution của 9 inherited specs sẽ chạy trong pilot002 trước API.

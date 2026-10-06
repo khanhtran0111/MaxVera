@@ -5,6 +5,53 @@ Audit development Phase 6–10 đã hoàn tất. Theo yêu cầu tiếp theo c�
 runner mới thực thi protocol `2.0.0` trên development, tự động qua các gate trước
 API/full/calibration. Chưa có kết quả confirmatory v2 hoặc holdout mới.
 
+## Phục hồi development ngày 2026-10-06 — D-040
+
+Controller `dev_restart_v2_001` dừng ở B6 pilot: 9 specifications resolve vulnerable
+endpoints; một request thất bại vì HTTP 429 sau sáu HTTP attempts. Đây là lỗi API,
+không phải bằng chứng endpoint sai. P6 có 80 successes, 14 missing DB và hai lỗi
+hết đĩa; 15 successes không có grounded candidate (5 thiếu ít nhất một role,
+10 có hai roles nhưng không có supported candidate relationship). Không sửa
+models/queries/ranking theo observation này hoặc mở test.
+
+Config phục hồi: `configs/experiments/pipeline_v2_recovery.yaml`, controller
+`dev_restart_v2_002`; stage IDs dùng hậu tố `_002`. Khởi chạy:
+
+```bash
+bash scripts/tools/run_pipeline_v2_recovery_tmux.sh
+tmux attach -t maxvera-pipeline-v2-recovery
+tail -f logs/pipeline_v2/development_recovery_002.log
+```
+
+Preparation ghi immutable report ở
+`results/pipeline_v2/database_recovery/p6_database_dev_recovery_v2_002`. Vùng DB
+riêng `data/interim/phase7_codeql_databases_v2_002` symlink 82 DB gốc và thử
+CodeQL `build-mode=none` cho 14 development source snapshots còn thiếu, tối đa
+1.800s/project, 2 threads/8.192 MiB. Ghi Git revision, extraction mode, archive
+hash và Java archive support; extraction success chưa chứng minh grounding.
+Phase 6 kiểm models/slots/unique bindings thật trên từng DB. Build failures và
+empty hypotheses tiếp tục được tính trong toàn cohort 96, không bị loại.
+
+P6 tái sử dụng 80 project successes chỉ sau kiểm toàn checksum index, pin manifest,
+scientific asset hashes, AST của discovery loop/inventory/query helpers và DB
+source/metadata hashes. P7/P9/dry được tạo mới từ cohort phục hồi. P10 có thể
+tái sử dụng specs dưới lineage riêng khi model/provider, context text/schema,
+role bindings không đổi và actual vulnerable endpoint query resolve lại. Kế thừa
+toàn bộ request/token reservations và call provenance, gồm failed transport;
+full runs kế thừa pilot đã qua gate để không reset ngân sách của pilot project.
+
+Transient API error giữ stage unfinished, project PENDING, hypothesis
+`RETRYABLE_API_ERROR`; CLI exit 75. Controller cooldown 60/120/240/480/900/900s,
+tối đa 6 automatic stage retries, checkpoint/budget vẫn giữ khi resume. HTTP
+retry policy/model/provider không đổi. Nonretryable API và budget exhaustion
+được tách khỏi grounding rejection. Tối đa ba semantic validation failures mỗi
+hypothesis; mọi logical request vẫn nằm trong 30 requests và 160k input/project.
+
+Sau mỗi project P6/P10/P11, dọn regenerable dataset cache và internal query debug
+logs; giữ query outputs/logs trong run. Build reserve tối thiểu 30 GiB. Artifact
+`_001`, historical test, frozen calibration policy và verifier v3 không bị sửa.
+Pilot gates vẫn bắt buộc trước full; P11/P12 và new unopened holdout gate giữ nguyên.
+
 `configs/experiments/pipeline_v2.yaml` là hồ sơ thiết kế, **không phải config
 chạy pipeline**; giữ hồ sơ audit tại thời điểm D-038. Config thực thi riêng là
 `configs/experiments/pipeline_v2_execution.yaml`, entrypoint `python -m src.pipeline_v2`.

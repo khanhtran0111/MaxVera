@@ -28,9 +28,7 @@ def _settings() -> OpenRouterSettings:
 
 def test_payload_pins_model_provider_privacy_and_no_fallback() -> None:
     client = OpenRouterClient(_settings())
-    payload = client._payload(
-        [{"role": "user", "content": "return JSON"}], expect_json=True
-    )
+    payload = client._payload([{"role": "user", "content": "return JSON"}], expect_json=True)
     assert payload["model"] == "openai/gpt-oss-20b"
     assert payload["provider"] == {
         "only": ["akashml"],
@@ -79,9 +77,7 @@ def test_completion_logs_provenance_without_key_or_prompt(monkeypatch: Any, tmp_
                     "id": "gen-test",
                     "model": "openai/gpt-oss-20b",
                     "provider": "AkashML",
-                    "choices": [
-                        {"message": {"content": "OK"}, "finish_reason": "stop"}
-                    ],
+                    "choices": [{"message": {"content": "OK"}, "finish_reason": "stop"}],
                     "usage": {"prompt_tokens": 4, "completion_tokens": 1, "cost": 0.0},
                 }
             ).encode()
@@ -150,3 +146,20 @@ def test_rate_limit_retry_uses_retry_after_or_bounded_backoff() -> None:
     assert OpenRouterClient._retry_delay(1, with_header) == 17.0
     assert OpenRouterClient._retry_delay(1, without_header) == 5.0
     assert OpenRouterClient._retry_delay(5, without_header) == 60.0
+
+
+@pytest.mark.parametrize("status,retryable", [(429, True), (503, True), (401, False)])
+def test_exhausted_http_error_retains_retry_classification(
+    monkeypatch: Any, status: int, retryable: bool
+) -> None:
+    from src.llm.providers.openrouter import OpenRouterError
+
+    def failed_request(*_args: object, **_kwargs: object) -> None:
+        raise urllib.error.HTTPError("https://example.invalid", status, "provider error", {}, None)
+
+    monkeypatch.setattr("urllib.request.urlopen", failed_request)
+    with pytest.raises(OpenRouterError) as captured:
+        OpenRouterClient(_settings()).complete([{"role": "user", "content": "fixture"}])
+    assert captured.value.retryable is retryable
+    assert captured.value.http_status == status
+    assert "unit-test-secret" not in str(captured.value)

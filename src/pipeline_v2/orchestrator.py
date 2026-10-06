@@ -7,7 +7,9 @@ import os
 import shlex
 import subprocess
 import sys
+import time
 from pathlib import Path
+from typing import Any
 
 from src.common.provenance import collect_git, sha256_file, utc_now
 from src.experiments.development_audit import snapshot_run
@@ -20,20 +22,23 @@ CONTROLLER_ID = "dev_restart_v2_001"
 def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: bool) -> Path:
     if not confirm_api_spend:
         raise ValueError("automatic synthesis requires the authorized --confirm-api-spend flag")
-    configuration(root, config_path)
+    config = configuration(root, config_path)
+    controller_id = str(config["execution"].get("controller_id", CONTROLLER_ID))
+    suffix = str(config["execution"].get("run_suffix", "001"))
     git = collect_git(root)
     if git["dirty"]:
         raise ValueError(
             "freeze the implementation in a clean local commit before automatic full runs"
         )
     selected = development_ids(root)
-    final = root / "results/pipeline_v2" / CONTROLLER_ID
-    work = final.with_name("." + CONTROLLER_ID + ".inprogress")
+    final = root / "results/pipeline_v2" / controller_id
+    work = final.with_name("." + controller_id + ".inprogress")
     expected = {
         "schema_version": 2,
         "protocol_version": "2.0.0",
         "analysis_scope": "development",
         "config_sha256": sha256_file(config_path),
+        "model_config_sha256": sha256_file(root / config["model_config"]),
         "git": git,
         "implementation_sha256": implementation_hashes(root),
         "selected_project_ids": selected,
@@ -49,7 +54,7 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
     else:
         work.mkdir(parents=True)
         atomic_json(
-            work / "manifest.json", {**expected, "created_at": utc_now(), "run_id": CONTROLLER_ID}
+            work / "manifest.json", {**expected, "created_at": utc_now(), "run_id": controller_id}
         )
     steps = json.loads((work / "steps.json").read_text()) if (work / "steps.json").exists() else {}
 
@@ -86,6 +91,7 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
             env = dict(os.environ)
             env["MAXVERA_DATA_ROLE"] = "evaluator" if evaluator else "analyzer"
             steps[run_id] = {
+                **steps.get(run_id, {}),
                 "status": "RUNNING",
                 "started_at": utc_now(),
                 "command": shlex.join(command),
@@ -93,10 +99,38 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
             }
             atomic_json(work / "steps.json", steps)
             print(f"{utc_now()} START {run_id}", flush=True)
-            with (work / (run_id + ".log")).open("a") as log:
-                process = subprocess.run(
-                    command, cwd=root, env=env, stdout=log, stderr=subprocess.STDOUT, check=False
+            policy = config.get("recovery", {})
+            while True:
+                with (work / (run_id + ".log")).open("a") as log:
+                    process = subprocess.run(
+                        command,
+                        cwd=root,
+                        env=env,
+                        stdout=log,
+                        stderr=subprocess.STDOUT,
+                        check=False,
+                    )
+                if process.returncode != 75:
+                    break
+                retries = steps[run_id].get("transport_retries", 0)
+                if retries >= int(policy.get("max_stage_retries", 0)):
+                    raise RuntimeError(
+                        f"{run_id}: retryable API cooldown limit reached; checkpoint retained"
+                    )
+                delay = min(
+                    int(policy["stage_cooldown_seconds"]) * 2**retries,
+                    int(policy["stage_cooldown_max_seconds"]),
                 )
+                steps[run_id].update(
+                    status="WAITING_FOR_API", transport_retries=retries + 1, cooldown_seconds=delay
+                )
+                atomic_json(work / "steps.json", steps)
+                print(f"{utc_now()} API COOLDOWN {run_id}: {delay}s; budgets retained", flush=True)
+                time.sleep(delay)
+                steps[run_id]["status"] = "RUNNING"
+                atomic_json(work / "steps.json", steps)
+                if "--resume" not in command:
+                    command.append("--resume")
             if process.returncode:
                 raise RuntimeError(
                     f"stage {run_id} failed ({process.returncode}); see {work / (run_id + '.log')}"
@@ -110,6 +144,8 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
             or manifest.get("selected_project_ids") != wanted
             or manifest.get("config_sha256") != expected["config_sha256"]
             or manifest.get("implementation_sha256") != expected["implementation_sha256"]
+            or manifest.get("model_config_sha256") != expected["model_config_sha256"]
+            or manifest.get("git", {}).get("commit") != git["commit"]
         ):
             raise ValueError("completed stage does not match this frozen controller")
         steps[run_id] = {
@@ -128,17 +164,27 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
         return path.relative_to(root).as_posix()
 
     try:
-        p6 = stage("phase6", "p6_hyp_dev_full_v2_001", "results/hypotheses/grounded_v2", 6, [])
+        if config.get("recovery"):
+            stage(
+                "prepare",
+                config["recovery"]["database_preparation_run_id"],
+                "results/pipeline_v2/database_recovery",
+                0,
+                [],
+            )
+        p6 = stage(
+            "phase6", f"p6_hyp_dev_full_v2_{suffix}", "results/hypotheses/grounded_v2", 6, []
+        )
         p7 = stage(
             "phase7",
-            "p7_program_graph_dev_full_v2_001",
+            f"p7_program_graph_dev_full_v2_{suffix}",
             "results/graphs/program_v2",
             7,
             ["--phase6-run", relative(p6)],
         )
         p9 = stage(
             "phase9",
-            "p9_useg_dev_full_v2_001",
+            f"p9_useg_dev_full_v2_{suffix}",
             "results/graphs/useg_v2",
             9,
             ["--phase6-run", relative(p6), "--phase7-run", relative(p7)],
@@ -148,7 +194,7 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
         for baseline in ("B6", "B7", "B8", "B9"):
             path = stage(
                 "phase10",
-                f"p10_{baseline.lower()}_dev_dry_v2_001",
+                f"p10_{baseline.lower()}_dev_dry_v2_{suffix}",
                 "results/specifications/v2/" + baseline.lower(),
                 10,
                 [*inputs, "--baseline", baseline, "--dry-run"],
@@ -157,7 +203,7 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
             if summary["llm_calls"] or summary["rejected_hypotheses"]:
                 raise ValueError(f"{baseline} full development dry-run gate failed")
             dry_runs[baseline] = path
-        pilots = {}
+        pilots: dict[str, dict[str, Any]] = {}
         for baseline, dry in dry_runs.items():
             eligible = {
                 row["project_id"]
@@ -171,12 +217,26 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
                 }
                 continue
             project = next(project for project in selected if project in eligible)
+            if config.get("recovery"):
+                project = config["recovery"]["pilot_project_id"]
+                if project not in eligible:
+                    raise ValueError("registered recovery pilot is no longer grounded")
             path = stage(
                 "phase10",
-                f"p10_{baseline.lower()}_dev_pilot_v2_001",
+                f"p10_{baseline.lower()}_dev_pilot_v2_{suffix}",
                 "results/specifications/v2/" + baseline.lower(),
                 10,
-                [*inputs, "--baseline", baseline, "--confirm-api-spend"],
+                [
+                    *inputs,
+                    "--baseline",
+                    baseline,
+                    "--confirm-api-spend",
+                    *(
+                        ["--inherit-run", config["recovery"]["phase10_seed_run"]]
+                        if baseline == "B6" and config.get("recovery")
+                        else []
+                    ),
+                ],
                 project=project,
             )
             summary = json.loads((path / "summary.json").read_text())
@@ -185,21 +245,38 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
                 or summary["rejected_hypotheses"]
                 or not summary["specifications"]
             ):
-                raise ValueError(f"{baseline} API pilot did not pass endpoint validation")
+                api_failures = summary.get("api_fatal_failures", 0) + summary.get(
+                    "api_budget_exhaustions", 0
+                )
+                raise ValueError(
+                    f"{baseline} pilot gate failed: "
+                    f"{api_failures} API failures/budget exhaustions, "
+                    f"{summary['rejected_hypotheses']} grounding rejections"
+                )
             pilots[baseline] = {"status": "PASS", "api_validated": True, "run_root": relative(path)}
         atomic_json(work / "api_pilot_gate.json", pilots)
         full_runs = {}
         for baseline in ("B6", "B7", "B8", "B9"):
             full_runs[baseline] = stage(
                 "phase10",
-                f"p10_{baseline.lower()}_dev_full_v2_001",
+                f"p10_{baseline.lower()}_dev_full_v2_{suffix}",
                 "results/specifications/v2/" + baseline.lower(),
                 10,
-                [*inputs, "--baseline", baseline, "--confirm-api-spend"],
+                [
+                    *inputs,
+                    "--baseline",
+                    baseline,
+                    "--confirm-api-spend",
+                    *(
+                        ["--inherit-run", pilots[baseline]["run_root"]]
+                        if pilots[baseline].get("api_validated")
+                        else []
+                    ),
+                ],
             )
         p11 = stage(
             "phase11",
-            "p11_diff_dev_full_v3_001",
+            f"p11_diff_dev_full_v3_{suffix}",
             "results/verification/v3",
             11,
             ["--phase10-run", relative(full_runs["B9"])],
@@ -207,7 +284,7 @@ def automate(root: Path, config_path: Path, *, resume: bool, confirm_api_spend: 
         )
         p12 = stage(
             "phase12",
-            "p12_calibration_dev_v2_001",
+            f"p12_calibration_dev_v2_{suffix}",
             "results/calibration/v2",
             12,
             [

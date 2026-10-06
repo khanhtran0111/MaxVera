@@ -462,3 +462,34 @@ uv run --frozen pytest -q
 
 Tại Phase 11 lock: canonical differential validator và full quality suite pass;
 exact command/kết quả được ghi trong experiment log và lock commit.
+
+## Recovery v2 — 2026-10-06, D-040
+
+Người dùng đã yêu cầu tự động phục hồi. Historical 001 bất biến: P6 80 successes/
+16 failures (14 no DB, 2 disk errors), P7/P9 65 graphs, dry B6–B9 pass, B6 pilot
+9 specs/1 HTTP429; controller STOPPED_AT_GATE. Sau storage cleanup, project ~77 GiB,
+free disk ~228 GiB; scientific artifacts/indexes preserved.
+
+Config `configs/experiments/pipeline_v2_recovery.yaml`, controller `dev_restart_v2_002`,
+namespace suffix002; launcher `scripts/tools/run_pipeline_v2_recovery_tmux.sh`, tmux
+`maxvera-pipeline-v2-recovery`, log `logs/pipeline_v2/development_recovery_002.log`.
+Preparation uses separate `data/interim/phase7_codeql_databases_v2_002`, recorded
+no-build extraction for missing development DBs; no overwriting old DB/status.
+P6 science compatibility checks + original archive/metadata hashes allow 80 inherited
+successes; two disk failures and 14 missing DB are reconsidered. Zero-hypothesis
+cases keep misses (5 role gaps, 10 unsupported candidate relationships), no label tuning.
+P10 reuse requires exact context/schema/model, frozen bindings and actual vulnerable
+query, inherits all reservations/logs; full inherits validated pilots without budget reset.
+Transient API -> unfinished checkpoint/exit75, six bounded cooldown retries. Budget
+and fatal API distinct from grounding rejection; three semantic failures/hypothesis,
+30 logical requests/160k tokens/project unchanged. Model/provider/queries/verifier/
+calibration support gates unchanged, source Git/model config frozen at every stage.
+Query caches/internal traces cleaned after each project, scientific outputs retained.
+No P13 execution; new confirmatory split remains required. Do not edit tracked files
+while recovery controller runs; inspect steps.json, failure.json and live stage logs.
+
+Recovery validation trước launch: 187 tests pass, Ruff/mypy (114 files) pass,
+launcher bash syntax/diff check pass; legacy P6/B6 pilot/P9 snapshots và cả 10 pilot
+contexts/schemas tương thích. Actual inherited endpoint queries vẫn phải chạy trong
+pilot002. Pilot project được pin `proj_7341ff37e347ec3be4ce` cho cả B6–B9, để tái
+kiểm cùng cohort và giữ nine-spec lineage ngay cả khi missing DB được phục hồi.

@@ -389,3 +389,162 @@ def test_inventory_uniqueness_spans_model_bases_without_rejecting_aliases() -> N
     collision = {**alias, "resolved_node_entity_id": "12"}
     eligible, ambiguous = unique_inventory_rows([row, alias, collision])
     assert not eligible and len(ambiguous) == 3
+
+
+@pytest.mark.parametrize("call_budget", [1, 30])
+def test_transport_checkpoint_resume_preserves_budget_and_not_grounding_rejection(
+    tmp_path: Path,
+    monkeypatch: Any,
+    call_budget: int,
+) -> None:
+    import json
+
+    import yaml
+
+    import src.pipeline_v2.specifications as stage
+    from src.llm.providers.openrouter import OpenRouterError
+    from src.reproduction.common import atomic_jsonl, read_jsonl
+
+    split = tmp_path / "data/processed/splits/development.csv"
+    split.parent.mkdir(parents=True)
+    split.write_text("project_id\nproj_fixture\n")
+    pack = tmp_path / "src/static_analysis/queries/v2"
+    pack.mkdir(parents=True)
+    (pack / "Grounding.qll").write_text("// fixture\n")
+    (tmp_path / "model.yaml").write_text("fixture: true\n")
+    config = {
+        "model_config": "model.yaml",
+        "codeql": {},
+        "budget": {
+            "max_context_tokens_per_call": 8192,
+            "max_output_tokens_per_call": 2048,
+            "max_calls_per_project": call_budget,
+            "max_total_input_tokens_per_project": 160000,
+        },
+    }
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(yaml.safe_dump(config))
+    p6 = tmp_path / "p6"
+    project = p6 / "projects/proj_fixture"
+    project.mkdir(parents=True)
+    (project / "database_provenance.json").write_text("{}")
+    p9 = tmp_path / "p9"
+    nodes, edges = graph()
+    atomic_jsonl(p9 / "useg/nodes.jsonl", nodes)
+    atomic_jsonl(p9 / "useg/edges.jsonl", edges)
+    atomic_jsonl(p9 / "project_status.jsonl", [{"project_id": "proj_fixture", "status": "SUCCESS"}])
+    monkeypatch.setattr(
+        stage, "dependency", lambda _r, _p, _s, phase: (p6 if phase == 6 else p9, {})
+    )
+    monkeypatch.setattr(stage, "codeql", lambda *_args: Path("/fixture/codeql"))
+    monkeypatch.setattr(stage, "_inventory_unchanged", lambda *_args: tmp_path / "database")
+    monkeypatch.setattr(stage.OpenRouterSettings, "load", lambda *_args: object())
+    monkeypatch.setattr(stage, "query_csv", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(stage, "resolution_complete", lambda *_args: True)
+    calls = []
+
+    def complete(_self: object, _messages: object, **kwargs: Any) -> str:
+        calls.append(1)
+        if len(calls) == 1:
+            raise OpenRouterError("rate limited", retryable=True, http_status=429)
+        schema = kwargs["response_schema"]["properties"]["specification"]["properties"]
+        result = {
+            "hypothesis_id": schema["hypothesis_id"]["enum"][0],
+            "candidate_cwe": "CWE-22",
+            "sanitizers": [],
+            "propagators": [],
+            "preconditions": [],
+            "summary": "unverified fixture",
+        }
+        for role in ["sources", "sinks"]:
+            result[role] = [
+                {
+                    "node_id": schema[role]["items"]["properties"]["node_id"]["enum"][0],
+                    "rationale": "typed fixture",
+                }
+            ]
+        return json.dumps({"specification": result})
+
+    monkeypatch.setattr(stage.OpenRouterClient, "complete", complete)
+    with pytest.raises(stage.RetryableSynthesisError):
+        stage.phase10(
+            tmp_path,
+            config,
+            config_path,
+            ["proj_fixture"],
+            "checkpoint",
+            "p6",
+            "p9",
+            "B6",
+            confirm_api_spend=True,
+        )
+    work = tmp_path / "results/specifications/v2/b6/.checkpoint.inprogress"
+    assert read_jsonl(work / "project_status.jsonl")[0]["status"] == "PENDING"
+    checkpoint = work / "projects/proj_fixture"
+    assert len(read_jsonl(checkpoint / "api_attempts.jsonl")) == 1
+    assert read_jsonl(checkpoint / "plans.jsonl")[-1]["status"] == "RETRYABLE_API_ERROR"
+    final = stage.phase10(
+        tmp_path,
+        config,
+        config_path,
+        ["proj_fixture"],
+        "checkpoint",
+        "p6",
+        "p9",
+        "B6",
+        confirm_api_spend=True,
+        resume=True,
+    )
+    summary = json.loads((final / "summary.json").read_text())
+    if call_budget == 1:
+        assert len(calls) == 1
+        assert summary["specifications"] == 0
+        assert summary["rejected_hypotheses"] == 0
+        assert summary["api_budget_exhaustions"] == 1
+    else:
+        assert len(calls) == 2
+        assert summary["specifications"] == 1
+        assert summary["rejected_hypotheses"] == 0
+        assert len(read_jsonl(final / "projects/proj_fixture/api_attempts.jsonl")) == 2
+        monkeypatch.setattr(
+            stage,
+            "dependency",
+            lambda _r, _p, _s, phase: (p6 if phase == 6 else p9 if phase == 9 else final, {}),
+        )
+        inherited = stage.phase10(
+            tmp_path,
+            config,
+            config_path,
+            ["proj_fixture"],
+            "inherited",
+            "p6",
+            "p9",
+            "B6",
+            confirm_api_spend=True,
+            inherit_relative=str(final.relative_to(tmp_path)),
+        )
+        inherited_summary = json.loads((inherited / "summary.json").read_text())
+        assert len(calls) == 2  # No new API call for the previously resolved specification.
+        assert inherited_summary["inherited_specifications"] == 1
+        assert len(read_jsonl(inherited / "projects/proj_fixture/api_attempts.jsonl")) == 2
+        altered = copy.deepcopy(nodes)
+        for node in altered:
+            if node["kind"] == "HYPOTHESIS":
+                node["properties"]["candidate_cwe"] = ["CWE-78"]
+        atomic_jsonl(p9 / "useg/nodes.jsonl", altered)
+        rejected = stage.phase10(
+            tmp_path,
+            config,
+            config_path,
+            ["proj_fixture"],
+            "changed",
+            "p6",
+            "p9",
+            "B6",
+            confirm_api_spend=True,
+            inherit_relative=str(final.relative_to(tmp_path)),
+        )
+        rejected_summary = json.loads((rejected / "summary.json").read_text())
+        assert rejected_summary["analysis_failures"] == 1
+        assert rejected_summary["specifications"] == 0
+        assert len(calls) == 2

@@ -79,6 +79,7 @@ def implementation_hashes(root: Path) -> dict[str, str]:
         root / "pyproject.toml",
         root / "uv.lock",
         root / "scripts/tools/run_pipeline_v2_tmux.sh",
+        root / "scripts/tools/run_pipeline_v2_recovery_tmux.sh",
     ]
     return {
         path.relative_to(root).as_posix(): sha256_file(path) for path in paths if path.is_file()
@@ -107,6 +108,7 @@ class Run:
         if require_clean and list(selected) != allowed:
             raise ValueError("canonical full run must account for the entire development split")
         self.root, self.run_id, self.phase = root, run_id, phase
+        self.config = yaml.safe_load(config_path.read_text())
         self.final = root / output / run_id
         self.work = self.final.with_name("." + run_id + ".inprogress")
         self.selected = list(selected)
@@ -191,6 +193,14 @@ class Run:
         with (self.work / "stdout.log").open("a") as handle:
             handle.write(line)
         print(line, end="", flush=True)
+        if (
+            self.phase in {6, 10, 11}
+            and self.config.get("recovery", {}).get("cache_cleanup_after_project")
+            and "inherited_from" not in fields
+        ):
+            from src.pipeline_v2.recovery import cleanup_cache
+
+            cleanup_cache(self, project, self.config)
 
     def pending(self) -> list[str]:
         return [row["project_id"] for row in self.statuses if row["status"] == "PENDING"]
@@ -498,9 +508,23 @@ def phase6(
         selected,
         resume=resume,
         require_clean=full,
+        dependencies=(
+            {
+                "historical_phase6": {
+                    "run_root": config["recovery"]["phase6_run"],
+                    "manifest_sha256": config["recovery"]["phase6_manifest_sha256"],
+                }
+            }
+            if config.get("recovery")
+            else None
+        ),
     )
     binary = codeql(root, config["codeql"])
     policy = config["codeql"]
+    if config.get("recovery"):
+        from src.pipeline_v2.recovery import inherited_phase6
+
+        inherited_phase6(run, config)
     for project in run.pending():
         started = time.monotonic()
         directory = run.work / "projects" / project

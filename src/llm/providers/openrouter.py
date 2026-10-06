@@ -29,6 +29,19 @@ def _provider_slug(value: object) -> str:
 class OpenRouterError(RuntimeError):
     """A bounded, secret-safe OpenRouter request failure."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        retryable: bool = False,
+        http_status: int | None = None,
+        retry_after_seconds: float = 0,
+    ) -> None:
+        super().__init__(message)
+        self.retryable = retryable
+        self.http_status = http_status
+        self.retry_after_seconds = retry_after_seconds
+
 
 @dataclass(frozen=True)
 class OpenRouterSettings:
@@ -198,6 +211,8 @@ class OpenRouterClient:
         prompt_sha256 = hashlib.sha256(encoded).hexdigest()
         started = time.monotonic()
         last_error = "no response"
+        retryable = False
+        http_status = None
         self.call_number += 1
         for attempt in range(1, self.settings.max_retries + 2):
             retry_delay = self._retry_delay(attempt)
@@ -264,6 +279,8 @@ class OpenRouterClient:
                 return content
             except urllib.error.HTTPError as error:
                 last_error = self._error_detail(error)
+                http_status = error.code
+                retryable = error.code in {408, 409, 429, 500, 502, 503, 504}
                 retry_delay = self._retry_delay(attempt, error)
                 self._append_log(
                     {
@@ -288,10 +305,14 @@ class OpenRouterClient:
                     break
             except (OSError, ValueError, KeyError, urllib.error.URLError) as error:
                 last_error = str(error)[:500]
+                http_status = None
+                retryable = isinstance(error, (OSError, urllib.error.URLError))
                 self._append_log(
                     {
                         "schema_version": 1,
-                        "status": "RETRY" if attempt <= self.settings.max_retries else "FAILED",
+                        "status": "RETRY"
+                        if retryable and attempt <= self.settings.max_retries
+                        else "FAILED",
                         "call": self.call_number,
                         "requested_model": self.settings.model,
                         "provider_route": self.settings.provider,
@@ -303,9 +324,16 @@ class OpenRouterClient:
                         "retry_delay_seconds": retry_delay,
                     }
                 )
+                if not retryable:
+                    break
             if attempt <= self.settings.max_retries:
                 time.sleep(retry_delay)
-        raise OpenRouterError(f"OpenRouter request failed after {attempt} attempt(s): {last_error}")
+        raise OpenRouterError(
+            f"OpenRouter request failed after {attempt} attempt(s): {last_error}",
+            retryable=retryable,
+            http_status=http_status,
+            retry_after_seconds=retry_delay,
+        )
 
 
 def validate_connection(repo_root: Path, config_path: Path | None = None) -> dict[str, Any]:

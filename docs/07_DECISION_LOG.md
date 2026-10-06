@@ -926,3 +926,32 @@ reset budget khi resume; tự fit cohort một class hoặc dùng test đã mở
 Decision mới phải ghi ngày, lý do, alternatives, impact, protocol version và
 config/result bị ảnh hưởng. Không sửa ngầm RQ, split, budget, model, tool, metric
 hoặc threshold.
+
+## D-040 — 2026-10-06: Phục hồi development v2 có lineage và bounded API retries
+
+Người dùng yêu cầu thực thi kế hoạch phục hồi sau controller 001 dừng vì rate-limit.
+Giữ protocol scientific 2.0.0, model/provider/prompt/schema/queries/ranking, budgets,
+verifier v3 và calibration minima; đăng ký config execution phục hồi riêng với
+controller/stage IDs 002. Không overwrite 001 hoặc mở historical test.
+
+Chuẩn bị vulnerable DB root riêng: symlink DB đã có, thử pinned no-build extraction
+trên 14 opaque development source trees thiếu DB, timeout 1.800s/project. Đây là
+thay đổi extraction coverage phải ghi provenance/sensitivity; archive Java support
+không thay grounded discovery. P6 kế thừa 80 thành công khi checksum, scientific
+asset/AST contracts và DB archive/metadata còn khớp; chạy lại 16 lỗi. 15 zero-candidate
+projects được audit role/relationship coverage, giữ miss và không tự thêm endpoint.
+
+API 429/network/5xx được phân loại retryable, giữ checkpoint unfinished và trả exit75.
+Controller có sáu cooldown retries tối đa; không reset logical request/token budgets.
+Transport failures không tiêu thụ semantic repair allowance, vẫn tiêu thụ tổng budget.
+Ba semantic validation failures/hypothesis; HTTP retries và route pinned giữ nguyên.
+Fatal API, budget exhaustion và grounding rejection được ghi riêng. Kế thừa P10
+spec chỉ khi context/schema/model/role descriptors không đổi và query vulnerable
+resolve lại; reservations và calls lịch sử được kế thừa có lineage. Full kế thừa
+pilot project, giữ tổng budget. Model config hash và Git commit được kiểm tại mỗi gate.
+
+Dọn query caches/internal debug traces sau mỗi project, giữ scientific outputs và
+failure provenance trong immutable run. Code/config được khóa bằng clean local commit
+trước tmux controller. P11/P12/test gates không được nới. Alternative bị bác: rerun
+same finalized pilot ID; gọi lại nine successful responses; reset budget khi retry;
+coi API outage là endpoint rejection; sửa CWE/models từ test đã mở.
