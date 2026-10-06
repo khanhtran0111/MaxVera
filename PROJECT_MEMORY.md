@@ -493,3 +493,15 @@ launcher bash syntax/diff check pass; legacy P6/B6 pilot/P9 snapshots và cả 1
 contexts/schemas tương thích. Actual inherited endpoint queries vẫn phải chạy trong
 pilot002. Pilot project được pin `proj_7341ff37e347ec3be4ce` cho cả B6–B9, để tái
 kiểm cùng cohort và giữ nine-spec lineage ngay cả khi missing DB được phục hồi.
+
+Startup correction: 002 bị ngắt trước API do no-build thiếu Maven/JDK PATH và fallback
+minimal JDK; giữ diagnostic partial output, không resume/promote 002. Canonical recovery
+chuyển sang `pipeline_v2_recovery_003.yaml`, `dev_restart_v2_003`, suffix003,
+`run_pipeline_v2_recovery_003_tmux.sh`, tmux `maxvera-pipeline-v2-recovery-003`, log
+`logs/pipeline_v2/development_recovery_003.log`. Pinned Java/Maven/Gradle environment
+explicit từ opaque source metadata, binaries all14 preflight pass; cancellation
+terminates subprocess group. Source/query scientific compatibility vẫn fail-closed.
+
+Validation snapshot003 trước launch: 189 tests pass (8.10s), Ruff toàn repo pass,
+mypy 114 source files pass, bash syntax/diff checks pass. Legacy P6 và B6 pilot
+scientific compatibility contracts đều PASS sau cancellation/toolchain fixes.

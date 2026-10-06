@@ -376,3 +376,20 @@ model bases trong Python; không dùng các IDs này để map xuyên phiên b�
 008 có 10 hypotheses và graph/dry B6–B9 pass, 0 API. Launcher tmux từ chối duplicate
 session, dirty snapshot và completed controller; tự thêm --resume cho controller
 chưa hoàn tất. Detach bằng Ctrl+b rồi d, phiên vẫn chạy khi đóng terminal.
+
+### Snapshot khởi chạy đã sửa: 003
+
+Preflight thực tế phát hiện 002 không truyền pinned Maven/JDK vào PATH, extractor
+fallback minimal JDK. Controller002 được ngắt trước API; partial preparation và
+DB trial giữ diagnostic, không được promote hoặc tái dùng. Config/script002 giữ nguyên.
+Snapshot003 dùng `configs/experiments/pipeline_v2_recovery_003.yaml`, controller
+`dev_restart_v2_003`, stage suffix003, DB root `phase7_codeql_databases_v2_003` và
+launcher `scripts/tools/run_pipeline_v2_recovery_003_tmux.sh`, tmux
+`maxvera-pipeline-v2-recovery-003`, log `logs/pipeline_v2/development_recovery_003.log`.
+
+Extraction environment chọn pinned JDK/Maven/Gradle từ opaque analysis manifest,
+đặt JAVA_HOME và PATH, ghi toolchain provenance. Preflight xác minh binaries cho
+cả 14 source trees trước launch. Cancellation của subprocess giờ terminate toàn
+process group để không để lại extractor giữ lock. Legacy scientific reuse checks
+chỉ bỏ qua đúng cancellation handler đã đăng ký; query/extraction helpers khác,
+model/provider payload, inventories và discovery vẫn phải tương thích.

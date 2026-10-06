@@ -1,0 +1,94 @@
+schema_version: 2
+protocol_version: 2.0.0
+status: development_v2
+analysis_scope: development
+historical_disposition: configs/experiments/pipeline_v2.yaml
+model_config: configs/models/gpt_oss_20b_openrouter.yaml
+top_k: 10
+dataset:
+  development_split_sha256: f534192c4272320f358602d66caf094b2d479ae4aa83a338b3f2389d0ad183ce
+  vulnerable_database_root: data/interim/phase7_codeql_databases_v2_003
+  fixed_database_root: data/interim/phase11_fixed_codeql_databases
+  labels: data/processed/evaluator_only/D_extended_labels.csv
+  labels_sha256: 2ed7a442d65980085d64c27660c4e4d82e10448023446d520e01193622c032c0
+  split_groups: data/processed/evaluator_only/D_extended_split_groups.csv
+  split_groups_sha256: 0a057922fb115d4ab4eaaa1702f4a9180f5ce37d28c76d5565cde02fed8dbf7d
+phase8:
+  run_id: p8_skg_global_full_002
+  run_root: results/graphs/knowledge/p8_skg_global_full_002
+  manifest_sha256: 91ca35b8ee2b9f153ba8dedfe75a4e165231b5a3b86cc5219e7623a2497f270a
+codeql:
+  version: 2.26.2
+  java_pack: 9.2.2
+  threads: 2
+  ram_mb: 8192
+  timeout_seconds: 1800
+  project_workers: 1
+budget:
+  max_calls_per_project: 30
+  max_total_input_tokens_per_project: 160000
+  max_context_tokens_per_call: 8192
+  max_output_tokens_per_call: 2048
+verification:
+  version: semantic-differential-verifier-v3
+  max_query_invocations_per_project: 40
+  fixed_mapping: exact_line_then_unique_callable_symbol_slot_and_model
+  unresolved_is_verified: false
+calibration:
+  target: candidate_cwe_correct_on_v3_verified_findings
+  minimum_repository_groups: 8
+  minimum_records_per_class: 5
+  minimum_groups_per_class: 2
+  require_two_class_training_folds: true
+  candidates:
+  - platt
+  - isotonic
+  - logistic
+  feature_names:
+  - hypothesis_score
+  - path_count_score
+  - path_compactness
+  - raw_score
+  selection_order:
+  - brier
+  - ece_equal_width
+  - aurc
+  - model_name
+  ece_bins: 10
+  optimization:
+    l2: 0.05
+    iterations: 3000
+    learning_rate: 0.1
+  routing:
+    target_accept_precision: 0.8
+    target_verify_recall: 0.8
+    max_abstain_positive_rate: 0.05
+    minimum_accept_count: 20
+    minimum_accept_groups: 3
+    accept_wilson_lower_bound: 0.8
+    fallback_verified: VERIFY
+    fallback_unverified: ABSTAIN
+    unverified_is_negative: false
+execution:
+  overwrite: false
+  clean_snapshot_for_full: true
+  all_baseline_dry_runs_before_api: true
+  all_baseline_api_pilots_before_full: true
+  historical_test_allowed: false
+  confirmatory_test_split: null
+  controller_id: dev_restart_v2_003
+  run_suffix: '003'
+recovery:
+  phase6_run: results/hypotheses/grounded_v2/p6_hyp_dev_full_v2_001
+  phase6_manifest_sha256: 53b36a10e0be1dd19c231561647ee38a1593d74a24c92f4e2f87506d177c0953
+  source_root: data/interim/phase6_project_sources
+  database_preparation_run_id: p6_database_dev_recovery_v2_003
+  build_mode: none
+  database_build_timeout_seconds: 1800
+  minimum_free_disk_gib: 30
+  cache_cleanup_after_project: true
+  max_stage_retries: 6
+  stage_cooldown_seconds: 60
+  stage_cooldown_max_seconds: 900
+  phase10_seed_run: results/specifications/v2/b6/p10_b6_dev_pilot_v2_001
+  pilot_project_id: proj_7341ff37e347ec3be4ce

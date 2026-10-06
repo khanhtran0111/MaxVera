@@ -548,3 +548,51 @@ def test_transport_checkpoint_resume_preserves_budget_and_not_grounding_rejectio
         assert rejected_summary["analysis_failures"] == 1
         assert rejected_summary["specifications"] == 0
         assert len(calls) == 2
+
+
+def test_database_extraction_receives_pinned_java_and_maven_on_path(tmp_path: Path) -> None:
+    import os
+    import shutil
+
+    from src.pipeline_v2.recovery import database_environment
+
+    java = tmp_path / "jdk/bin/java"
+    java.parent.mkdir(parents=True)
+    java.write_text("#!/bin/sh\nexit 0\n")
+    java.chmod(0o755)
+    maven = tmp_path / "tools/maven/bin/mvn"
+    maven.parent.mkdir(parents=True)
+    maven.write_text("#!/bin/sh\nexit 0\n")
+    maven.chmod(0o755)
+    policy = {
+        "install_root": "tools",
+        "jdk": {"8u202": {"env_home": "FIXTURE_JAVA"}},
+        "maven": {"3.5.0": {"directory": "maven"}},
+    }
+    row = {"jdk_version": "8u202", "maven_version": "3.5.0"}
+    env, recorded = database_environment(
+        tmp_path, row, policy, {"FIXTURE_JAVA": str(java.parent.parent)}
+    )
+    assert shutil.which("java", path=env["PATH"]) == str(java)
+    assert shutil.which("mvn", path=env["PATH"]) == str(maven)
+    assert env["JAVA_HOME"] == str(java.parent.parent)
+    assert recorded["jdk_version"] == "8u202"
+    assert env["PATH"].split(os.pathsep)[0] == str(java.parent)
+    with pytest.raises(ValueError, match="pinned JDK unavailable"):
+        database_environment(tmp_path, row, policy, {})
+
+
+def test_cancelled_query_terminates_its_process_group(monkeypatch: Any) -> None:
+    import src.graphs.program.runner as runner
+
+    class Interrupted:
+        def communicate(self, **_kwargs: object) -> tuple[str, str]:
+            raise KeyboardInterrupt
+
+    child = Interrupted()
+    stopped = []
+    monkeypatch.setattr(runner.subprocess, "Popen", lambda *_args, **_kwargs: child)
+    monkeypatch.setattr(runner, "_terminate_process_group", lambda process: stopped.append(process))
+    with pytest.raises(KeyboardInterrupt):
+        runner._run_command(["fixture"], timeout=1)
+    assert stopped == [child]

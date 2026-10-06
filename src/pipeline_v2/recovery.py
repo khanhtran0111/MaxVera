@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import shutil
 import subprocess
 import zipfile
@@ -14,6 +15,7 @@ from typing import Any
 
 import yaml
 
+from src.common.envfile import effective_env
 from src.common.provenance import sha256_file
 from src.graphs.program.runner import _run_command
 from src.pipeline_v2.runtime import Run, codeql, dependency, implementation_hashes
@@ -25,6 +27,7 @@ INFRASTRUCTURE_FILES = {
     "src/pipeline_v2/orchestrator.py",
     "src/pipeline_v2/__main__.py",
     "src/llm/providers/openrouter.py",
+    "src/graphs/program/runner.py",
     "scripts/tools/run_pipeline_v2_tmux.sh",
 }
 
@@ -52,6 +55,19 @@ def ast_contract(source: str, name: str, *, loop_only: bool = False) -> str:
     if loop_only:
         assert isinstance(node, ast.FunctionDef)
         node = next(item for item in node.body if isinstance(item, ast.For))
+    if name == "_run_command":
+        expected = ast.parse(
+            "try:\n pass\nexcept BaseException:\n _terminate_process_group(process)\n raise\n"
+        ).body[0]
+        assert isinstance(expected, ast.Try)
+        approved = ast.dump(expected.handlers[0], include_attributes=False)
+        for statement in ast.walk(node):
+            if isinstance(statement, ast.Try):
+                statement.handlers = [
+                    handler
+                    for handler in statement.handlers
+                    if ast.dump(handler, include_attributes=False) != approved
+                ]
     return ast.dump(node, include_attributes=False)
 
 
@@ -91,6 +107,11 @@ def compatible_history(root: Path, config: Mapping[str, Any], path: Path) -> Non
             "STRATEGIES",
         ],
         "src/llm/providers/openrouter.py": ["OpenRouterClient._payload"],
+        "src/graphs/program/runner.py": [
+            "_run_command",
+            "_terminate_process_group",
+            "_assert_database_cache_unlocked",
+        ],
     }
     for name, functions in checks.items():
         previous = subprocess.check_output(["git", "show", f"{revision}:{name}"], cwd=root).decode()
@@ -188,12 +209,58 @@ def cleanup_cache(run: Run, project: str, config: Mapping[str, Any]) -> None:
             log.write_text(f"cache cleanup unavailable: {type(error).__name__}: {error}\n")
 
 
+def database_environment(
+    root: Path, row: Mapping[str, str], toolchain: Mapping[str, Any], machine: Mapping[str, str]
+) -> tuple[dict[str, str], dict[str, str]]:
+    environment = dict(os.environ)
+    jdk = row["jdk_version"]
+    variable = toolchain["jdk"][jdk]["env_home"]
+    java_home = Path(machine.get(variable, "")).expanduser().resolve()
+    if not machine.get(variable) or not (java_home / "bin/java").is_file():
+        raise ValueError(f"pinned JDK unavailable: {jdk}")
+    environment["JAVA_HOME"] = str(java_home)
+    directories = [java_home / "bin"]
+    recorded = {"jdk_version": jdk, "jdk_home": str(java_home)}
+    maven = str(row.get("maven_version", "n/a"))
+    if maven in {"None", "", "n/a"}:
+        maven = "3.9.8"
+    maven_home = root / toolchain["install_root"] / toolchain["maven"][maven]["directory"]
+    if not (maven_home / "bin/mvn").is_file():
+        raise ValueError(f"pinned Maven unavailable: {maven}")
+    directories.append(maven_home / "bin")
+    recorded.update(maven_version=maven, maven_home=str(maven_home))
+    gradle = row.get("gradle_version")
+    if gradle not in {None, "", "n/a"}:
+        gradle_home = root / toolchain["install_root"] / toolchain["gradle"][gradle]["directory"]
+        if not (gradle_home / "bin/gradle").is_file():
+            raise ValueError(f"pinned Gradle unavailable: {gradle}")
+        directories.append(gradle_home / "bin")
+        recorded.update(gradle_version=str(gradle), gradle_home=str(gradle_home))
+    environment["PATH"] = os.pathsep.join(
+        [*(str(path) for path in directories), environment.get("PATH", "")]
+    )
+    if jdk == "17":
+        environment["JAVA_TOOL_OPTIONS"] = " ".join(
+            [environment.get("JAVA_TOOL_OPTIONS", ""), "-XX:-UseContainerSupport"]
+        ).strip()
+    return environment, recorded
+
+
 def prepare_databases(
     root: Path, config: Mapping[str, Any], config_path: Path, *, resume: bool
 ) -> Path:
     from src.pipeline_v2.runtime import development_ids
 
     recovery = config["recovery"]
+    from src.reproduction.common import read_csv
+
+    source_rows = {
+        r["project_id"]: r
+        for r in read_csv(root / "data/processed/analysis_input/D_extended_projects.csv")
+    }
+    toolchain_path = root / "configs/toolchains/cwe_bench_java.yaml"
+    toolchain = yaml.safe_load(toolchain_path.read_text())
+    machine = effective_env(root / ".env")
     selected = development_ids(root)
     source, lock = dependency(root, recovery["phase6_run"], selected, 6)
     if lock["manifest_sha256"] != recovery["phase6_manifest_sha256"]:
@@ -208,7 +275,7 @@ def prepare_databases(
         selected,
         resume=resume,
         require_clean=True,
-        dependencies={"historical_phase6": lock},
+        dependencies={"historical_phase6": lock, "toolchain_sha256": sha256_file(toolchain_path)},
     )
     destination = root / config["dataset"]["vulnerable_database_root"]
     destination.mkdir(parents=True, exist_ok=True)
@@ -239,6 +306,10 @@ def prepare_databases(
             revision = subprocess.check_output(
                 ["git", "-C", str(source_tree), "rev-parse", "HEAD"], text=True
             ).strip()
+            environment, toolchain_record = database_environment(
+                root, source_rows[project], toolchain, machine
+            )
+            atomic_json(work / "toolchain.json", toolchain_record)
             subprocess.run(["git", "-C", str(source_tree), "diff", "--quiet", "HEAD"], check=True)
             java = subprocess.check_output(
                 ["git", "-C", str(source_tree), "ls-files", "*.java"], text=True
@@ -271,7 +342,10 @@ def prepare_databases(
                 f"--source-root={source_tree}",
             ]
             result = _run_command(
-                command, cwd=source_tree, timeout=int(recovery["database_build_timeout_seconds"])
+                command,
+                cwd=source_tree,
+                env=environment,
+                timeout=int(recovery["database_build_timeout_seconds"]),
             )
             (work / "build.log").write_text(
                 f"exit_code={result.returncode}\n{result.stdout}\n{result.stderr}"
@@ -300,6 +374,7 @@ def prepare_databases(
                 "SUCCESS",
                 "recovered vulnerable database; grounding checked in Phase 6",
                 source_git_commit=revision,
+                toolchain=toolchain_record,
                 build_mode="none",
                 archived_java_files=extracted,
                 source_archive_sha256=sha256_file(target / "src.zip"),

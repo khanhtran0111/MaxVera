@@ -955,3 +955,10 @@ failure provenance trong immutable run. Code/config được khóa bằng clean 
 trước tmux controller. P11/P12/test gates không được nới. Alternative bị bác: rerun
 same finalized pilot ID; gọi lại nine successful responses; reset budget khi retry;
 coi API outage là endpoint rejection; sửa CWE/models từ test đã mở.
+
+D-040 startup correction: trial002 thiếu Maven/JDK PATH, tạo một diagnostic no-build
+DB bằng minimal JDK rồi được ngắt trước API. Giữ nguyên config/artifacts002; launch
+canonical recovery ở namespace003/config riêng. Source metadata chọn toolchain pinned,
+JAVA_HOME/PATH được truyền explicit và ghi provenance; preflight all14 binaries.
+Cancellation handler terminate process group được phép như transport-only change;
+AST compatibility phải khớp sau khi bỏ đúng handler này, không bỏ query semantics.

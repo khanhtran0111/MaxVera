@@ -252,3 +252,14 @@ Validation trước launch: 187 tests pass, Ruff toàn repository pass, mypy 114
 files pass, bash syntax và git diff checks pass. Snapshot/checksum của legacy P6,
 B6 pilot và P9 đã xác minh; cả 10 legacy pilot context text/schema còn tương thích.
 Actual vulnerable re-resolution của 9 inherited specs sẽ chạy trong pilot002 trước API.
+
+Startup002 phát hiện no-build fallback minimal JDK vì chưa truyền toolchain environment;
+đã ngắt trước API, giữ partial controller/preparation diagnostic. Snapshot003 sửa
+JAVA_HOME/PATH từ pinned opaque source metadata; all14 pinned toolchains preflight pass.
+Run configs/scripts002 giữ nguyên; active launcher sau freeze là
+`run_pipeline_v2_recovery_003_tmux.sh`, controller `dev_restart_v2_003`. Cancellation
+regression bảo đảm subprocess process group được terminate khi interrupt.
+
+Validation snapshot003 trước launch: 189 tests pass (8.10s), Ruff toàn repo pass,
+mypy 114 source files pass, bash syntax/diff checks pass. Legacy P6 và B6 pilot
+scientific compatibility contracts đều PASS sau cancellation/toolchain fixes.

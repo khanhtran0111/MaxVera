@@ -106,6 +106,9 @@ def _run_command(
             output=stdout,
             stderr=stderr,
         ) from error
+    except BaseException:
+        _terminate_process_group(process)
+        raise
     return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
