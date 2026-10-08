@@ -962,3 +962,38 @@ canonical recovery ở namespace003/config riêng. Source metadata chọn toolch
 JAVA_HOME/PATH được truyền explicit và ghi provenance; preflight all14 binaries.
 Cancellation handler terminate process group được phép như transport-only change;
 AST compatibility phải khớp sau khi bỏ đúng handler này, không bỏ query semantics.
+
+## D-041 — 2026-10-08: Sửa đường chạy B9 v2 end-to-end trên development
+
+Người dùng yêu cầu sửa các lỗi đang chặn chạy. Controller003 đã dừng tại B6 full
+vì HTTP429/retry exhaustion; B9 v2 mới có dry/pilot synthesis. USEG003 có 76/96
+project success và 694 hypotheses; 12 trong 76 project thiếu fixed DB vì preparation
+cũ chỉ chọn cohort historical. Giữ nguyên artifacts/configs003 và các misses.
+
+Đăng ký config `configs/experiments/b9_pipeline_v2.yaml`, numbered entrypoint
+`scripts/10_run_b9_full_useg.sh --pipeline-v2`, controller `src/pipeline_v2/b9.py`.
+Reuse pinned P6/P7/P9 inputs003 qua manifests/checksums, config và scientific
+asset/discovery AST compatibility; chạy B9 dry, pilot end-to-end rồi full, fixed
+preparation, verifier v3, conditional calibration và validator. Không đòi B6–B8
+full để chạy development B9. Historical numbered entrypoint giữ nguyên.
+
+Fixed preparation mới chọn actual B9 v2 specifications/frozen endpoints trong
+evaluator process; ghi statuses cho mọi selected project, parent fixed DB chỉ
+reuse qua pinned provenance/hash. DB mới ở namespace v2_004 theo preparation run
+ID; không sửa parent metadata. No-build dùng pinned toolchain, không fallback
+minimal JDK. Verifier kiểm fixed preparation/archive/metadata và giữ specification
+từ partial failure bằng UNVERIFIED_UPSTREAM_ANALYSIS_FAILURE, không drop khỏi routing.
+
+Transport pacing 15s giữa attempts, kể cả client mới, nằm trong execution config.
+Payload/model/provider, model retry limit, 30 logical attempts/project và tokens
+giữ nguyên. HTTP cooldown exhaustion ghi WAITING_FOR_API/exit75; resume giữ counters
+và reservations. Full kế thừa pilot cùng snapshot để không gọi lại response đã có.
+
+Validator yêu cầu một verification/routing record cho mỗi spec, snapshot/lineage,
+differential evidence thật, final statuses và budgets. Thiếu calibration support
+vẫn xuất conservative routing, calibrated Full/ACCEPT tắt. Report chỉ là development
+operational counts. Protocol scientific 2.0.0, RQ/split/metrics/thresholds giữ nguyên;
+holdout chưa mở mới vẫn thiếu, full cần clean local commit và immutable IDs.
+
+Alternatives bị bác: đổi route/fallback âm thầm để né429; giữ cohort preparation
+cũ; bỏ partial specifications; overwrite artifacts003; hạ verifier/calibration gate.

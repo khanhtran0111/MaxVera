@@ -18,6 +18,16 @@ def main() -> int:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("baseline_args", nargs=argparse.REMAINDER)
     args = parser.parse_args()
+    forwarded = list(args.baseline_args)
+    if forwarded[:1] == ["--"]:
+        forwarded = forwarded[1:]
+    if "--pipeline-v2" in forwarded:
+        if args.baseline_id != "B9":
+            parser.error("--pipeline-v2 end-to-end entrypoint requires B9")
+        from src.pipeline_v2.b9 import main as b9_main
+
+        forwarded.remove("--pipeline-v2")
+        return b9_main(forwarded)
     with args.config.open("r", encoding="utf-8") as handle:
         config = yaml.safe_load(handle)
     if not isinstance(config, dict) or config.get("baseline_id") != args.baseline_id:

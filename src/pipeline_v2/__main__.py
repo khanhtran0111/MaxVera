@@ -27,6 +27,7 @@ def main() -> None:
     parser.add_argument("--phase10-run")
     parser.add_argument("--phase11-run")
     parser.add_argument("--inherit-run")
+    parser.add_argument("--fixed-preparation-run")
     parser.add_argument("--baseline", choices=["B6", "B7", "B8", "B9"], default="B9")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true")
@@ -107,7 +108,14 @@ def main() -> None:
         from src.pipeline_v2.verification import phase11
 
         output = phase11(
-            root, config, config_path, selected, args.run_id, required("phase10_run"), **common
+            root,
+            config,
+            config_path,
+            selected,
+            args.run_id,
+            required("phase10_run"),
+            fixed_preparation_relative=args.fixed_preparation_run,
+            **common,
         )
     else:
         from src.pipeline_v2.calibration import phase12

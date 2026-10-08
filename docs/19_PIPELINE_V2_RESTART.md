@@ -393,3 +393,34 @@ cả 14 source trees trước launch. Cancellation của subprocess giờ termin
 process group để không để lại extractor giữ lock. Legacy scientific reuse checks
 chỉ bỏ qua đúng cancellation handler đã đăng ký; query/extraction helpers khác,
 model/provider payload, inventories và discovery vẫn phải tương thích.
+
+### B9 development end-to-end — D-041 (2026-10-08)
+
+Controller003 đã STOPPED_AT_GATE ở B6 full/HTTP429. Controller B9 riêng reuse pinned
+inputs003; fixed preparation chọn actual v2 cohort và giữ parent DB/status nguyên vẹn.
+
+```bash
+bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --mode full \
+  --run-id b9_e2e_dev_full_v2_004 --dry-run
+bash scripts/tools/run_b9_v2_tmux.sh --mode pilot \
+  --run-id b9_e2e_dev_pilot_v2_004 --confirm-api-spend
+```
+
+Preflight dry không gọi API. Controller chạy actual B9 dry → API pilot → fixed
+DB → verifier v3 → conditional routing → validator. Full tự chạy pilot end-to-end
+và kế thừa responses/budgets cùng snapshot, sau clean local commit:
+
+```bash
+bash scripts/tools/run_b9_v2_tmux.sh --mode full \
+  --run-id b9_e2e_dev_full_v2_004 --confirm-api-spend
+bash scripts/tools/validate_b9_v2.sh \
+  --run-root results/pipeline_v2/b9/b9_e2e_dev_full_v2_004
+```
+
+Launcher từ chối duplicate session; xem pane/log để biết job đang chạy hay đã dừng.
+Resume numbered script với cùng flags và --resume; không sửa code/config giữa run,
+không overwrite finalized output. HTTP retry exhaustion ghi WAITING_FOR_API/exit75,
+giữ checkpoints/counters/budgets. Outputs: findings.jsonl, metrics_operational.json,
+validation.json, report.md, development_lock.json và immutable stage IDs/checksums.
+Conservative VERIFY/ABSTAIN vẫn hoàn tất kỹ thuật khi calibration ineligible,
+nhưng không phải calibrated Full/confirmatory evaluation. Holdout mới vẫn chưa mở.

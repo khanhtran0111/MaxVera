@@ -437,6 +437,9 @@ def phase10(
                                 "synthesis_attempt": attempt,
                                 "pipeline_version": 2,
                             },
+                            request_interval_seconds=float(
+                                config.get("execution", {}).get("llm_request_interval_seconds", 0)
+                            ),
                         )
                         # Reserve in-flight calls before sending; resume preserves the charge.
                         reserved.append(

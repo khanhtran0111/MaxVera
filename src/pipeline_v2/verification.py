@@ -154,6 +154,7 @@ def phase11(
     *,
     resume: bool = False,
     full: bool = False,
+    fixed_preparation_relative: str | None = None,
 ) -> Path:
     if os.environ.get("MAXVERA_DATA_ROLE") != "evaluator":
         raise ValueError("verifier v3 requires a separate evaluator process")
@@ -162,6 +163,27 @@ def phase11(
     if upstream_manifest["dependencies"].get("dry_run"):
         raise ValueError("verifier cannot consume a dry-run synthesis artifact")
     fixed_root = root / config["dataset"]["fixed_database_root"]
+    fixed_lock: dict[str, Any] = {}
+    if fixed_preparation_relative:
+        prepared, fixed_lock = dependency(root, fixed_preparation_relative, selected, 0)
+        preparation = json.loads((prepared / "preparation_manifest.json").read_text())
+        if preparation.get("phase10_manifest_sha256") != lock["manifest_sha256"]:
+            raise ValueError("fixed preparation is not bound to this synthesis run")
+        fixed_root = root / preparation["database_root"]
+        if not fixed_root.resolve().is_relative_to((root / "data/interim").resolve()):
+            raise ValueError("fixed database root is outside data/interim")
+        if sha256_file(fixed_root / "preparation_manifest.json") != sha256_file(
+            prepared / "preparation_manifest.json"
+        ):
+            raise ValueError("fixed database preparation manifest changed")
+        for database_record in read_jsonl(prepared / "databases.jsonl"):
+            if database_record["project_id"] not in selected or any(
+                sha256_file(fixed_root / database_record["project_id"] / filename)
+                != database_record[field]
+                for filename, field in (("src.zip", "source_archive_sha256"),
+                                        ("codeql-database.yml", "metadata_sha256"))
+            ):
+                raise ValueError("fixed database provenance changed")
     preparation = json.loads((fixed_root / "preparation_manifest.json").read_text())
     if (
         preparation.get("development_only") is not True
@@ -186,15 +208,40 @@ def phase11(
             "fixed_preparation": {
                 "manifest_sha256": sha256_file(fixed_root / "preparation_manifest.json"),
                 "status_sha256": sha256_file(fixed_root / "build_status.jsonl"),
+                **fixed_lock,
             },
         },
         require_clean=full,
     )
+    if fixed_preparation_relative:
+        run.config["dataset"] = {
+            **run.config["dataset"],
+            "fixed_database_root": fixed_root.relative_to(root).as_posix(),
+        }
     binary = codeql(root, config["codeql"])
     p10_status = {row["project_id"]: row for row in read_jsonl(upstream / "project_status.jsonl")}
     specifications = read_jsonl(upstream / "specifications.jsonl")
     for project in run.pending():
         if p10_status[project]["status"] != "SUCCESS":
+            atomic_jsonl(
+                run.work / "projects" / project / "verification_results.jsonl",
+                [
+                    {
+                        "project_id": project,
+                        "hypothesis_id": specification["hypothesis_id"],
+                        "specification_id": specification["specification_id"],
+                        "candidate_cwe": specification["candidate_cwe"],
+                        "verification_version": "semantic-differential-verifier-v3",
+                        "status": "UNVERIFIED_UPSTREAM_ANALYSIS_FAILURE",
+                        "vulnerable": None,
+                        "fixed": None,
+                        "llm_calls": 0,
+                        "llm_tokens": 0,
+                    }
+                    for specification in specifications
+                    if specification["project_id"] == project
+                ],
+            )
             run.status(project, "ANALYSIS_FAILED", "inherited Phase 10 analysis miss")
             continue
         project_specs = [row for row in specifications if row["project_id"] == project]

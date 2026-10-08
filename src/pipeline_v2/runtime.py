@@ -82,6 +82,12 @@ def implementation_hashes(root: Path) -> dict[str, str]:
         root / "scripts/tools/run_pipeline_v2_recovery_tmux.sh",
         root / "scripts/tools/run_pipeline_v2_recovery_003_tmux.sh",
         root / "configs/toolchains/cwe_bench_java.yaml",
+        root / "src/verification/prepare_fixed.py",
+        root / "src/data/build_projects.py",
+        root / "src/graphs/program/build_databases.py",
+        root / "src/cli/run_baseline.py",
+        root / "scripts/tools/run_b9_v2_tmux.sh",
+        root / "scripts/10_run_b9_full_useg.sh",
     ]
     return {
         path.relative_to(root).as_posix(): sha256_file(path) for path in paths if path.is_file()
@@ -197,7 +203,10 @@ class Run:
         print(line, end="", flush=True)
         if (
             self.phase in {6, 10, 11}
-            and self.config.get("recovery", {}).get("cache_cleanup_after_project")
+            and self.config.get("execution", {}).get(
+                "cache_cleanup_after_project",
+                self.config.get("recovery", {}).get("cache_cleanup_after_project"),
+            )
             and "inherited_from" not in fields
         ):
             from src.pipeline_v2.recovery import cleanup_cache

@@ -1,6 +1,6 @@
 # MaxVera — Project Memory
 
-> Cập nhật: 2026-10-05 (Asia/Saigon)
+> Cập nhật: 2026-10-08 (Asia/Saigon)
 > Phase 11 canonical run commit:
 > `4b898bfe9a3f16c494ec1942caf95f51e29db221`
 > Phase 11 development lock commit:
@@ -505,3 +505,24 @@ terminates subprocess group. Source/query scientific compatibility vẫn fail-cl
 Validation snapshot003 trước launch: 189 tests pass (8.10s), Ruff toàn repo pass,
 mypy 114 source files pass, bash syntax/diff checks pass. Legacy P6 và B6 pilot
 scientific compatibility contracts đều PASS sau cancellation/toolchain fixes.
+
+## B9 end-to-end fixes — 2026-10-08, D-041
+
+Controller003 thực tế STOPPED_AT_GATE tại B6 full vì HTTP429/retry exhaustion.
+P6: 93/96 success, 694 hypotheses; P7/P9: 76/96 success, 20 explicit misses.
+B9 dry/pilot003 checksum valid; 10 specs trên một project, chưa có full/v3/calibration.
+12/76 project cần fixed DB mới do preparation cũ chỉ chọn cohort historical.
+
+Implemented `src/pipeline_v2/b9.py`, `fixed.py`, `validate.py`; config
+`configs/experiments/b9_pipeline_v2.yaml`; numbered B9 nhận --pipeline-v2.
+Controller reuse inputs003 và chạy riêng B9 dry → pilot end-to-end → full →
+fixed preparation → verifier v3 → conditional calibration → validator/report.
+Parent fixed DB/status giữ nguyên; DB mới ở namespace v2_004. Partial synthesis
+specs có UNVERIFIED_UPSTREAM_ANALYSIS_FAILURE; pacing15s và WAITING_FOR_API/exit75
+giữ bounded retries/budgets. No new holdout, không claim calibrated Full khi thiếu support.
+
+Validation snapshot trước pilot: 198 tests pass, Ruff/mypy (117 files), bash syntax,
+diff checks và smoke cleanup assertion pass. Chưa có canonical B9 full lock. API connection
+probe 2026-10-08 nhận nonempty response từ pinned AkashML/GPT-OSS20B; chưa chứng minh
+full workload không429. Launcher scripts/tools/run_b9_v2_tmux.sh, validator
+scripts/tools/validate_b9_v2.sh; live pilot/full phải kiểm result validator.

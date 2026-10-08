@@ -12,6 +12,22 @@ The development v2 runner and verifier v3 are implemented in `src/pipeline_v2`,
 with a separate [execution config](configs/experiments/pipeline_v2_execution.yaml).
 Full development outputs and the final pipeline lock must complete before a new holdout is opened.
 
+B9 v2 now has a separate development end-to-end controller using pinned recovery003
+inputs, synthesis, fixed preparation, verifier v3, conditional routing and validation:
+
+```bash
+bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --mode full \
+  --run-id b9_e2e_dev_full_v2_004 --dry-run
+bash scripts/tools/run_b9_v2_tmux.sh --mode pilot \
+  --run-id b9_e2e_dev_pilot_v2_004 --confirm-api-spend
+```
+
+Full mode requires a clean committed snapshot and runs an end-to-end pilot gate
+before full synthesis. Add `--resume` after a checkpointed failure; validate a
+completed controller with `scripts/tools/validate_b9_v2.sh --run-root PATH`.
+Without `--pipeline-v2`, B9 retains historical synthesis-only behavior. See
+[D-041](docs/07_DECISION_LOG.md) and the [v2 runbook](docs/19_PIPELINE_V2_RESTART.md).
+
 MaxVera is a reproducible research scaffold for graph-grounded, zero-hint,
 repository-level vulnerability discovery in Java. The analysis pipeline uses
 CodeQL for static verification and `openai/gpt-oss-20b` through a pinned

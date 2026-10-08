@@ -26,6 +26,28 @@ def _settings() -> OpenRouterSettings:
     )
 
 
+def test_request_pacing_is_shared_across_clients_and_retries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clock = [100.0]
+    sleeps = []
+
+    def sleep(seconds: float) -> None:
+        sleeps.append(seconds)
+        clock[0] += seconds
+
+    monkeypatch.setattr("src.llm.providers.openrouter.time.monotonic", lambda: clock[0])
+    monkeypatch.setattr("src.llm.providers.openrouter.time.sleep", sleep)
+    monkeypatch.setattr(OpenRouterClient, "_last_request_started", None)
+    first = OpenRouterClient(_settings(), request_interval_seconds=15)
+    first._pace_request()
+    first._pace_request()
+    second = OpenRouterClient(_settings(), request_interval_seconds=15)
+    second._pace_request()
+    assert sleeps == [15, 15]
+    assert first._payload([], expect_json=True) == second._payload([], expect_json=True)
+
+
 def test_payload_pins_model_provider_privacy_and_no_fallback() -> None:
     client = OpenRouterClient(_settings())
     payload = client._payload([{"role": "user", "content": "return JSON"}], expect_json=True)

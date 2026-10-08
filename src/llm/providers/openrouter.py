@@ -107,16 +107,31 @@ class OpenRouterSettings:
 class OpenRouterClient:
     """Synchronous one-request-at-a-time client with provenance-only logging."""
 
+    _last_request_started: float | None = None
+
     def __init__(
         self,
         settings: OpenRouterSettings,
         call_log: Path | None = None,
         log_context: Mapping[str, Any] | None = None,
+        *,
+        request_interval_seconds: float = 0,
     ):
+        if not 0 <= request_interval_seconds <= 60:
+            raise ValueError("request interval must be between 0 and 60 seconds")
         self.settings = settings
         self.call_log = call_log
         self.log_context = dict(log_context or {})
         self.call_number = 0
+        self.request_interval_seconds = request_interval_seconds
+
+    def _pace_request(self) -> None:
+        previous = OpenRouterClient._last_request_started
+        if previous is not None:
+            remaining = self.request_interval_seconds - (time.monotonic() - previous)
+            if remaining > 0:
+                time.sleep(remaining)
+        OpenRouterClient._last_request_started = time.monotonic()
 
     def _payload(
         self,
@@ -215,6 +230,7 @@ class OpenRouterClient:
         http_status = None
         self.call_number += 1
         for attempt in range(1, self.settings.max_retries + 2):
+            self._pace_request()
             retry_delay = self._retry_delay(attempt)
             request = urllib.request.Request(
                 f"{self.settings.base_url}/chat/completions",
