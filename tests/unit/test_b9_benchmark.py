@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,7 @@ import yaml
 from src.common.provenance import sha256_file
 from src.pipeline_v2 import benchmark_evaluate, benchmark_inputs, calibration, runtime
 from src.pipeline_v2.benchmark_evaluate import case_alignment, paper_aggregate, path_metric
+from src.pipeline_v2.benchmark_inputs import inherit_discovery
 from src.pipeline_v2.runtime import Run, configuration, dependency, selection_ids
 from src.reproduction.common import atomic_jsonl, read_jsonl
 
@@ -116,6 +118,128 @@ def test_case_alignment_uses_case_identity_not_opaque_ids() -> None:
         case_alignment([a], [{**b, "cve_id": "different"}])
     with pytest.raises(ValueError, match="ambiguous"):
         case_alignment([a, a], [b])
+
+
+def test_discovery_reuse_handles_already_inherited_records_and_is_idempotent(
+    benchmark_workspace: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root, config, config_path = benchmark_workspace
+    upstream = root / "results/p6/seed"
+    lock = {
+        "run_root": "results/p6/seed",
+        "manifest_sha256": "manifest",
+        "checksums_sha256": "checksums",
+    }
+    config["benchmark"]["phase6_seed"] = lock
+    config_path.write_text(yaml.safe_dump(config))
+    project = "dev_0"
+    source = upstream / "projects" / project
+    source.mkdir(parents=True)
+    database = root / config["dataset"]["vulnerable_database_root"] / project
+    database.mkdir(parents=True)
+    (database / "src.zip").write_text("frozen archive")
+    (database / "codeql-database.yml").write_text("frozen metadata")
+    (source / "database_provenance.json").write_text(
+        json.dumps(
+            {
+                "source_archive_sha256": sha256_file(database / "src.zip"),
+                "database_metadata_sha256": sha256_file(database / "codeql-database.yml"),
+            }
+        )
+    )
+    atomic_jsonl(
+        upstream / "project_status.jsonl",
+        [
+            {
+                "project_id": project,
+                "status": "SUCCESS",
+                "reason": "prior inheritance",
+                "inherited_from": {"run_root": "results/earlier/seed"},
+                "hypotheses": 10,
+            }
+        ],
+    )
+    monkeypatch.setattr(benchmark_inputs, "configuration", lambda *_: config)
+    monkeypatch.setattr(
+        benchmark_inputs, "upstream_runs", lambda *_: {"phase6": {"path": upstream, "lock": lock}}
+    )
+    run = Run(root, "results/p6", "new", 6, config_path, [project])
+    inherit_discovery(run)
+    assert run.statuses[0]["inherited_from"] == lock
+    assert run.statuses[0]["hypotheses"] == 10 and not run.pending()
+    before = (run.work / "project_status.jsonl").read_bytes()
+    inherit_discovery(run)
+    assert (run.work / "project_status.jsonl").read_bytes() == before
+
+
+def test_missing_database_build_uses_isolated_clean_revision_without_mutating_source(
+    benchmark_workspace: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root, config, config_path = benchmark_workspace
+    config["benchmark"]["minimum_free_disk_gib"] = 0
+    config_path.write_text(yaml.safe_dump(config))
+    selected = selection_ids(root, config)
+    parent = root / config["benchmark"]["vulnerable_parent_roots"][0]
+    for project in selected[1:]:
+        database = parent / project
+        database.mkdir(parents=True)
+        (database / "codeql-database.yml").write_text("historical metadata")
+        (database / "src.zip").write_text("historical archive")
+    source = root / config["fixed_preparation"]["source_root"] / selected[0]
+    source.mkdir(parents=True)
+    subprocess.run(["git", "init", "--quiet"], cwd=source, check=True)
+    java = source / "A.java"
+    java.write_text("class A {}\n")
+    subprocess.run(["git", "add", "A.java"], cwd=source, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.invalid",
+            "commit",
+            "--quiet",
+            "-m",
+            "frozen",
+        ],
+        cwd=source,
+        check=True,
+    )
+    java.write_text("class UncommittedChange {}\n")
+    toolchain = root / "configs/toolchains/cwe_bench_java.yaml"
+    toolchain.parent.mkdir(parents=True)
+    toolchain.write_text("{}\n")
+    monkeypatch.setattr(benchmark_inputs, "codeql", lambda *_: Path("/fixture/codeql"))
+    monkeypatch.setattr(
+        benchmark_inputs, "database_environment", lambda *_: ({}, {"jdk": "fixture"})
+    )
+
+    def extract(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        checkout = Path(kwargs["cwd"])
+        assert checkout != source and (checkout / "A.java").read_text() == "class A {}\n"
+        assert f"--source-root={checkout}" in command
+        destination = Path(command[3])
+        destination.mkdir()
+        (destination / "codeql-database.yml").write_text("new metadata")
+        (destination / "src.zip").write_text("new archive")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(benchmark_inputs, "_run_command", extract)
+    move = benchmark_inputs.shutil.move
+
+    def interrupt_move(*args: Any, **kwargs: Any) -> None:
+        raise KeyboardInterrupt("interrupted before database move")
+
+    monkeypatch.setattr(benchmark_inputs.shutil, "move", interrupt_move)
+    with pytest.raises(KeyboardInterrupt, match="before database move"):
+        benchmark_inputs.prepare(root, config_path, "isolated")
+    monkeypatch.setattr(benchmark_inputs.shutil, "move", move)
+    final = benchmark_inputs.prepare(root, config_path, "isolated", resume=True)
+    assert java.read_text() == "class UncommittedChange {}\n"
+    statuses = read_jsonl(final / "project_status.jsonl")
+    assert len(statuses) == 120 and all(r["status"] == "SUCCESS" for r in statuses)
+    assert statuses[0]["checkout_method"] == "local" and statuses[0]["build_mode"] == "none"
 
 
 @pytest.mark.parametrize("eligible", [True, False])

@@ -19,6 +19,7 @@ from src.pipeline_v2.b9 import upstream_runs
 from src.pipeline_v2.recovery import database_environment
 from src.pipeline_v2.runtime import Run, codeql, configuration, development_ids, selection_ids
 from src.reproduction.common import atomic_json, read_csv, read_jsonl
+from src.verification.prepare_fixed import _checkout_fixed_revision
 
 
 def inherit_discovery(run: Run) -> None:
@@ -68,7 +69,7 @@ def inherit_discovery(run: Run) -> None:
         fields = {
             k: v
             for k, v in statuses[project].items()
-            if k not in {"project_id", "status", "reason", "updated_at"}
+            if k not in {"project_id", "status", "reason", "updated_at", "inherited_from"}
         }
         run.status(
             project,
@@ -110,14 +111,19 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
         try:
             if provenance_path.exists():
                 record = json.loads(provenance_path.read_text())
+                candidate = (
+                    target if target.exists() else run.work / "builds" / project / "database"
+                )
                 if any(
-                    sha256_file(target / file) != record[key]
+                    sha256_file(candidate / file) != record[key]
                     for file, key in [
                         ("src.zip", "source_archive_sha256"),
                         ("codeql-database.yml", "metadata_sha256"),
                     ]
                 ):
                     raise ValueError("benchmark database checkpoint changed")
+                if candidate != target:
+                    shutil.move(str(candidate), str(target))
             else:
                 parent = next(
                     (
@@ -141,7 +147,6 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
                     revision = subprocess.check_output(
                         ["git", "rev-parse", "HEAD"], cwd=source, text=True
                     ).strip()
-                    subprocess.run(["git", "diff", "--quiet", "HEAD"], cwd=source, check=True)
                     if shutil.disk_usage(root).free < policy["minimum_free_disk_gib"] * 1024**3:
                         raise RuntimeError("benchmark extraction disk reserve exhausted")
                     environment, toolchain_record = database_environment(
@@ -149,6 +154,23 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
                     )
                     scratch = run.work / "builds" / project
                     scratch.mkdir(parents=True, exist_ok=True)
+                    checkout = scratch / "source"
+                    remote = subprocess.run(
+                        ["git", "remote", "get-url", "origin"],
+                        cwd=source,
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                    )
+                    fetched, method = _checkout_fixed_revision(
+                        source,
+                        checkout,
+                        revision,
+                        remote.stdout.strip() if remote.returncode == 0 else "",
+                        timeout=int(config["fixed_preparation"]["fetch_timeout_seconds"]),
+                    )
+                    if not fetched:
+                        raise RuntimeError("isolated vulnerable checkout failed: " + method)
                     database = scratch / "database"
                     if database.exists():
                         shutil.rmtree(database)
@@ -162,9 +184,9 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
                             "--build-mode=none",
                             f"--threads={config['codeql']['threads']}",
                             f"--ram={config['codeql']['ram_mb']}",
-                            f"--source-root={source}",
+                            f"--source-root={checkout}",
                         ],
-                        cwd=source,
+                        cwd=checkout,
                         env=environment,
                         timeout=config["codeql"]["timeout_seconds"],
                     )
@@ -175,12 +197,22 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
                         raise RuntimeError("benchmark no-build extraction failed")
                     if target.exists():
                         raise ValueError("unregistered benchmark database destination")
-                    shutil.move(str(database), str(target))
                     extra = {
                         "build_mode": "none",
                         "source_git_commit": revision,
+                        "checkout_method": method,
                         "toolchain": toolchain_record,
                     }
+                    atomic_json(
+                        provenance_path,
+                        {
+                            "project_id": project,
+                            "source_archive_sha256": sha256_file(database / "src.zip"),
+                            "metadata_sha256": sha256_file(database / "codeql-database.yml"),
+                            **extra,
+                        },
+                    )
+                    shutil.move(str(database), str(target))
                 record = {
                     "project_id": project,
                     "source_archive_sha256": sha256_file(target / "src.zip"),

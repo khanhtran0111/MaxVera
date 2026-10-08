@@ -40,9 +40,9 @@ use the registered [benchmark config](configs/experiments/b9_benchmark_120.yaml)
 
 ```bash
 bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --benchmark-120 \
-  --run-id b9_benchmark_120_v2_001 --dry-run
+  --run-id b9_benchmark_120_v2_002 --dry-run
 bash scripts/tools/run_b9_benchmark_120_tmux.sh \
-  --run-id b9_benchmark_120_v2_001 --confirm-api-spend
+  --run-id b9_benchmark_120_v2_002 --confirm-api-spend
 ```
 
 Calibration fits development only. The evaluator reports paper-formula patched-method

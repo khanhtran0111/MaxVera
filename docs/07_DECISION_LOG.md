@@ -1061,3 +1061,14 @@ New immutable namespace results/pipeline_v2/benchmark/<ID>; frozen clean commit
 trước launch, tmux riêng maxvera-b9-benchmark-120, bounded API retries/resume giữ
 budgets. Full120 cần statuses cho mọi case; analysis failures được giữ denominator.
 Không thay RQ hoặc tuning từ test; nghiên cứu confirmatory sau này cần holdout mới.
+
+D-042 startup correction: trial b9_benchmark_120_v2_001 trên snapshot0adfd50 dừng
+trước API: discovery003 chứa prior inherited_from, forwarding fields gây duplicate
+keyword khi đặt new seed lock. Exclude prior inherited_from ở forwarding; previous
+chain vẫn truy xuất qua pinned003manifest/status. Source của missing vulnerable DB
+có build.gradle.kts modified từ build cũ, nên clean-source check từ chối trước extraction.
+No-build mới dùng isolated checkout tại HEAD của opaque source, giữ original checkout
+nguyên vẹn, pinned toolchain unchanged. Atomic provenance trước DB move cho phép resume
+interruption. Regression tests cover already-inherited seed/idempotence, dirty-source
+isolation và interrupt-before-move recovery. Trial001 outputs giữ nguyên; rerun002
+trên clean source commit, cùng config/model/budgets và cohort120.

@@ -598,3 +598,14 @@ Before launch:209tests pass (10.61s), Ruff repo/mypy120sourcefiles, bash syntax,
 diff/smoke checks pass. Actual005synthesis compatibility PASS for dev96 and benchmark120;
 independent005validator stillPASS. New evaluator export/resume test covers120rows,
 failed-case denominator, strict methods, emptyFDR; calibration test poisons test labels.
+
+Trial001 snapshot0adfd50 started20:37:35+07, inputs119success/1miss (dirty oldsource),
+then STOPPED_AT_GATE: P6seed003 has inherited_from already, duplicatekeyword forwarding.
+0newAPIcalls; trial controller/stages kept intact. Own tmux idle shell closed afterexit1.
+Correction excludes inherited_from before setting new registered lock, and missingDB
+build uses isolated sourceHEAD checkout; original build.gradle.kts modification stays.
+Provenance-before-move checkpoint supports interrupted extraction resume. New regression
+tests prove both fixes. Next active IDb9_benchmark_120_v2_002, same frozen120config,
+new clean code commit; source/config must stay clean while live stages execute.
+Prelaunch002:211tests pass (11.00s), Ruff/mypy120files, diff/shell/smoke PASS;
+actual005synthesis compatibility remains PASS for dev and diagnostic profiles.

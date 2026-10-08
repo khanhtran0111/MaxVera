@@ -320,3 +320,9 @@ Evaluator uses patched-method path metric formulas and retains everycase, with
 D_extended revisions/model/toolchain/zero-hint differ from original paper conditions.
 Pre-launch checks:209tests (10.61s), Ruff/mypy120files, shell/diff/smoke PASS;
 actual005synthesis compatibility PASS for both profiles; independent005validator PASS.
+
+Trial b9_benchmark_120_v2_001 on0adfd50 started20:37:35+07, stopped beforeAPI atP6
+because prior inherited_from collided with new lock. Inputs recorded119DBready and
+1dirty-source rejection. Trial artifacts retained. Corrected forwarding and isolated
+vulnerable checkout preserve parent source; checkpoint beforemove supports resume.
+Next run002 reuses unchanged config/scientific inputs under new clean source snapshot.

@@ -450,9 +450,9 @@ Model/toolchain/zero-hint khác bài gốc; paper-reference report ghi rõ scope
 
 ```bash
 bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --benchmark-120 \
-  --run-id b9_benchmark_120_v2_001 --dry-run
+  --run-id b9_benchmark_120_v2_002 --dry-run
 bash scripts/tools/run_b9_benchmark_120_tmux.sh \
-  --run-id b9_benchmark_120_v2_001 --confirm-api-spend
+  --run-id b9_benchmark_120_v2_002 --confirm-api-spend
 tmux attach -t maxvera-b9-benchmark-120
 tail -f logs/pipeline_v2/b9_benchmark_120.log
 ```
@@ -467,9 +467,9 @@ Resume interrupted controller bằng numbered script và cùng frozen snapshot:
 
 ```bash
 bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --benchmark-120 \
-  --run-id b9_benchmark_120_v2_001 --resume --confirm-api-spend
+  --run-id b9_benchmark_120_v2_002 --resume --confirm-api-spend
 bash scripts/tools/validate_b9_v2.sh \
-  --run-root results/pipeline_v2/benchmark/b9_benchmark_120_v2_001
+  --run-root results/pipeline_v2/benchmark/b9_benchmark_120_v2_002
 ```
 
 Không chạy resume đồng thời với tmux controller còn active. Final controller có
