@@ -401,7 +401,7 @@ inputs003; fixed preparation chọn actual v2 cohort và giữ parent DB/status 
 
 ```bash
 bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --mode full \
-  --run-id b9_e2e_dev_full_v2_004 --dry-run
+  --run-id b9_e2e_dev_full_v2_005 --dry-run
 bash scripts/tools/run_b9_v2_tmux.sh --mode pilot \
   --run-id b9_e2e_dev_pilot_v2_005 \
   --inherit-run results/specifications/v2/b9/b9_e2e_dev_pilot_v2_004_synth \
@@ -414,9 +414,11 @@ và kế thừa responses/budgets cùng snapshot, sau clean local commit:
 
 ```bash
 bash scripts/tools/run_b9_v2_tmux.sh --mode full \
-  --run-id b9_e2e_dev_full_v2_004 --confirm-api-spend
+  --run-id b9_e2e_dev_full_v2_005 \
+  --inherit-run results/specifications/v2/b9/b9_e2e_dev_pilot_v2_005_synth \
+  --confirm-api-spend
 bash scripts/tools/validate_b9_v2.sh \
-  --run-root results/pipeline_v2/b9/b9_e2e_dev_full_v2_004
+  --run-root results/pipeline_v2/b9/b9_e2e_dev_full_v2_005
 ```
 
 Launcher từ chối duplicate session; xem pane/log để biết job đang chạy hay đã dừng.
@@ -431,3 +433,11 @@ Pilot004 dừng đúng gate do verifier cần41 queries trong budget40. Giữ ar
 pilot005 dùng endpoint batching (23 queries/10 fully mapped specs), kế thừa synthesis004
 qua --inherit-run với scientific compatibility và actual vulnerable re-resolution.
 Không resume004 bằng source đã thay đổi. HTTP429 vẫn có thể xảy ra dù pacing15s.
+
+Pilot005 đã PASS validator độc lập: 10 specs, 23 query attempts, 0 verifier failures;
+10 UNVERIFIED_PERSISTS_FIXED → 10 ABSTAIN, 0 differential verified. Không gọi API mới;
+responses/reservations004 được kế thừa. Report:
+`results/pipeline_v2/b9/b9_e2e_dev_pilot_v2_005/report.md`.
+Full96 và 12 missing fixed DB builds chưa chạy; holdout/calibration claims chưa đủ.
+Nếu tmux maxvera-b9-v2 chỉ còn idle shell sau Controller exit code:0, đóng session
+đã hoàn tất (`tmux kill-session -t maxvera-b9-v2`) trước khi dùng launcher cho full005.

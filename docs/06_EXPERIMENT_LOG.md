@@ -289,3 +289,21 @@ preserve every API reservation/call, then run verification/routing/independent v
 Validation correction snapshot trước launch005: 202 tests pass (8.67s), Ruff toàn
 repository, mypy117sourcefiles, shell syntax và git diff checks pass. Full96 input
 preflight (zeroAPI) và compatibility check của actual004 synthesis đều PASS.
+
+Actual pilot005 (`149041f`) completes15:29:25 Asia/Saigon, exit0; independent
+controller validator PASS. One project/ten specifications, zero analysis misses;
+P11 completes23query attempts, all ten UNVERIFIED_PERSISTS_FIXED, no query/budget
+failures. P12 routes10 ABSTAIN, no calibrated probabilities or ACCEPT. No verified
+vulnerability claim. Controller findings/report/operational metrics/development lock
+and each stage have immutable manifests/checksums.
+
+Ten inherited004responses and all ten reservations are unchanged; every HTTP call
+record retains lineage, no new LLM HTTP attempt in005. Reported10successfulcalls,
+eight429 and59,903/3,881tokens describe the inherited synthesis. Both actual endpoint
+batches match all ten individual004query results, including internal QL entity IDs.
+A final literal-preservation guard changes only declaration renaming; regenerating
+both actual005batch queries gives byte-identical strings. Full96 not run, twelve
+missing fixed DBs not yet built, calibration/ACCEPT and confirmatory gate remainclosed.
+Final verification: 202 tests pass (8.81s), Ruff/mypy117files, diff/smoke assertion
+pass; independent005validator PASS. All completed004stage checksums and parentfixed
+preparation locks remain unchanged. Local commits only, no full96 launch.

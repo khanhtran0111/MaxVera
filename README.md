@@ -17,12 +17,17 @@ inputs, synthesis, fixed preparation, verifier v3, conditional routing and valid
 
 ```bash
 bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --mode full \
-  --run-id b9_e2e_dev_full_v2_004 --dry-run
+  --run-id b9_e2e_dev_full_v2_005 --dry-run
 bash scripts/tools/run_b9_v2_tmux.sh --mode pilot \
   --run-id b9_e2e_dev_pilot_v2_005 \
   --inherit-run results/specifications/v2/b9/b9_e2e_dev_pilot_v2_004_synth \
   --confirm-api-spend
 ```
+
+Pilot `b9_e2e_dev_pilot_v2_005` passes the independent end-to-end validator:
+10 specifications, 23 verification queries, 10 `UNVERIFIED_PERSISTS_FIXED` and
+10 `ABSTAIN`; no new LLM attempts (responses inherited from pilot004).
+Full96 development has not run; calibration and ACCEPT remain disabled.
 
 Full mode requires a clean committed snapshot and runs an end-to-end pilot gate
 before full synthesis. Add `--resume` after a checkpointed failure; validate a

@@ -540,3 +540,30 @@ Pilot005 will inherit004 synthesis under the same config from a new clean commit
 Validation trước pilot005: 202 tests pass (8.67s), Ruff toàn repo và mypy117files pass;
 shell syntax/diff checks pass. Full96 zero-API preflight và actual004 synthesis
 compatibility PASS. Chưa có kết quả pilot005 hoặc B9 full lock.
+
+## B9 pilot005 — end-to-end PASS, 2026-10-08
+
+Frozen execution source `149041f`; start15:17:11, finish15:29:25 Asia/Saigon.
+Controller `results/pipeline_v2/b9/b9_e2e_dev_pilot_v2_005` completed exit0.
+Independent `validate_b9_v2.sh --run-root ...` PASS: one project, ten specs,
+zero analysis misses. P11:23query attempts, ten UNVERIFIED_PERSISTS_FIXED,
+zero query/budget failures. P12:ten ABSTAIN, calibrated_full=false/accept=false;
+zero differential verified findings. This demonstrates technical execution only.
+
+All ten responses/reservations inherited byte-for-byte from004, no new LLM HTTP
+attempts. Operational usage includes inherited10calls, eight429, 59,903/3,881tokens.
+Both endpoint batches return exactly the individual004 rows including entity IDs
+on all ten specs. Fixed DB parent metadata/archive retained; all12 currently missing
+fixed DB cohort projects have source repos, but their builds remain untested untilfull.
+No canonical B9 full96 lock or new unopened confirmatory holdout.
+
+Final descriptor-literal guard renames only the QL predicate declaration, leaving
+source expressions containing frozenEndpoint(...) intact. Actual vulnerable/fixed
+batch query strings remain byte-identical to the validated005 output; no rerun/API.
+Next full run may use b9_e2e_dev_full_v2_005 with --inherit-run pointing to005_synth.
+Tmux maxvera-b9-v2 currently holds an idle shell after exit0; inspect before closing
+this completed session to reuse launcher. Source/config must stay clean duringfull.
+Final checks sau literal guard/result documentation: 202 tests pass (8.81s), Ruff/mypy117
+pass, git diff/smoke assertion pass, independent final005validator PASS. Completed
+004stage checksums và parent fixed preparation vẫn nguyên vẹn. Chỉ local commits;
+không push remote hoặc tự khởi chạy full96.

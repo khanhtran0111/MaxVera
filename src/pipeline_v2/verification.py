@@ -96,7 +96,7 @@ def batch_endpoint_query(specifications: Sequence[Mapping[str, Any]]) -> str:
         name = f"batchEndpoint{index}"
         predicates.append(
             common_predicates(spec["frozen_endpoints"], str(spec["candidate_cwe"])).replace(
-                "frozenEndpoint(", name + "("
+                "predicate frozenEndpoint(", "predicate " + name + "(", 1
             )
         )
         choices.append(

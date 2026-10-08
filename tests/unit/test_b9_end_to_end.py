@@ -490,7 +490,7 @@ def test_batch_query_retains_each_original_frozen_predicate() -> None:
         "dataflow_kind": "expr",
         "slot": "return",
         "target_signature": "a.Source#read()",
-        "expression": "read(...)",
+        "expression": "frozenEndpoint(...)",
         "source_text_sha256": "b" * 64,
         "source_sha256": "a" * 64,
         "start_line": 10,
@@ -513,6 +513,9 @@ def test_batch_query_retains_each_original_frozen_predicate() -> None:
     query = verification.batch_endpoint_query(specs)
     for index, spec in enumerate(specs):
         predicate = common_predicates(entries, spec["candidate_cwe"])
-        assert predicate.replace("frozenEndpoint(", f"batchEndpoint{index}(") in query
+        assert predicate.replace(
+            "predicate frozenEndpoint(", f"predicate batchEndpoint{index}(", 1
+        ) in query
         assert f'specificationId = "{spec["specification_id"]}"' in query
     assert "node as resolved_node" in query
+    assert 'node.toString() = "frozenEndpoint(...)"' in query
