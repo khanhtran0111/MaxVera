@@ -34,6 +34,48 @@ from src.reproduction.common import atomic_json, atomic_jsonl, read_jsonl
 DEFAULT_CONFIG = "configs/experiments/b9_pipeline_v2.yaml"
 
 
+def compatible_synthesis(root: Path, config: Mapping[str, Any], path: Path) -> None:
+    """Allow a verifier/controller fix to reuse the exact frozen synthesis contract."""
+    manifest = json.loads((path / "manifest.json").read_text())
+    if manifest["config_sha256"] != sha256_file(root / config["execution"]["config_path"]):
+        raise ValueError("B9 synthesis seed execution config changed")
+    current = implementation_hashes(root)
+    permitted = {
+        "src/pipeline_v2/b9.py",
+        "src/pipeline_v2/verification.py",
+        "src/pipeline_v2/specifications.py",
+    }
+    previous = manifest["implementation_sha256"]
+    if set(previous) != set(current) or any(
+        current[name] != digest for name, digest in previous.items() if name not in permitted
+    ):
+        raise ValueError("B9 synthesis seed scientific asset changed")
+    name = "src/pipeline_v2/specifications.py"
+    old_source = subprocess.check_output(
+        ["git", "show", f"{manifest['git']['commit']}:{name}"],
+        cwd=root,
+        text=True,
+    )
+    if hashlib.sha256(old_source.encode()).hexdigest() != previous[name]:
+        raise ValueError("B9 synthesis seed Git source does not match its lock")
+    source = (root / name).read_text()
+    for function in (
+        "_inherit_project",
+        "context_plan",
+        "_inventory_unchanged",
+        "_checkpoint",
+        "SYSTEM",
+        "STRATEGIES",
+        "TERMINAL_PLAN_STATES",
+    ):
+        if ast_contract(old_source, function) != ast_contract(source, function):
+            raise ValueError("B9 synthesis contract changed: " + function)
+    if ast_contract(old_source, "phase10", loop_only=True) != ast_contract(
+        source, "phase10", loop_only=True
+    ):
+        raise ValueError("B9 synthesis execution loop changed")
+
+
 def upstream_runs(root: Path, config: Mapping[str, Any], selected: Sequence[str]) -> dict[str, Any]:
     policy = config["upstream_reuse"]
     path = root / policy["config_path"]
@@ -323,6 +365,7 @@ def run(
     confirm_api_spend: bool,
     dry_run: bool = False,
     project_id: str | None = None,
+    inherit_relative: str | None = None,
 ) -> Path | dict[str, Any]:
     config = configuration(root, config_path)
     if config.get("execution", {}).get("entrypoint") != "b9_end_to_end":
@@ -391,7 +434,13 @@ def run(
             for row in read_jsonl(dry / "dry_run_plan.jsonl")
         ):
             raise ValueError("registered pilot has no API-eligible hypothesis")
-        pilot = branch(controller, pilot_selection, run_id + "_pilot" if full else run_id, inputs)
+        pilot = branch(
+            controller,
+            pilot_selection,
+            run_id + "_pilot" if full else run_id,
+            inputs,
+            inherit=root / inherit_relative if inherit_relative else None,
+        )
         validation = validate_stages(
             root,
             config,
@@ -512,6 +561,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--mode", choices=["pilot", "full"], default="pilot")
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--project-id")
+    parser.add_argument("--inherit-run", help="reuse compatible B9 synthesis with all reservations")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--confirm-api-spend", action="store_true")
@@ -528,6 +578,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             dry_run=args.dry_run,
             confirm_api_spend=args.confirm_api_spend,
             project_id=args.project_id,
+            inherit_relative=args.inherit_run,
         )
     except RetryableSynthesisError as error:
         print(str(error), flush=True)

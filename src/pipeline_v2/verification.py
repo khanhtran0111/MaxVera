@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -14,7 +15,12 @@ from typing import Any
 from src.common.provenance import sha256_file
 from src.graphs.evidence.model import cycle_nodes
 from src.pipeline_v2.model import identifier, map_endpoint
-from src.pipeline_v2.queries import endpoint_query, path_query, resolution_complete
+from src.pipeline_v2.queries import (
+    common_predicates,
+    endpoint_query,
+    path_query,
+    resolution_complete,
+)
 from src.pipeline_v2.runtime import Run, codeql, dependency, endpoint_inventory, query_csv
 from src.reproduction.common import atomic_json, atomic_jsonl, read_jsonl
 from src.verification.remap import archive_source, unchanged_line_mapping
@@ -83,6 +89,86 @@ def map_frozen_entries(
     }
 
 
+def batch_endpoint_query(specifications: Sequence[Mapping[str, Any]]) -> str:
+    """Execute the unchanged frozen predicates once, keeping each spec's rows separate."""
+    predicates, choices = [], []
+    for index, spec in enumerate(specifications):
+        name = f"batchEndpoint{index}"
+        predicates.append(
+            common_predicates(spec["frozen_endpoints"], str(spec["candidate_cwe"])).replace(
+                "frozenEndpoint(", name + "("
+            )
+        )
+        choices.append(
+            f"(specificationId = {json.dumps(str(spec['specification_id']))} "
+            f"and {name}(role, endpointId, node))"
+        )
+    if not choices:
+        raise ValueError("empty endpoint resolution batch")
+    return (
+        "/** @name MaxVera v3 batch endpoint resolution\n"
+        " * @kind table\n * @id maxvera/v3/batch-endpoints\n */\nimport Grounding\n"
+        + "\n".join(predicates)
+        + "\nfrom string specificationId, string role, string endpointId, V2Node node\nwhere "
+        + "\n or ".join(choices)
+        + "\nselect specificationId, role, endpointId, node as resolved_node,\n"
+        " node.getLocation().getFile().getRelativePath() as file,\n"
+        " node.getLocation().getStartLine() as line\n"
+    )
+
+
+def batch_endpoints(
+    binary: Path,
+    database: Path,
+    directory: Path,
+    pack: Path,
+    specifications: Sequence[Mapping[str, Any]],
+    policy: Mapping[str, Any],
+    before_query: Callable[[], None],
+) -> dict[str, list[dict[str, str]]]:
+    source = batch_endpoint_query(specifications)
+    identity = {
+        "query_sha256": hashlib.sha256(source.encode()).hexdigest(),
+        "database_metadata_sha256": sha256_file(database / "codeql-database.yml"),
+        "source_archive_sha256": sha256_file(database / "src.zip"),
+    }
+    checkpoint = directory / "batch_endpoints.json"
+    if checkpoint.is_file():
+        saved = json.loads(checkpoint.read_text())
+        if saved["identity"] != identity:
+            raise ValueError("batch endpoint checkpoint provenance changed")
+        rows = saved["rows"]
+    else:
+        query = (
+            pack
+            / "generated"
+            / (directory.parent.name + "_" + directory.name + "_batch_endpoints.ql")
+        )
+        query.parent.mkdir(parents=True, exist_ok=True)
+        query.write_text(source)
+        rows = query_csv(
+            binary,
+            database,
+            query,
+            directory / "batch_endpoints",
+            policy,
+            before_query,
+            entity_ids=True,
+        )
+        atomic_json(checkpoint, {"identity": identity, "rows": rows})
+    expected = {str(spec["specification_id"]) for spec in specifications}
+    if any(row["specificationId"] not in expected for row in rows):
+        raise ValueError("batch resolution returned an unknown specification")
+    return {
+        spec_id: [
+            {k: v for k, v in row.items() if k != "specificationId"}
+            for row in rows
+            if row["specificationId"] == spec_id
+        ]
+        for spec_id in expected
+    }
+
+
 def _side(
     binary: Path,
     database: Path,
@@ -93,6 +179,7 @@ def _side(
     policy: Mapping[str, Any],
     remaining: int,
     before_query: Callable[[], None],
+    endpoint_rows: Sequence[Mapping[str, str]] | None = None,
 ) -> tuple[dict[str, Any], int]:
     if remaining < 1:
         raise ValueError("verification query budget exhausted")
@@ -109,8 +196,12 @@ def _side(
     )
     query.parent.mkdir(parents=True, exist_ok=True)
     query.write_text(endpoint_query(specification, entries))
-    rows = query_csv(
-        binary, database, query, directory / "endpoints", policy, before_query, entity_ids=True
+    rows = (
+        list(endpoint_rows)
+        if endpoint_rows is not None
+        else query_csv(
+            binary, database, query, directory / "endpoints", policy, before_query, entity_ids=True
+        )
     )
     result: dict[str, Any] = {
         "resolution_complete": resolution_complete(entries, rows),
@@ -119,10 +210,10 @@ def _side(
         "paths": [],
         "query_completed": False,
     }
-    used = 1
+    used = int(endpoint_rows is None)
     if not result["resolution_complete"]:
         return result, used
-    if remaining < 2:
+    if remaining < used + 1:
         raise ValueError("verification path query budget exhausted")
     query = query.with_name(query.name.replace("_endpoints.ql", "_path.ql"))
     query.write_text(path_query(specification, entries))
@@ -180,8 +271,10 @@ def phase11(
             if database_record["project_id"] not in selected or any(
                 sha256_file(fixed_root / database_record["project_id"] / filename)
                 != database_record[field]
-                for filename, field in (("src.zip", "source_archive_sha256"),
-                                        ("codeql-database.yml", "metadata_sha256"))
+                for filename, field in (
+                    ("src.zip", "source_archive_sha256"),
+                    ("codeql-database.yml", "metadata_sha256"),
+                )
             ):
                 raise ValueError("fixed database provenance changed")
     preparation = json.loads((fixed_root / "preparation_manifest.json").read_text())
@@ -264,8 +357,34 @@ def phase11(
             atomic_jsonl(attempt_file, attempt_rows)
 
         fixed_inventory: list[dict[str, Any]] | None = None
+        fixed_endpoint_batch: dict[str, list[dict[str, str]]] | None = None
         results = read_jsonl(run.work / "projects" / project / "verification_results.jsonl")
         completed_ids = {result["specification_id"] for result in results}
+        pending_specs = [s for s in project_specs if s["specification_id"] not in completed_ids]
+        endpoint_batch = None
+        if pending_specs:
+            try:
+                endpoint_batch = batch_endpoints(
+                    binary,
+                    vulnerable_db,
+                    run.work / "projects" / project,
+                    run.work / "query_pack",
+                    project_specs,
+                    config["codeql"],
+                    before_query,
+                )
+            except (
+                OSError,
+                ValueError,
+                RuntimeError,
+                KeyError,
+                subprocess.TimeoutExpired,
+            ) as error:
+                # Individual queries remain fail-closed if batching cannot complete.
+                atomic_json(
+                    run.work / "projects" / project / "batch_endpoint_failure.json",
+                    {"reason": str(error)},
+                )
         for specification in project_specs:
             if specification["specification_id"] in completed_ids:
                 continue
@@ -296,6 +415,11 @@ def phase11(
                     config["codeql"],
                     remaining,
                     before_query,
+                    endpoint_rows=(
+                        endpoint_batch[specification["specification_id"]]
+                        if endpoint_batch is not None
+                        else None
+                    ),
                 )
                 record["vulnerable"] = vulnerable
                 if (
@@ -322,6 +446,40 @@ def phase11(
                         atomic_json(
                             run.work / "fixed_inventory" / project / "provenance.json", provenance
                         )
+                        batch_specs = []
+                        for candidate in project_specs:
+                            candidate_entries, candidate_mapping = map_frozen_entries(
+                                candidate["frozen_endpoints"],
+                                fixed_inventory,
+                                vulnerable_db / "src.zip",
+                                fixed_db / "src.zip",
+                            )
+                            if candidate_mapping["complete"]:
+                                batch_specs.append(
+                                    {**candidate, "frozen_endpoints": candidate_entries}
+                                )
+                        if batch_specs:
+                            try:
+                                fixed_endpoint_batch = batch_endpoints(
+                                    binary,
+                                    fixed_db,
+                                    run.work / "fixed_inventory" / project / "resolution",
+                                    run.work / "query_pack",
+                                    batch_specs,
+                                    config["codeql"],
+                                    before_query,
+                                )
+                            except (
+                                OSError,
+                                ValueError,
+                                RuntimeError,
+                                KeyError,
+                                subprocess.TimeoutExpired,
+                            ) as error:
+                                atomic_json(
+                                    run.work / "fixed_inventory" / project / "batch_failure.json",
+                                    {"reason": str(error)},
+                                )
                     mapped, mapping = map_frozen_entries(
                         frozen, fixed_inventory, vulnerable_db / "src.zip", fixed_db / "src.zip"
                     )
@@ -346,6 +504,11 @@ def phase11(
                             config["codeql"],
                             remaining,
                             before_query,
+                            endpoint_rows=(
+                                fixed_endpoint_batch[specification["specification_id"]]
+                                if fixed_endpoint_batch is not None
+                                else None
+                            ),
                         )
                         fixed.update(side)
                     record["fixed"] = fixed

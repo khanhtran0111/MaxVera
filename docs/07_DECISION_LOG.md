@@ -997,3 +997,24 @@ holdout chưa mở mới vẫn thiếu, full cần clean local commit và immuta
 
 Alternatives bị bác: đổi route/fallback âm thầm để né429; giữ cohort preparation
 cũ; bỏ partial specifications; overwrite artifacts003; hạ verifier/calibration gate.
+
+D-041 pilot correction: `b9_e2e_dev_pilot_v2_004` completed ten B9 responses
+(59,903 input/3,881 output tokens; eight recovered HTTP429 attempts), fixed DB
+preparation and routing, but stopped at the pilot gate: nine PERSISTS_FIXED and
+one query-budget failure. Ten specifications require 4×10+1 inventory queries,
+which exceeds the frozen 40/project cap. Keep this diagnostic controller and
+all completed stage artifacts immutable; do not resume it with changed code.
+
+Verifier batches the original frozen endpoint predicates separately by specification
+on each database, preserving QL entity IDs, ambiguous rows, source archive checks,
+semantic mapping and the unchanged per-spec path queries. Ten fully mapped specs
+now require 23 attempted queries (two endpoint batches, one inventory, twenty paths).
+Batch checkpoints bind query/source/metadata hashes; failed batches fall back to
+individual queries within the same cap. No query budget or verification gate changes.
+
+`--inherit-run` on the B9 controller allows reuse of the completed 004 synthesis
+under the same config/model and unchanged synthesis assets/AST contracts. Only
+controller/verifier fixes and compatibility-dispatch plumbing may differ; context,
+schema, frozen bindings and actual vulnerable resolution are rechecked. All previous
+API reservations/responses/call logs retain lineage. Pilot005 uses a new immutable
+namespace and clean source commit; it must pass the independent final validator.

@@ -403,7 +403,9 @@ inputs003; fixed preparation chọn actual v2 cohort và giữ parent DB/status 
 bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --mode full \
   --run-id b9_e2e_dev_full_v2_004 --dry-run
 bash scripts/tools/run_b9_v2_tmux.sh --mode pilot \
-  --run-id b9_e2e_dev_pilot_v2_004 --confirm-api-spend
+  --run-id b9_e2e_dev_pilot_v2_005 \
+  --inherit-run results/specifications/v2/b9/b9_e2e_dev_pilot_v2_004_synth \
+  --confirm-api-spend
 ```
 
 Preflight dry không gọi API. Controller chạy actual B9 dry → API pilot → fixed
@@ -424,3 +426,8 @@ giữ checkpoints/counters/budgets. Outputs: findings.jsonl, metrics_operational
 validation.json, report.md, development_lock.json và immutable stage IDs/checksums.
 Conservative VERIFY/ABSTAIN vẫn hoàn tất kỹ thuật khi calibration ineligible,
 nhưng không phải calibrated Full/confirmatory evaluation. Holdout mới vẫn chưa mở.
+
+Pilot004 dừng đúng gate do verifier cần41 queries trong budget40. Giữ artifacts004;
+pilot005 dùng endpoint batching (23 queries/10 fully mapped specs), kế thừa synthesis004
+qua --inherit-run với scientific compatibility và actual vulnerable re-resolution.
+Không resume004 bằng source đã thay đổi. HTTP429 vẫn có thể xảy ra dù pacing15s.

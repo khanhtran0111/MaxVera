@@ -315,3 +315,204 @@ def test_b9_numbered_entrypoint_dispatches_v2(monkeypatch: pytest.MonkeyPatch) -
     )
     assert run_baseline.main() == 0
     assert received == [["--mode", "pilot", "--run-id", "fixture"]]
+
+
+def test_batch_checkpoint_isolates_specs_preserves_ambiguity_and_binds_database(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    database = tmp_path / "db"
+    database.mkdir()
+    (database / "src.zip").write_bytes(b"archive")
+    (database / "codeql-database.yml").write_text("metadata")
+    specs = [{"specification_id": "a"}, {"specification_id": "b"}]
+    monkeypatch.setattr(verification, "batch_endpoint_query", lambda _: "frozen query")
+    calls = []
+
+    def query(*args: Any, **kwargs: Any) -> list[dict[str, str]]:
+        args[5]()
+        return [
+            {
+                "specificationId": "a",
+                "role": "source",
+                "endpointId": "shared",
+                "resolved_node_entity_id": "1",
+            },
+            {
+                "specificationId": "a",
+                "role": "source",
+                "endpointId": "shared",
+                "resolved_node_entity_id": "2",
+            },
+            {
+                "specificationId": "b",
+                "role": "source",
+                "endpointId": "shared",
+                "resolved_node_entity_id": "3",
+            },
+        ]
+
+    monkeypatch.setattr(verification, "query_csv", query)
+    args = (
+        tmp_path / "codeql",
+        database,
+        tmp_path / "result",
+        tmp_path / "pack",
+        specs,
+        {},
+        lambda: calls.append("query"),
+    )
+    rows = verification.batch_endpoints(*args)
+    assert len(rows["a"]) == 2 and len(rows["b"]) == 1
+    assert not verification.resolution_complete(
+        [{"role": "source", "node_id": "shared"}], rows["a"]
+    )
+    assert verification.resolution_complete([{"role": "source", "node_id": "shared"}], rows["b"])
+    assert verification.batch_endpoints(*args) == rows and len(calls) == 1
+    (database / "codeql-database.yml").write_text("changed metadata")
+    with pytest.raises(ValueError, match="provenance changed"):
+        verification.batch_endpoints(*args)
+    assert len(calls) == 1
+
+
+def test_ten_differential_specs_complete_within_frozen_40_query_budget(
+    workspace: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root, config, config_path = workspace
+    p10 = synthesis(root, config_path, ["dev_a"])
+    frozen = [
+        {
+            "role": role,
+            "node_id": role,
+            "descriptor": {"file": "src/A.java", "source_sha256": "a" * 64},
+        }
+        for role in ("source", "sink")
+    ]
+    specs = [
+        {
+            **read_jsonl(p10 / "specifications.jsonl")[0],
+            "specification_id": f"spec_{i}",
+            "frozen_endpoints": frozen,
+        }
+        for i in range(10)
+    ]
+    atomic_jsonl(p10 / "specifications.jsonl", specs)
+    write_checksums(p10)
+    fixed_root = root / config["dataset"]["fixed_database_root"]
+    fixed_root.mkdir(parents=True)
+    atomic_jsonl(fixed_root / "build_status.jsonl", [])
+    atomic_json(
+        fixed_root / "preparation_manifest.json",
+        {
+            "development_only": True,
+            "locked_test_prepared": False,
+            "identity_mapping_persisted": False,
+            "preparation_complete": True,
+            "development_split_sha256": config["dataset"]["development_split_sha256"],
+            "status_sha256": sha256_file(fixed_root / "build_status.jsonl"),
+        },
+    )
+    for base in (fixed_root, root / config["dataset"]["vulnerable_database_root"]):
+        database = base / "dev_a"
+        database.mkdir(parents=True)
+        (database / "src.zip").write_bytes(b"archive")
+        (database / "codeql-database.yml").write_text("metadata")
+    monkeypatch.setenv("MAXVERA_DATA_ROLE", "evaluator")
+    monkeypatch.setattr(verification, "codeql", lambda *_: root / "codeql")
+    monkeypatch.setattr(verification, "archive_source", lambda *_: ("a" * 64, "source"))
+    monkeypatch.setattr(verification, "endpoint_query", lambda *_: "endpoint query")
+    monkeypatch.setattr(verification, "path_query", lambda *_: "path query")
+    monkeypatch.setattr(
+        verification, "_interpret_paths", lambda *_args, **_kw: [[("src/A.java", 10)]]
+    )
+    endpoint_rows = [{"role": role, "endpointId": role} for role in ("source", "sink")]
+
+    def batch(*args: Any) -> dict[str, list[dict[str, str]]]:
+        args[-1]()
+        return {s["specification_id"]: endpoint_rows for s in args[4]}
+
+    def inventory(*args: Any) -> tuple[list[Any], dict[str, Any]]:
+        args[-1]()
+        return [], {}
+
+    def query(*args: Any, **_kwargs: Any) -> list[Any]:
+        args[5]()
+        return []
+
+    monkeypatch.setattr(verification, "batch_endpoints", batch)
+    monkeypatch.setattr(verification, "endpoint_inventory", inventory)
+    monkeypatch.setattr(
+        verification,
+        "map_frozen_entries",
+        lambda entries, *_: (entries, {"complete": True, "entries": []}),
+    )
+    monkeypatch.setattr(verification, "query_csv", query)
+    final = verification.phase11(
+        root, config, config_path, ["dev_a"], "verify_ten", p10.relative_to(root).as_posix()
+    )
+    results = read_jsonl(final / "verification_results.jsonl")
+    assert len(results) == 10
+    assert {r["status"] for r in results} == {"UNVERIFIED_PERSISTS_FIXED"}
+    assert len(read_jsonl(final / "projects/dev_a/query_attempts.jsonl")) == 23
+
+
+def test_synthesis_reuse_rejects_prompt_drift_but_allows_verifier_fix(
+    workspace: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root, config, config_path = workspace
+    repository = Path(__file__).resolve().parents[2]
+    path = root / "src/pipeline_v2/specifications.py"
+    path.parent.mkdir(parents=True)
+    source = (repository / "src/pipeline_v2/specifications.py").read_text()
+    path.write_text(source)
+    verifier = path.with_name("verification.py")
+    verifier.write_text("old verifier")
+    p10 = synthesis(root, config_path, ["dev_a"])
+    monkeypatch.setattr(b9.subprocess, "check_output", lambda *_args, **_kw: source)
+    verifier.write_text("batched verifier")
+    b9.compatible_synthesis(root, config, p10)
+    path.write_text(source.replace("You synthesize unverified", "You change unverified"))
+    with pytest.raises(ValueError, match="contract changed: SYSTEM"):
+        b9.compatible_synthesis(root, config, p10)
+    path.write_text(source)
+    config_path.write_text(config_path.read_text() + "\n# changed frozen policy\n")
+    with pytest.raises(ValueError, match="execution config changed"):
+        b9.compatible_synthesis(root, config, p10)
+
+
+def test_batch_query_retains_each_original_frozen_predicate() -> None:
+    from src.pipeline_v2.queries import common_predicates
+
+    descriptor = {
+        "version": "java-dataflow-endpoint-v2",
+        "file": "src/A.java",
+        "enclosing_callable": "a.A#run(java.lang.String)",
+        "expression_kind": "MethodCall",
+        "dataflow_kind": "expr",
+        "slot": "return",
+        "target_signature": "a.Source#read()",
+        "expression": "read(...)",
+        "source_text_sha256": "b" * 64,
+        "source_sha256": "a" * 64,
+        "start_line": 10,
+        "start_column": 5,
+        "end_line": 10,
+        "end_column": 9,
+    }
+    entries = [
+        {
+            "node_id": "ep_source",
+            "role": "source",
+            "descriptor": descriptor,
+            "models": [{"role": "source", "basis": "remote-flow-source"}],
+        }
+    ]
+    specs = [
+        {"specification_id": spec_id, "candidate_cwe": cwe, "frozen_endpoints": entries}
+        for spec_id, cwe in [("spec_a", "CWE-22"), ("spec_b", "CWE-78")]
+    ]
+    query = verification.batch_endpoint_query(specs)
+    for index, spec in enumerate(specs):
+        predicate = common_predicates(entries, spec["candidate_cwe"])
+        assert predicate.replace("frozenEndpoint(", f"batchEndpoint{index}(") in query
+        assert f'specificationId = "{spec["specification_id"]}"' in query
+    assert "node as resolved_node" in query

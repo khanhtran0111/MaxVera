@@ -276,9 +276,14 @@ def phase10(
         from src.pipeline_v2.runtime import implementation_hashes
 
         if manifest["implementation_sha256"] != implementation_hashes(root):
-            from src.pipeline_v2.recovery import compatible_history
+            if config.get("execution", {}).get("entrypoint") == "b9_end_to_end":
+                from src.pipeline_v2.b9 import compatible_synthesis
 
-            compatible_history(root, config, seed_run)
+                compatible_synthesis(root, config, seed_run)
+            else:
+                from src.pipeline_v2.recovery import compatible_history
+
+                compatible_history(root, config, seed_run)
         if manifest["model_config_sha256"] != sha256_file(root / config["model_config"]):
             raise ValueError("Phase 10 recovery seed model/provider changed")
     run = Run(

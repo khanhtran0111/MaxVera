@@ -263,3 +263,29 @@ regression bảo đảm subprocess process group được terminate khi interrup
 Validation snapshot003 trước launch: 189 tests pass (8.10s), Ruff toàn repo pass,
 mypy 114 source files pass, bash syntax/diff checks pass. Legacy P6 và B6 pilot
 scientific compatibility contracts đều PASS sau cancellation/toolchain fixes.
+
+## 2026-10-08 — B9 v2 end-to-end plumbing and pilot budget correction (D-041)
+
+Source snapshot `30f0b7b`: 198 tests, Ruff, mypy117files, shell/diff/smoke checks pass.
+Full96 input preflight passes, zero API. Separate pinned AkashML connectivity probe
+succeeds. Dedicated B9 controller skips unrelated B6–B8 full gates, selects actual
+v2 synthesis cohort for fixed preparation and preserves partially failed specs.
+
+`b9_e2e_dev_pilot_v2_004`: synthesis10/10, no grounding rejects/API fatal/budget
+exhaustion; 10 successful calls plus eight recoveredHTTP429 attempts, 59,903 prompt
+and3,881 completion tokens. Fixed preparation reuses one parent DB with hash provenance.
+Verifier40 attempts yields9 UNVERIFIED_PERSISTS_FIXED and1 UNVERIFIED_QUERY_OR_BUDGET_FAILURE;
+routing10 ABSTAIN, calibration/ACCEPT disabled. Controller correctly STOPPED_AT_GATE.
+Do not treat this as an end-to-end pass, Full lock or vulnerability precision result.
+
+Root cause: ten specs need41queries (4/spec plus fixed inventory), cap40unchanged.
+Endpoint predicates are now batched per specification on each side; expected23queries
+when all ten mappings resolve. Ambiguous entity rows, source/model semantics and
+per-spec vulnerable/fixed paths remain mandatory. Regression covers all10specs within
+40, checkpoint/hash isolation, ambiguity and rejection of changed synthesis prompts.
+Pilot005 must inherit the immutable004 synthesis, recheck actual vulnerable resolution,
+preserve every API reservation/call, then run verification/routing/independent validator.
+
+Validation correction snapshot trước launch005: 202 tests pass (8.67s), Ruff toàn
+repository, mypy117sourcefiles, shell syntax và git diff checks pass. Full96 input
+preflight (zeroAPI) và compatibility check của actual004 synthesis đều PASS.

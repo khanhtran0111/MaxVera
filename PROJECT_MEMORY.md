@@ -526,3 +526,17 @@ diff checks và smoke cleanup assertion pass. Chưa có canonical B9 full lock. 
 probe 2026-10-08 nhận nonempty response từ pinned AkashML/GPT-OSS20B; chưa chứng minh
 full workload không429. Launcher scripts/tools/run_b9_v2_tmux.sh, validator
 scripts/tools/validate_b9_v2.sh; live pilot/full phải kiểm result validator.
+
+Pilot004 finished synthesis: 10/10 specs, 10 successful calls, eight recovered429
+HTTP attempts, 59,903 input/3,881 output tokens. Parent fixed DB reused with provenance.
+Verifier/routing finished but controller STOPPED_AT_GATE: 9 PERSISTS_FIXED, 1 query
+budget failure. All004 artifacts retained unchanged, not a validated end-to-end lock.
+Cause: 4×10+1 inventory = 41 needed versus frozen40. Correction batches unchanged
+endpoint predicates on both sides (23 queries for ten fully mapped specs), keeping
+entity ambiguity, descriptor/archive checks, per-spec path queries and verifier gates.
+B9 --inherit-run revalidates synthesis scientific contracts and actual endpoint
+resolution, retains all reservations/responses/log lineage; avoids duplicate API.
+Pilot005 will inherit004 synthesis under the same config from a new clean commit.
+Validation trước pilot005: 202 tests pass (8.67s), Ruff toàn repo và mypy117files pass;
+shell syntax/diff checks pass. Full96 zero-API preflight và actual004 synthesis
+compatibility PASS. Chưa có kết quả pilot005 hoặc B9 full lock.
