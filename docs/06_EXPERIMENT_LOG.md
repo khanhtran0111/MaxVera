@@ -307,3 +307,16 @@ missing fixed DBs not yet built, calibration/ACCEPT and confirmatory gate remain
 Final verification: 202 tests pass (8.81s), Ruff/mypy117files, diff/smoke assertion
 pass; independent005validator PASS. All completed004stage checksums and parentfixed
 preparation locks remain unchanged. Local commits only, no full96 launch.
+
+## 2026-10-08 — Registered B9 all120 diagnostic comparison (D-042)
+
+User requests all120cases for published-paper comparison. New registered benchmark
+profile extends selection to exact96dev+24historicaltest without changing splits,
+prompts/models/budgets or discovery/verification semantics. Test has diagnostic
+disposition; fitting remains dev-only. No actual full120 result at registration.
+Input preflight:120cases,119existing vulnerableDBs,120source repos,0APIcalls.
+Evaluator uses patched-method path metric formulas and retains everycase, with
+4variants and120/96/24breakouts; published Table1 reference is descriptive because
+D_extended revisions/model/toolchain/zero-hint differ from original paper conditions.
+Pre-launch checks:209tests (10.61s), Ruff/mypy120files, shell/diff/smoke PASS;
+actual005synthesis compatibility PASS for both profiles; independent005validator PASS.

@@ -11,7 +11,7 @@ from typing import Any
 
 from src.common.provenance import sha256_file
 from src.experiments.development_audit import snapshot_run
-from src.pipeline_v2.runtime import configuration, development_ids
+from src.pipeline_v2.runtime import configuration, development_ids, selection_ids
 from src.pipeline_v2.verification import differential_status
 from src.reproduction.common import read_jsonl
 
@@ -39,7 +39,7 @@ def validate_stages(
         manifest = json.loads((path / "manifest.json").read_text())
         if (
             manifest.get("phase") != phase
-            or manifest.get("analysis_scope") != "development"
+            or manifest.get("analysis_scope") != config["analysis_scope"]
             or manifest.get("protocol_version") != "2.0.0"
             or manifest.get("selected_project_ids") != list(selected)
         ):
@@ -118,6 +118,7 @@ def validate_stages(
             and (
                 route["decision"] != "ABSTAIN"
                 or route.get("oof_candidate_cwe_probability") is not None
+                or route.get("frozen_candidate_cwe_probability") is not None
             )
         ):
             raise ValueError("routing treats an unverified result as calibrated/accepted")
@@ -128,9 +129,25 @@ def validate_stages(
     ):
         raise ValueError("ACCEPT emitted while the acceptance gate is disabled")
     if not summary["calibrated_full"] and any(
-        row.get("oof_candidate_cwe_probability") is not None for row in routes.values()
+        row.get("oof_candidate_cwe_probability") is not None
+        or row.get("frozen_candidate_cwe_probability") is not None
+        for row in routes.values()
     ):
         raise ValueError("ineligible calibration emitted probabilities")
+    if config["analysis_scope"] == "benchmark_diagnostic":
+        fit = json.loads((calibration / "fit_scope.json").read_text())
+        development = set(development_ids(root)) & selected_set
+        if set(fit["selected_project_ids"]) != development or fit["test_labels_used"] is not False:
+            raise ValueError("benchmark calibration used non-development fitting data")
+        for route in routes.values():
+            if (
+                route["project_id"] not in development
+                and route.get("oof_candidate_cwe_probability") is not None
+            ) or (
+                route["project_id"] in development
+                and route.get("frozen_candidate_cwe_probability") is not None
+            ):
+                raise ValueError("benchmark routing confuses OOF and frozen application")
     budget = config["budget"]
     for project in selected:
         reserved = read_jsonl(synthesis / "projects" / project / "api_attempts.jsonl")
@@ -176,7 +193,8 @@ def validate_stages(
         "output_tokens": sum(
             int(row.get("usage", {}).get("completion_tokens", 0) or 0) for row in successes
         ),
-        "metrics_scope": "development operational counts; no vulnerability precision/FDR claim",
+        "metrics_scope": config["analysis_scope"]
+        + " operational counts; no vulnerability precision/FDR claim",
         "confirmatory_test_ready": False,
     }
 
@@ -191,14 +209,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.error("controller must be under results/pipeline_v2")
     snapshot_run(controller)
     manifest = json.loads((controller / "manifest.json").read_text())
-    lock = json.loads((controller / "development_lock.json").read_text())
+    lock_file = (
+        "benchmark_lock.json"
+        if manifest["analysis_scope"] == "benchmark_diagnostic"
+        else "development_lock.json"
+    )
+    lock = json.loads((controller / lock_file).read_text())
     paths = lock["analysis_runs"]
     config_path = root / lock["config_path"]
     if sha256_file(config_path) != manifest["config_sha256"]:
         raise ValueError("controller config changed")
     config = configuration(root, config_path)
     selected = manifest["selected_project_ids"]
-    if manifest.get("canonical_result") and selected != development_ids(root):
+    if manifest["analysis_scope"] == "benchmark_diagnostic" and selected != selection_ids(
+        root, config
+    ):
+        raise ValueError("benchmark controller lacks the complete 120-case population")
+    if manifest.get("canonical_result") and selected != selection_ids(root, config):
         raise ValueError("canonical end-to-end run lacks the complete development selection")
     for name, record in lock["stages"].items():
         path = root / record["output"]
@@ -213,6 +240,36 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if result != json.loads((controller / "validation.json").read_text()):
         raise ValueError("controller validation report differs from raw outputs")
+    if manifest["analysis_scope"] == "benchmark_diagnostic":
+        evaluated = root / lock["evaluation_run"]
+        snapshot_run(evaluated)
+        for filename in (
+            "report.md",
+            "table_paper_comparison.csv",
+            "metrics_paper_proxy.json",
+            "case_alignment.json",
+        ):
+            if sha256_file(controller / filename) != sha256_file(evaluated / filename):
+                raise ValueError("benchmark report differs from its locked evaluator output")
+        from src.pipeline_v2.benchmark_evaluate import VARIANTS, paper_aggregate
+
+        expected = json.loads((evaluated / "metrics_paper_proxy.json").read_text())
+        dev = set(development_ids(root))
+        for variant in VARIANTS:
+            rows = read_jsonl(evaluated / f"{variant}_projects.jsonl")
+            if len(rows) != 120 or {r["project_id"] for r in rows} != set(selected):
+                raise ValueError("paper metrics dropped benchmark cases")
+            for scope in ("all120", "development96", "test24_diagnostic"):
+                chosen = (
+                    rows
+                    if scope == "all120"
+                    else [r for r in rows if (r["project_id"] in dev) == (scope == "development96")]
+                )
+                if any(
+                    expected[variant + "/" + scope][key] != value
+                    for key, value in paper_aggregate(chosen).items()
+                ):
+                    raise ValueError("paper metrics cannot be regenerated from case rows")
     print(json.dumps(result, sort_keys=True))
     return 0
 

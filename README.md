@@ -35,6 +35,22 @@ completed controller with `scripts/tools/validate_b9_v2.sh --run-root PATH`.
 Without `--pipeline-v2`, B9 retains historical synthesis-only behavior. See
 [D-041](docs/07_DECISION_LOG.md) and the [v2 runbook](docs/19_PIPELINE_V2_RESTART.md).
 
+For the requested comparison on all **120 cases** (96 development + 24 diagnostic),
+use the registered [benchmark config](configs/experiments/b9_benchmark_120.yaml):
+
+```bash
+bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --benchmark-120 \
+  --run-id b9_benchmark_120_v2_001 --dry-run
+bash scripts/tools/run_b9_benchmark_120_tmux.sh \
+  --run-id b9_benchmark_120_v2_001 --confirm-api-spend
+```
+
+Calibration fits development only. The evaluator reports paper-formula patched-method
+path metrics for all120/development96/test24, with explicit failed-case denominators.
+These are the same CVEs as the reproduction release; some source revisions, the model,
+toolchain and hint condition differ. This is a diagnostic comparison with published
+IRIS results, not a new confirmatory holdout result. See D-042 in the decision log.
+
 MaxVera is a reproducible research scaffold for graph-grounded, zero-hint,
 repository-level vulnerability discovery in Java. The analysis pipeline uses
 CodeQL for static verification and `openai/gpt-oss-20b` through a pinned

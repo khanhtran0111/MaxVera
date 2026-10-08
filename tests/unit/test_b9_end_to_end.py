@@ -470,6 +470,13 @@ def test_synthesis_reuse_rejects_prompt_drift_but_allows_verifier_fix(
     monkeypatch.setattr(b9.subprocess, "check_output", lambda *_args, **_kw: source)
     verifier.write_text("batched verifier")
     b9.compatible_synthesis(root, config, p10)
+    path.with_name("benchmark.py").write_text("# separate registered cohort infrastructure")
+    b9.compatible_synthesis(root, config, p10)
+    unexpected = path.with_name("changed_science.py")
+    unexpected.write_text("# unregistered synthesis asset")
+    with pytest.raises(ValueError, match="scientific asset changed"):
+        b9.compatible_synthesis(root, config, p10)
+    unexpected.unlink()
     path.write_text(source.replace("You synthesize unverified", "You change unverified"))
     with pytest.raises(ValueError, match="contract changed: SYSTEM"):
         b9.compatible_synthesis(root, config, p10)

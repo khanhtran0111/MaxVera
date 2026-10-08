@@ -26,6 +26,7 @@ from src.pipeline_v2.runtime import (
     dependency,
     development_ids,
     implementation_hashes,
+    selection_ids,
 )
 from src.pipeline_v2.specifications import RetryableSynthesisError
 from src.pipeline_v2.validate import validate_stages
@@ -37,17 +38,48 @@ DEFAULT_CONFIG = "configs/experiments/b9_pipeline_v2.yaml"
 def compatible_synthesis(root: Path, config: Mapping[str, Any], path: Path) -> None:
     """Allow a verifier/controller fix to reuse the exact frozen synthesis contract."""
     manifest = json.loads((path / "manifest.json").read_text())
-    if manifest["config_sha256"] != sha256_file(root / config["execution"]["config_path"]):
+    diagnostic = config["analysis_scope"] == "benchmark_diagnostic"
+    seed_config = (
+        root / config["benchmark"]["seed_config_path"]
+        if diagnostic
+        else root / config["execution"]["config_path"]
+    )
+    if manifest["config_sha256"] != sha256_file(seed_config):
         raise ValueError("B9 synthesis seed execution config changed")
+    if diagnostic:
+        old = yaml.safe_load(seed_config.read_text())
+        if any(
+            old[key] != config[key]
+            for key in (
+                "top_k",
+                "budget",
+                "model_config",
+                "codeql",
+                "phase8",
+                "verification",
+                "calibration",
+            )
+        ):
+            raise ValueError("benchmark synthesis policy changed")
     current = implementation_hashes(root)
     permitted = {
         "src/pipeline_v2/b9.py",
         "src/pipeline_v2/verification.py",
         "src/pipeline_v2/specifications.py",
+        "src/pipeline_v2/runtime.py",
+        "src/pipeline_v2/__main__.py",
+        "src/pipeline_v2/calibration.py",
+        "src/pipeline_v2/fixed.py",
+        "src/pipeline_v2/validate.py",
     }
     previous = manifest["implementation_sha256"]
-    if set(previous) != set(current) or any(
-        current[name] != digest for name, digest in previous.items() if name not in permitted
+    additions = set(current) - set(previous)
+    if (
+        set(previous) - set(current)
+        or any(not name.startswith("src/pipeline_v2/benchmark") for name in additions)
+        or any(
+            current[name] != digest for name, digest in previous.items() if name not in permitted
+        )
     ):
         raise ValueError("B9 synthesis seed scientific asset changed")
     name = "src/pipeline_v2/specifications.py"
@@ -74,6 +106,26 @@ def compatible_synthesis(root: Path, config: Mapping[str, Any], path: Path) -> N
         source, "phase10", loop_only=True
     ):
         raise ValueError("B9 synthesis execution loop changed")
+    runtime = "src/pipeline_v2/runtime.py"
+    if runtime in previous and previous[runtime] != current[runtime]:
+        old_runtime = subprocess.check_output(
+            ["git", "show", f"{manifest['git']['commit']}:{runtime}"], cwd=root, text=True
+        )
+        if hashlib.sha256(old_runtime.encode()).hexdigest() != previous[runtime]:
+            raise ValueError("B9 synthesis seed runtime source changed")
+        current_runtime = (root / runtime).read_text()
+        for function in (
+            "endpoint_inventory",
+            "archive_sources",
+            "source_text_fingerprint",
+            "entity_rows",
+            "unique_inventory_rows",
+            "query_csv",
+            "codeql",
+            "phase6",
+        ):
+            if ast_contract(old_runtime, function) != ast_contract(current_runtime, function):
+                raise ValueError("B9 synthesis seed discovery contract changed: " + function)
 
 
 def upstream_runs(root: Path, config: Mapping[str, Any], selected: Sequence[str]) -> dict[str, Any]:
@@ -106,6 +158,7 @@ def upstream_runs(root: Path, config: Mapping[str, Any], selected: Sequence[str]
         "src/pipeline_v2/specifications.py",
         "src/pipeline_v2/verification.py",
         "src/llm/providers/openrouter.py",
+        "src/pipeline_v2/calibration.py",
     }
     result = {}
     for name, phase in (("phase6", 6), ("phase7", 7), ("phase9", 9)):
@@ -191,6 +244,7 @@ def stage(
     *,
     evaluator: bool = False,
     fixed: bool = False,
+    module_name: str | None = None,
 ) -> Path:
     root = controller.root
     target = root / output / run_id
@@ -199,7 +253,7 @@ def stage(
     state = steps.get(run_id, {})
     config_path = root / controller.config["execution"]["config_path"]
     if not target.exists():
-        module = "src.pipeline_v2.fixed" if fixed else "src.pipeline_v2"
+        module = module_name or ("src.pipeline_v2.fixed" if fixed else "src.pipeline_v2")
         command = [sys.executable, "-m", module]
         if not fixed:
             command.append(name)
@@ -209,9 +263,9 @@ def stage(
             "--run-id",
             run_id,
             "--mode",
-            "full" if len(selected) == len(development_ids(root)) else "pilot",
+            "full" if list(selected) == selection_ids(root, controller.config) else "pilot",
         ]
-        if len(selected) != len(development_ids(root)):
+        if list(selected) != selection_ids(root, controller.config):
             command += ["--project-id", selected[0]]
         command += list(arguments)
         if target.with_name("." + run_id + ".inprogress").exists():
@@ -556,6 +610,10 @@ def run(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    if argv and "--benchmark-120" in argv:
+        from src.pipeline_v2.benchmark import main as benchmark_main
+
+        return benchmark_main([argument for argument in argv if argument != "--benchmark-120"])
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=Path(DEFAULT_CONFIG))
     parser.add_argument("--mode", choices=["pilot", "full"], default="pilot")

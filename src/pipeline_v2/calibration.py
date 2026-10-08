@@ -14,11 +14,12 @@ from src.calibration.model import (
     calibration_metrics,
     fit_candidate,
     grouped_oof_predictions,
+    predict,
     select_thresholds,
 )
 from src.common.provenance import sha256_file
 from src.pipeline_v2.model import identifier
-from src.pipeline_v2.runtime import Run, dependency, development_ids
+from src.pipeline_v2.runtime import Run, dependency, development_ids, selection_ids
 from src.reproduction.common import atomic_json, atomic_jsonl, read_jsonl
 
 
@@ -112,8 +113,9 @@ def phase12(
 ) -> Path:
     if os.environ.get("MAXVERA_DATA_ROLE") != "evaluator":
         raise ValueError("Phase 12 requires a separate evaluator process")
-    if not set(selected) <= set(development_ids(root)):
-        raise ValueError("calibration selection is outside development")
+    if not set(selected) <= set(selection_ids(root, config)):
+        raise ValueError("calibration selection is outside registered cohort")
+    fit_selected = set(selected) & set(development_ids(root))
     p6, lock6 = dependency(root, phase6_relative, selected, 6)
     p10, lock10 = dependency(root, phase10_relative, selected, 10)
     p11, lock11 = dependency(root, phase11_relative, selected, 11)
@@ -147,21 +149,18 @@ def phase12(
         for row in all_results
     ):
         raise ValueError("calibration requires selected development verifier v3 results")
-    labels_by_project = _development_rows(checked["labels"], set(selected))
-    groups_by_project = _development_rows(checked["split_groups"], set(selected))
+    labels_by_project = _development_rows(checked["labels"], fit_selected)
+    groups_by_project = _development_rows(checked["split_groups"], fit_selected)
     hypotheses = {row["hypothesis_id"]: row for row in read_jsonl(p6 / "hypotheses.jsonl")}
     specifications = {
         row["specification_id"]: row for row in read_jsonl(p10 / "specifications.jsonl")
     }
     rows, labels, groups = [], [], []
+    application_features: dict[str, dict[str, float]] = {}
     for result in all_results:
         if result["status"] != "VERIFIED_DIFFERENTIAL":
             continue
         project = result["project_id"]
-        if project not in labels_by_project or project not in groups_by_project:
-            raise ValueError("verified finding lacks a development-only target/group")
-        if groups_by_project[project].get("split") != "development":
-            raise ValueError("repository group is outside development")
         if result["specification_id"] not in specifications:
             raise ValueError("verified finding lacks its frozen synthesis specification")
         hypothesis = hypotheses[result["hypothesis_id"]]
@@ -172,6 +171,15 @@ def phase12(
             "path_compactness": 1 / (1 + min(map(len, paths))),
         }
         features["raw_score"] = sum(features.values()) / len(features)
+        if project not in fit_selected:
+            application_features[result["specification_id"]] = features
+            continue
+        if project not in labels_by_project or project not in groups_by_project:
+            raise ValueError("verified finding lacks a development-only target/group")
+        if groups_by_project[project].get("split") != "development":
+            raise ValueError("repository group is outside development")
+        if result["specification_id"] not in specifications:
+            raise ValueError("verified finding lacks its frozen synthesis specification")
         target = int(result["candidate_cwe"] == labels_by_project[project]["ground_truth_cwe"])
         group = identifier("repo", groups_by_project[project]["repository_group"])
         labels.append(target)
@@ -191,6 +199,7 @@ def phase12(
     atomic_jsonl(run.work / "verified_features.jsonl", rows)
     model_name, thresholds, accept = None, {}, {"enabled": False}
     probabilities: dict[str, float] = {}
+    frozen_probabilities: dict[str, float] = {}
     if gate["eligible"]:
         numeric = [row["features"] for row in rows]
         candidates = []
@@ -240,9 +249,26 @@ def phase12(
         probabilities = {
             row["specification_id"]: value for row, value in zip(rows, values, strict=True)
         }
+        frozen_probabilities = {
+            spec_id: predict(model, features) for spec_id, features in application_features.items()
+        }
+    if config["analysis_scope"] == "benchmark_diagnostic":
+        atomic_json(
+            run.work / "fit_scope.json",
+            {
+                "selected_project_ids": sorted(fit_selected),
+                "test_labels_used": False,
+                "development_split_sha256": dataset["development_split_sha256"],
+                "application_specifications": sorted(application_features),
+                "application_model_sha256": sha256_file(run.work / "model.json")
+                if gate["eligible"]
+                else None,
+            },
+        )
     routed = []
     for result in all_results:
-        probability = probabilities.get(result["specification_id"])
+        spec_id = result["specification_id"]
+        probability = probabilities.get(spec_id, frozen_probabilities.get(spec_id))
         decision = "VERIFY" if result["status"] == "VERIFIED_DIFFERENTIAL" else "ABSTAIN"
         if probability is not None:
             if accept["enabled"] and probability >= thresholds["tau_accept"]:
@@ -255,7 +281,12 @@ def phase12(
                 "specification_id": result["specification_id"],
                 "verification_status": result["status"],
                 "decision": decision,
-                "oof_candidate_cwe_probability": probability,
+                "oof_candidate_cwe_probability": probabilities.get(spec_id),
+                **(
+                    {"frozen_candidate_cwe_probability": frozen_probabilities.get(spec_id)}
+                    if config["analysis_scope"] == "benchmark_diagnostic"
+                    else {}
+                ),
                 "calibrated_full_eligible": gate["eligible"],
             }
         )

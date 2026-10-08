@@ -567,3 +567,34 @@ Final checks sau literal guard/result documentation: 202 tests pass (8.81s), Ruf
 pass, git diff/smoke assertion pass, independent final005validator PASS. Completed
 004stage checksums và parent fixed preparation vẫn nguyên vẹn. Chỉ local commits;
 không push remote hoặc tự khởi chạy full96.
+
+## B9 all120 paper-reference profile — 2026-10-08, D-042
+
+User explicitly clarified all120cases for original-paper comparison. Registered
+configs/experiments/b9_benchmark_120.yaml and --pipeline-v2 --benchmark-120;
+96dev+24historicaltest, diagnostic only. Original dev-only entrypoint remains96.
+Same120CVEs as D_repro_v1; declared refs differ (tag5,buggy10,fix5), and opaqueIDs
+do not match. Do not claim identical snapshots/model/toolchain/hint conditions.
+
+New benchmark.py/benchmark_inputs.py/benchmark_evaluate.py controller prepares120,
+reuses119historical vulnerableDBs and93unchanged successful P6dev projects with
+registeredlock/AST/archivechecks. Missing/upstream cases execute natively; P7/P9,
+B9 dry/pilot/full, actual fixed preparation, verifier/routing/evaluator cover120.
+Test fixed parents21 pinned separately. Calibration fits development only, frozen
+model application on test features; fit_scope.json disallows test labels for fitting.
+
+Paper-proxy metrics use strict patched-method path overlap, dedup paths; AvgFDR
+only nonempty-path cases (N/A ifnone), AvgF1/detection denominatorall120 inclfails.
+Four evidence/routing variants with all120/dev96/test24 breakouts +published IRIS
+Table1 reference, legacy local macro metrics kept separately. Final raw case rows
+and report locked/independently validated. No new holdout or vulnerability-FDRclaim.
+
+Zero-API preflight PASS:120selection96+24,119availableDB,120source repositories.
+Launcher scripts/tools/run_b9_benchmark_120_tmux.sh uses separate
+maxvera-b9-benchmark-120/logs/pipeline_v2/b9_benchmark_120.log. Planned live ID
+b9_benchmark_120_v2_001 requires clean frozen local commit; no result claimed yet.
+See docs/19_PIPELINE_V2_RESTART.md commands and docs/07_DECISION_LOG.md rationale.
+Before launch:209tests pass (10.61s), Ruff repo/mypy120sourcefiles, bash syntax,
+diff/smoke checks pass. Actual005synthesis compatibility PASS for dev96 and benchmark120;
+independent005validator stillPASS. New evaluator export/resume test covers120rows,
+failed-case denominator, strict methods, emptyFDR; calibration test poisons test labels.

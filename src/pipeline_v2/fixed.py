@@ -22,7 +22,7 @@ from src.graphs.program.build_databases import _node_files, _preferred_attempt
 from src.graphs.program.runner import _run_command
 from src.pipeline_v2.calibration import _development_rows
 from src.pipeline_v2.recovery import database_environment
-from src.pipeline_v2.runtime import Run, codeql, configuration, dependency, development_ids
+from src.pipeline_v2.runtime import Run, codeql, configuration, dependency, selection_ids
 from src.reproduction.common import atomic_json, atomic_jsonl, read_csv, read_jsonl
 from src.verification.prepare_fixed import (
     _checkout_fixed_revision,
@@ -206,6 +206,31 @@ def prepare(
     ):
         raise ValueError("fixed preparation requires actual B9 v2 specifications")
     parent, parent_lock = parent_databases(root, config)
+    diagnostic_parent: Path | None = None
+    diagnostic_success: set[str] = set()
+    diagnostic_lock: dict[str, str] = {}
+    if config["analysis_scope"] == "benchmark_diagnostic":
+        registered = config["fixed_preparation"]["diagnostic_parent"]
+        diagnostic_parent = root / registered["root"]
+        for name, filename in (
+            ("manifest_sha256", "preparation_manifest.json"),
+            ("status_sha256", "build_status.jsonl"),
+        ):
+            diagnostic_lock[name] = sha256_file(diagnostic_parent / filename)
+            if diagnostic_lock[name] != registered[name]:
+                raise ValueError("diagnostic fixed parent changed")
+        parent_manifest = json.loads((diagnostic_parent / "preparation_manifest.json").read_text())
+        if (
+            parent_manifest.get("locked_test_prepared") is not True
+            or parent_manifest.get("labels_sha256") != config["dataset"]["labels_sha256"]
+            or parent_manifest.get("test_split_sha256") != config["dataset"]["test_split_sha256"]
+        ):
+            raise ValueError("diagnostic fixed parent is not bound to the registered release")
+        diagnostic_success = {
+            r["project_id"]
+            for r in read_jsonl(diagnostic_parent / "build_status.jsonl")
+            if r["status"] == "SUCCESS"
+        }
     dataset = config["dataset"]
     labels_path = root / dataset["labels"]
     if sha256_file(labels_path) != dataset["labels_sha256"]:
@@ -276,13 +301,17 @@ def prepare(
             else:
                 extra: dict[str, Any]
                 previous = parent / project
+                reuse_lock = parent_lock
+                if project in diagnostic_success and diagnostic_parent is not None:
+                    previous = diagnostic_parent / project
+                    reuse_lock = diagnostic_lock
                 if (
-                    project in parent_success
+                    (project in parent_success or project in diagnostic_success)
                     and (previous / "src.zip").is_file()
                     and (previous / "codeql-database.yml").is_file()
                 ):
                     destination.symlink_to(previous.resolve(), target_is_directory=True)
-                    extra = {"build_mode": "historical", "parent": parent_lock}
+                    extra = {"build_mode": "historical", "parent": reuse_lock}
                 else:
                     if project not in labels or project not in metadata:
                         raise ValueError("development fixed target/build metadata is unavailable")
@@ -311,8 +340,10 @@ def prepare(
     atomic_jsonl(database_root / "build_status.jsonl", run.statuses)
     preparation = {
         "schema_version": 2,
-        "development_only": True,
-        "locked_test_prepared": False,
+        "development_only": config["analysis_scope"] == "development",
+        "locked_test_prepared": config["analysis_scope"] == "benchmark_diagnostic",
+        "analysis_scope": config["analysis_scope"],
+        "confirmatory_result": False,
         "identity_mapping_persisted": False,
         "preparation_complete": not run.pending(),
         "development_split_sha256": dataset["development_split_sha256"],
@@ -344,7 +375,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         root,
         configuration(root, path),
         path,
-        development_ids(root, project_id=args.project_id),
+        selection_ids(root, configuration(root, path), project_id=args.project_id),
         args.run_id,
         args.phase10_run,
         resume=args.resume,

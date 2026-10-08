@@ -441,3 +441,41 @@ responses/reservations004 được kế thừa. Report:
 Full96 và 12 missing fixed DB builds chưa chạy; holdout/calibration claims chưa đủ.
 Nếu tmux maxvera-b9-v2 chỉ còn idle shell sau Controller exit code:0, đóng session
 đã hoàn tất (`tmux kill-session -t maxvera-b9-v2`) trước khi dùng launcher cho full005.
+
+### B9 đủ 120 cases — D-042 (2026-10-08)
+
+Profile riêng chọn96development +24historical test, diagnostic-only; calibration
+fit96development. Same120CVEs, một số source refs của D_extended khác D_repro_v1.
+Model/toolchain/zero-hint khác bài gốc; paper-reference report ghi rõ scope.
+
+```bash
+bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --benchmark-120 \
+  --run-id b9_benchmark_120_v2_001 --dry-run
+bash scripts/tools/run_b9_benchmark_120_tmux.sh \
+  --run-id b9_benchmark_120_v2_001 --confirm-api-spend
+tmux attach -t maxvera-b9-benchmark-120
+tail -f logs/pipeline_v2/b9_benchmark_120.log
+```
+
+Dry input preflight gọi0API; registered selection120,119 historical vulnerable DBs,
+120source repos. Inputs/P6/P7/P9 → grounding dry → pilot end-to-end → full120
+synthesis/fixed/v3/routing → evaluator. Missing DB/build/query/API failures vẫn có
+explicit statuses; completion counts120, không có nghĩa mọi120 phân tích thành công.
+Giữ source/config clean trong suốt run; tmux chạy nền khi terminal detach.
+
+Resume interrupted controller bằng numbered script và cùng frozen snapshot:
+
+```bash
+bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --benchmark-120 \
+  --run-id b9_benchmark_120_v2_001 --resume --confirm-api-spend
+bash scripts/tools/validate_b9_v2.sh \
+  --run-root results/pipeline_v2/benchmark/b9_benchmark_120_v2_001
+```
+
+Không chạy resume đồng thời với tmux controller còn active. Final controller có
+report.md, table_paper_comparison.csv, metrics_paper_proxy.json, case_alignment.json,
+benchmark_lock.json, validation.json, findings.jsonl. Evaluator giữ120rows/variant,
+AvgFDR chỉ cases có paths; AvgF1 và detection rate denominator120 gồm analysismisses.
+Validator kiểm lineage/checksums, fitdevonly, full cohort và regenerate aggregates.
+Chưa có full120 result tại thời điểm đăng ký profile; preflight/test không thay cho
+actual live-run completion hoặc claim calibrated Full.

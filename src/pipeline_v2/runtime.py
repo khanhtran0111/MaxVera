@@ -32,14 +32,24 @@ QUERY_ROOT = "src/static_analysis/queries/v2"
 
 def configuration(root: Path, path: Path) -> dict[str, Any]:
     value = yaml.safe_load(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict) or value.get("analysis_scope") != "development":
-        raise ValueError("pipeline v2 execution is development-only")
-    if value.get("protocol_version") != "2.0.0" or value.get("status") != "development_v2":
+    if not isinstance(value, dict) or value.get("analysis_scope") not in {
+        "development",
+        "benchmark_diagnostic",
+    }:
+        raise ValueError("pipeline v2 execution scope is not registered")
+    status = (
+        "benchmark_diagnostic_v2"
+        if value["analysis_scope"] == "benchmark_diagnostic"
+        else "development_v2"
+    )
+    if value.get("protocol_version") != "2.0.0" or value.get("status") != status:
         raise ValueError("pipeline v2 execution policy is not registered")
     dataset = value["dataset"]
     split = root / "data/processed/splits/development.csv"
     if dataset["development_split_sha256"] != sha256_file(split):
         raise ValueError("development split checksum mismatch")
+    if value["analysis_scope"] == "benchmark_diagnostic":
+        selection_ids(root, value)
     return cast(dict[str, Any], value)
 
 
@@ -52,6 +62,43 @@ def development_ids(root: Path, *, project_id: str | None = None) -> list[str]:
     if project_id is not None:
         if project_id not in identifiers:
             raise ValueError("project is outside development")
+        return [project_id]
+    return identifiers
+
+
+def selection_ids(
+    root: Path,
+    config: Mapping[str, Any],
+    *,
+    project_id: str | None = None,
+) -> list[str]:
+    if config.get("analysis_scope") == "development":
+        return development_ids(root, project_id=project_id)
+    if config.get("analysis_scope") != "benchmark_diagnostic":
+        raise ValueError("unregistered selection scope")
+    policy, dataset = config["benchmark"], config["dataset"]
+    if (
+        policy.get("confirmatory") is not False
+        or policy.get("calibration_fit_scope") != "development"
+        or config["execution"].get("historical_test_allowed") is not True
+    ):
+        raise ValueError("benchmark requires diagnostic disposition and development-only fitting")
+    identifiers = development_ids(root)
+    test_path = root / "data/processed/splits/test_locked.csv"
+    if sha256_file(test_path) != dataset["test_split_sha256"]:
+        raise ValueError("benchmark test split checksum mismatch")
+    identifiers += [row["project_id"] for row in read_csv(test_path)]
+    population = root / dataset["population"]
+    if (
+        sha256_file(population) != dataset["population_sha256"]
+        or len(identifiers) != 120
+        or len(set(identifiers)) != 120
+        or set(identifiers) != {r["project_id"] for r in read_csv(population)}
+    ):
+        raise ValueError("benchmark must cover the exact 120-case release without split overlap")
+    if project_id is not None:
+        if project_id not in identifiers:
+            raise ValueError("project is outside benchmark")
         return [project_id]
     return identifiers
 
@@ -110,13 +157,16 @@ class Run:
     ) -> None:
         if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,79}", run_id):
             raise ValueError("invalid run ID")
-        allowed = development_ids(root)
+        self.config = yaml.safe_load(config_path.read_text())
+        self.config.setdefault("analysis_scope", "development")
+        if self.config["analysis_scope"] == "benchmark_diagnostic":
+            self.config = configuration(root, config_path)
+        allowed = selection_ids(root, self.config)
         if not selected or len(set(selected)) != len(selected) or not set(selected) <= set(allowed):
-            raise ValueError("run selection must contain unique development IDs only")
+            raise ValueError("run selection must contain unique registered cohort IDs only")
         if require_clean and list(selected) != allowed:
             raise ValueError("canonical full run must account for the entire development split")
         self.root, self.run_id, self.phase = root, run_id, phase
-        self.config = yaml.safe_load(config_path.read_text())
         self.final = root / output / run_id
         self.work = self.final.with_name("." + run_id + ".inprogress")
         self.selected = list(selected)
@@ -125,7 +175,7 @@ class Run:
         git = collect_git(root)
         if require_clean and git["dirty"]:
             raise ValueError("canonical full v2 run requires a clean implementation snapshot")
-        expected = {
+        expected: dict[str, Any] = {
             "config_sha256": sha256_file(config_path),
             "model_config_sha256": sha256_file(
                 root / yaml.safe_load(config_path.read_text())["model_config"]
@@ -134,6 +184,14 @@ class Run:
             "implementation_sha256": implementation_hashes(root),
             "dependencies": dict(dependencies or {}),
         }
+        diagnostic = self.config["analysis_scope"] == "benchmark_diagnostic"
+        if diagnostic:
+            expected["cohort_sha256"] = {
+                key: self.config["dataset"][key]
+                for key in ("development_split_sha256", "test_split_sha256", "population_sha256")
+            }
+            if phase == 6:
+                expected["dependencies"]["benchmark_seed"] = self.config["benchmark"]["phase6_seed"]
         if self.work.exists():
             if not resume:
                 raise FileExistsError(f"use --resume for unfinished run: {self.work}")
@@ -151,10 +209,11 @@ class Run:
                     "phase": phase,
                     "protocol_version": "2.0.0",
                     "run_id": run_id,
-                    "analysis_scope": "development",
+                    "analysis_scope": self.config["analysis_scope"],
                     "git": git,
                     "created_at": utc_now(),
-                    "canonical_result": require_clean,
+                    "canonical_result": require_clean and not diagnostic,
+                    "confirmatory_result": False,
                     "data_access": (
                         "development evaluator labels/groups"
                         if phase == 12
@@ -184,6 +243,10 @@ class Run:
                 ignore=shutil.ignore_patterns("*.qlx", ".cache"),
             )
         self.statuses = read_jsonl(self.work / "project_status.jsonl")
+        if diagnostic and phase == 6:
+            from src.pipeline_v2.benchmark_inputs import inherit_discovery
+
+            inherit_discovery(self)
 
     def status(self, project: str, status: str, reason: str, **fields: Any) -> None:
         if project not in self.selected:
@@ -225,7 +288,7 @@ class Run:
                 "schema_version": 2,
                 "phase": self.phase,
                 "run_id": self.run_id,
-                "analysis_scope": "development",
+                "analysis_scope": self.config["analysis_scope"],
                 "projects": len(self.selected),
                 "analysis_successes": sum(row["status"] == "SUCCESS" for row in self.statuses),
                 "analysis_failures": sum(row["status"] != "SUCCESS" for row in self.statuses),
@@ -245,15 +308,32 @@ class Run:
 def dependency(
     root: Path, relative: str, selected: Sequence[str], phase: int
 ) -> tuple[Path, dict[str, Any]]:
-    if not set(selected) <= set(development_ids(root)):
-        raise ValueError("dependency selection is outside development")
     path = (root / relative).resolve()
     if not path.is_relative_to((root / "results").resolve()):
         raise ValueError("dependency is outside the results directory")
     manifest = json.loads((path / "manifest.json").read_text())
+    scope = manifest.get("analysis_scope")
+    if scope == "development":
+        allowed = development_ids(root)
+    elif scope == "benchmark_diagnostic":
+        hashes = manifest.get("cohort_sha256", {})
+        paths = {
+            "development_split_sha256": "data/processed/splits/development.csv",
+            "test_split_sha256": "data/processed/splits/test_locked.csv",
+            "population_sha256": "data/processed/analysis_input/D_extended_projects.csv",
+        }
+        if manifest.get("confirmatory_result") is not False or any(
+            hashes.get(key) != sha256_file(root / value) for key, value in paths.items()
+        ):
+            raise ValueError("diagnostic dependency cohort changed")
+        allowed = development_ids(root) + [
+            r["project_id"] for r in read_csv(root / paths["test_split_sha256"])
+        ]
+    else:
+        raise ValueError("dependency scope is not registered")
     if (
         manifest.get("phase") != phase
-        or manifest.get("analysis_scope") != "development"
+        or not set(selected) <= set(allowed)
         or manifest.get("protocol_version") != "2.0.0"
         or not set(selected) <= set(manifest.get("selected_project_ids", []))
     ):

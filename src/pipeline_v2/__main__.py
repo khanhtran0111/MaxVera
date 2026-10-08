@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 
 from src.pipeline_v2.graphs import phase7, phase9
-from src.pipeline_v2.runtime import configuration, development_ids, phase6
+from src.pipeline_v2.runtime import configuration, phase6, selection_ids
 from src.pipeline_v2.specifications import phase10
 
 
@@ -52,7 +52,7 @@ def main() -> None:
         parser.error("full must select the entire development split")
     if args.mode == "pilot" and not args.project_id:
         parser.error("pilot requires an opaque development --project-id")
-    selected = development_ids(root, project_id=args.project_id)
+    selected = selection_ids(root, config, project_id=args.project_id)
     if not args.run_id:
         parser.error("--run-id is required")
     evaluator = args.stage in {"phase11", "phase12"}

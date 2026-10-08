@@ -279,8 +279,9 @@ def phase11(
                 raise ValueError("fixed database provenance changed")
     preparation = json.loads((fixed_root / "preparation_manifest.json").read_text())
     if (
-        preparation.get("development_only") is not True
-        or preparation.get("locked_test_prepared") is not False
+        preparation.get("development_only") is not (config["analysis_scope"] == "development")
+        or preparation.get("locked_test_prepared")
+        is not (config["analysis_scope"] == "benchmark_diagnostic")
         or preparation.get("identity_mapping_persisted") is not False
         or preparation.get("development_split_sha256")
         != config["dataset"]["development_split_sha256"]

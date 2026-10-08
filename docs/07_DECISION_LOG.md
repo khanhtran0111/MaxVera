@@ -1018,3 +1018,46 @@ controller/verifier fixes and compatibility-dispatch plumbing may differ; contex
 schema, frozen bindings and actual vulnerable resolution are rechecked. All previous
 API reservations/responses/call logs retain lineage. Pilot005 uses a new immutable
 namespace and clean source commit; it must pass the independent final validator.
+
+## D-042 — 2026-10-08: B9 trên đủ 120 cases để đối chiếu bài IRIS
+
+Người dùng làm rõ muốn đủ 120 cases để có bảng so sánh bài gốc. Đăng ký profile
+`benchmark_diagnostic_v2`/`configs/experiments/b9_benchmark_120.yaml`, entrypoint
+`--pipeline-v2 --benchmark-120`; development cũ vẫn chọn96. Cohort mới là union
+96development và24historical test, checksum cả hai splits và population được khóa.
+Historical test đã mở nên kết quả120 là diagnostic, không claim holdout confirmatory.
+Protocol science2.0.0, discovery queries, synthesis prompts/schema, Top-k10,
+model/provider/budgets, verifier40queries và calibration thresholds giữ nguyên.
+
+Analyzer chỉ nhận opaque projects/source artifacts. Reuse119 vulnerable DBs qua
+archive/metadata provenance; missing DB dùng pinned no-build toolchain. Reuse93
+unchanged successful development P6 projects qua registered003lock/scientific AST;
+remaining P6 và P7/P9 chạy trên đủ120. B9 dry → end-to-end pilot kế thừa005responses
+→ full120 → actual-cohort fixed preparation → verifier v3 → calibration → evaluator.
+Fixed DBs development/test chỉ reuse qua pinned historical manifests/statuses;
+missing cohort DBs vẫn cần actual build. Không overwrite parent outputs hoặc splits.
+
+Calibration fit/OOF/model selection/thresholds chỉ từ96development, test24 chỉ dùng
+frozen fitted model nếu đủ support. fit_scope.json và validator chứng minh fitting
+selection; không đọc test target/group cho fitting. Ineligible vẫn VERIFY/ABSTAIN,
+ACCEPT off. Evidence này là candidate-CWE calibration, không vulnerability FDR.
+
+Independent evaluator dùng paper§3.6 path formula: deduplicate paths, TP khi path
+giao patched method, detection nếu có TP, AvgFDR chỉ trung bình cases có paths,
+AvgF1 trên toàn bộ120 kể cả fails/no-output. Không có paths → FDR N/A; thiếu method
+annotation không fallback class/file. Xuất4variants vulnerable_paths,
+differential_verified, routed_verify_or_accept, accept_only; từng variant có120
+case rows và all120/dev96/test24 metrics. Đính kèm published Table1 reference
+https://arxiv.org/html/2405.17238v3#S5.T1. Local legacy alert/success macro table
+giữ riêng, không gộp như cùng công thức path metrics.
+
+D_extended và D_repro_v1 cùng120(CVE,owner,repo), opaque IDs khác nhau. Declared
+github_tag khác5cases, buggy_commit_id khác10, fix_commit_ids khác5. Vì snapshots
+khác, zero-hint/GPT-OSS20B/CodeQL2.26.2 khác oracle-CWE/models/CodeQL bài gốc,
+bảng là descriptive comparison, không tuyên bố exact reproduction hoặc hơn/kém
+thuật toán dưới identical conditions. case_alignment.json ghi khác biệt refs.
+
+New immutable namespace results/pipeline_v2/benchmark/<ID>; frozen clean commit
+trước launch, tmux riêng maxvera-b9-benchmark-120, bounded API retries/resume giữ
+budgets. Full120 cần statuses cho mọi case; analysis failures được giữ denominator.
+Không thay RQ hoặc tuning từ test; nghiên cứu confirmatory sau này cần holdout mới.

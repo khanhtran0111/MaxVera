@@ -276,7 +276,10 @@ def phase10(
         from src.pipeline_v2.runtime import implementation_hashes
 
         if manifest["implementation_sha256"] != implementation_hashes(root):
-            if config.get("execution", {}).get("entrypoint") == "b9_end_to_end":
+            if config.get("execution", {}).get("entrypoint") in {
+                "b9_end_to_end",
+                "b9_benchmark_end_to_end",
+            }:
                 from src.pipeline_v2.b9 import compatible_synthesis
 
                 compatible_synthesis(root, config, seed_run)
