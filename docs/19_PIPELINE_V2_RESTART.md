@@ -479,3 +479,30 @@ AvgFDR chỉ cases có paths; AvgF1 và detection rate denominator120 gồm anal
 Validator kiểm lineage/checksums, fitdevonly, full cohort và regenerate aggregates.
 Chưa có full120 result tại thời điểm đăng ký profile; preflight/test không thay cho
 actual live-run completion hoặc claim calibrated Full.
+
+### Khôi phục với pacing90giây — D-043 (2026-10-09)
+
+Run002 dừng tại provider429; snapshot partial sau manualresume giữ247specifications,
+24success/5failed/91pending, all budgets/responses/plans. Registered90s profile chỉ
+thay timing/configpath/recovery metadata; reuse9locked input/upstream/dry/pilot stages.
+Không sửa config002 hoặc resume002 với source đã đổi.
+
+```bash
+bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --benchmark-120 \
+  --config configs/experiments/b9_benchmark_120_90s.yaml \
+  --run-id b9_benchmark_120_v2_003 --dry-run
+bash scripts/tools/run_b9_benchmark_120_tmux.sh \
+  --config configs/experiments/b9_benchmark_120_90s.yaml \
+  --run-id b9_benchmark_120_v2_003 --confirm-api-spend
+```
+
+Trước launch kiểm sessionmaxvera-b9-benchmark-120 cũ đã idle sauexit75; chỉ đóng
+idle shell để dùng launcher, không chạy hai controllers đồng thời. Session name/log
+giữ như trước. Khi003 bị ngắt, resume với cùng config/runid/clean source và --resume;
+giữ request reservations/checkpoints và bounded6controller retries. Spacing90giây
+bao gồm HTTPretry; subprocesscooldown>=90. Completed full controller validate:
+
+```bash
+bash scripts/tools/validate_b9_v2.sh \
+  --run-root results/pipeline_v2/benchmark/b9_benchmark_120_v2_003
+```

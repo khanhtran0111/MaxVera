@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import urllib.error
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -26,8 +27,10 @@ def _settings() -> OpenRouterSettings:
     )
 
 
+@pytest.mark.parametrize("interval", [15, 90])
 def test_request_pacing_is_shared_across_clients_and_retries(
     monkeypatch: pytest.MonkeyPatch,
+    interval: int,
 ) -> None:
     clock = [100.0]
     sleeps = []
@@ -39,12 +42,12 @@ def test_request_pacing_is_shared_across_clients_and_retries(
     monkeypatch.setattr("src.llm.providers.openrouter.time.monotonic", lambda: clock[0])
     monkeypatch.setattr("src.llm.providers.openrouter.time.sleep", sleep)
     monkeypatch.setattr(OpenRouterClient, "_last_request_started", None)
-    first = OpenRouterClient(_settings(), request_interval_seconds=15)
+    first = OpenRouterClient(_settings(), request_interval_seconds=interval)
     first._pace_request()
     first._pace_request()
-    second = OpenRouterClient(_settings(), request_interval_seconds=15)
+    second = OpenRouterClient(_settings(), request_interval_seconds=interval)
     second._pace_request()
-    assert sleeps == [15, 15]
+    assert sleeps == [interval, interval]
     assert first._payload([], expect_json=True) == second._payload([], expect_json=True)
 
 
@@ -61,6 +64,30 @@ def test_payload_pins_model_provider_privacy_and_no_fallback() -> None:
     }
     assert payload["reasoning"] == {"effort": "low", "exclude": True}
     assert payload["response_format"] == {"type": "json_object"}
+
+
+def test_90_second_pacing_also_applies_to_http_retries(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = [100.0]
+    starts: list[float] = []
+
+    def sleep(seconds: float) -> None:
+        clock[0] += seconds
+
+    def failed_request(*_args: object, **_kwargs: object) -> None:
+        starts.append(clock[0])
+        raise urllib.error.HTTPError("https://example.invalid", 429, "provider error", {}, None)
+
+    monkeypatch.setattr("src.llm.providers.openrouter.time.monotonic", lambda: clock[0])
+    monkeypatch.setattr("src.llm.providers.openrouter.time.sleep", sleep)
+    monkeypatch.setattr("urllib.request.urlopen", failed_request)
+    monkeypatch.setattr(OpenRouterClient, "_last_request_started", None)
+    from src.llm.providers.openrouter import OpenRouterError
+
+    with pytest.raises(OpenRouterError):
+        OpenRouterClient(replace(_settings(), max_retries=2), request_interval_seconds=90).complete(
+            [{"role": "user", "content": "fixture"}]
+        )
+    assert starts == [100, 190, 280]
 
 
 def test_payload_uses_strict_structured_outputs_when_schema_is_supplied() -> None:

@@ -609,3 +609,27 @@ tests prove both fixes. Next active IDb9_benchmark_120_v2_002, same frozen120con
 new clean code commit; source/config must stay clean while live stages execute.
 Prelaunch002:211tests pass (11.00s), Ruff/mypy120files, diff/shell/smoke PASS;
 actual005synthesis compatibility remains PASS for dev and diagnostic profiles.
+
+## B9 90-second recovery — 2026-10-09, D-043
+
+User explicitly requests90s between requests and restarting maxvera-b9-benchmark-120.
+Run002 snapshotdb1a238 stopped HTTP429/APIretry exhaustion; inputs120ready, P6
+118success/2timeouts/893hypotheses, P7/P9 98success/22misses, pilotE2EPASS. After
+manualresume, checkpoint247specs,24SUCCESS/5FAILED/91PENDING. All old002 artifacts
+kept. Frozen CHECKPOINT_ONLY snapshot results/pipeline_v2/benchmark_checkpoints/
+b9_benchmark_120_v2_002_synth_90s_001 (source manifestc9b790ed...,checksumef84d67d...).
+
+New config configs/experiments/b9_benchmark_120_90s.yaml; planned/active ID003.
+Only interval15→90 and controller mincooldown60→90, new execution configpath and
+explicit transport_recovery lock. Model/provider/science/budgets unchanged. OpenRouter
+client validationcap60→90 only; pacing applies to every HTTPattempt/sharedclient.
+benchmark_recovery.py validates exact permitted config/provider source differences,
+reuses9locked completed stages, restores full sourcepartial with everyreservation,
+response, rejection/terminal/pending state and LLMlog. Recoverymarker makes resume
+idempotent without budgetreset. Controller/Run hooks keep P10scientific loop unchanged.
+
+Prelaunch003:216tests pass (12.34s), Ruff/mypy121files/shell/diff/smoke PASS. Real9stage
+reuse preflight PASS, full120/120DB90s zeroAPI preflight PASS. Run requires new clean
+source commit; do not edit tracked code/config while live. Launcher must pass explicit
+--config configs/experiments/b9_benchmark_120_90s.yaml --run-id b9_benchmark_120_v2_003.
+Existing old session is idle afterexit75; inspect before closing/relaunching same name.

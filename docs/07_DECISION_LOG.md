@@ -1072,3 +1072,40 @@ nguyên vẹn, pinned toolchain unchanged. Atomic provenance trước DB move ch
 interruption. Regression tests cover already-inherited seed/idempotence, dirty-source
 isolation và interrupt-before-move recovery. Trial001 outputs giữ nguyên; rerun002
 trên clean source commit, cùng config/model/budgets và cohort120.
+
+## D-043 — 2026-10-09: Giãn request90giây và khôi phục B9 full120
+
+Người dùng yêu cầu khoảng cách90giây và chạy lại cùng phiên tmux. Run002 hoàn tất
+inputs120/120, P6 118success/2timeouts (893hypotheses), P7/P9 98success/22misses,
+pilot end-to-end PASS. Full synthesis dừng HTTP429/upstream AkashML sau cumulative
+6controller retries. Sau manual resume, frozen checkpoint có247specifications,
+24SUCCESS/5ANALYSIS_FAILED/91PENDING. Không mở/tune test labels hoặc đổi science.
+
+Đăng ký configs/experiments/b9_benchmark_120_90s.yaml; interval15→90giây,
+controller minimumcooldown60→90giây để lần đầu của subprocess retry cũng giãn90.
+Giữ model GPT-OSS20B/AkashML, payload/privacy/no-fallback, tokens và30logicalcalls/
+project, Top-k10, query40/verifier/calibration và cohort120. Client chỉ mở validation
+cap interval60→90; _pace_request đã áp dụng chung cho clients/HTTP retries trong
+process. Không thay cumulative6retry policy trong yêu cầu chỉ giãn request này.
+
+Giữ nguyên artifacts/config002. Snapshot byte-for-byte source partial002 tại
+results/pipeline_v2/benchmark_checkpoints/b9_benchmark_120_v2_002_synth_90s_001,
+type CHECKPOINT_ONLY (không giả vờ completed). Snapshot pin source/config/model,
+all source file hashes, controller steps và checksum coverage. Registered recovery
+chỉ cho phép đúng90s timing/config path/recovery metadata differences. Provider
+source được kiểm đúng hai string substitutions intervalcap/message; mọi source
+payload/model/privacy, discovery/helper AST/synthesis loop/context/schema giữ nguyên.
+
+New run003 reuse9completed stages qua original manifests/checksums, full selection
+và same scientific snapshot. Full P10 restore all project directories, generated
+queries, statuses, raw responses, plans (kể cả REJECTED/FATAL/BUDGET_EXHAUSTED),
+reservations và LLM logs; recovery marker prevents reset on subsequent resumes.
+Input P6/P9 dependency locks must equal original checkpoint. Full verification,
+actual fixed preparation/calibration/evaluator chạy sau synthesis từ new clean commit.
+Không tăng ngân sách hoặc gọi lại completed/rejected hypotheses. Original misses
+vẫn giữ denominator120; result diagnostic disposition unchanged.
+
+Tests kiểm 90s giữa client instances và actual HTTP retry attempts bằng fakeclock;
+checkpoint restoration/resume bảo toàn budgets và terminal states, reject scientific
+drift/tampering, chỉ reuse pinned completed stages. Actual9stage reuse preflight PASS,
+zeroAPI. Full suite216tests (12.34s), Ruff/mypy121files, shell/diff/smoke PASS.

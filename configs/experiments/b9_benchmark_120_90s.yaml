@@ -1,0 +1,185 @@
+schema_version: 2
+protocol_version: 2.0.0
+status: benchmark_diagnostic_v2
+analysis_scope: benchmark_diagnostic
+historical_disposition: configs/experiments/pipeline_v2.yaml
+model_config: configs/models/gpt_oss_20b_openrouter.yaml
+top_k: 10
+dataset:
+  development_split_sha256: f534192c4272320f358602d66caf094b2d479ae4aa83a338b3f2389d0ad183ce
+  vulnerable_database_root: data/interim/b9_benchmark_vulnerable_001
+  fixed_database_root: data/interim/b9_benchmark_fixed_001
+  labels: data/processed/evaluator_only/D_extended_labels.csv
+  labels_sha256: 2ed7a442d65980085d64c27660c4e4d82e10448023446d520e01193622c032c0
+  split_groups: data/processed/evaluator_only/D_extended_split_groups.csv
+  split_groups_sha256: 0a057922fb115d4ab4eaaa1702f4a9180f5ce37d28c76d5565cde02fed8dbf7d
+  test_split_sha256: 7e948c65be2896c0eaec680ad2c3a709b8a3f4b7b0e759dcccd2af2086945b6a
+  population: data/processed/analysis_input/D_extended_projects.csv
+  population_sha256: 0224b63566573ea492a0774717c6eb1a4de24392f234099aa939562aa3669fc1
+phase8:
+  run_id: p8_skg_global_full_002
+  run_root: results/graphs/knowledge/p8_skg_global_full_002
+  manifest_sha256: 91ca35b8ee2b9f153ba8dedfe75a4e165231b5a3b86cc5219e7623a2497f270a
+codeql:
+  version: 2.26.2
+  java_pack: 9.2.2
+  threads: 2
+  ram_mb: 8192
+  timeout_seconds: 1800
+  project_workers: 1
+budget:
+  max_calls_per_project: 30
+  max_total_input_tokens_per_project: 160000
+  max_context_tokens_per_call: 8192
+  max_output_tokens_per_call: 2048
+verification:
+  version: semantic-differential-verifier-v3
+  max_query_invocations_per_project: 40
+  fixed_mapping: exact_line_then_unique_callable_symbol_slot_and_model
+  unresolved_is_verified: false
+calibration:
+  target: candidate_cwe_correct_on_v3_verified_findings
+  minimum_repository_groups: 8
+  minimum_records_per_class: 5
+  minimum_groups_per_class: 2
+  require_two_class_training_folds: true
+  candidates:
+  - platt
+  - isotonic
+  - logistic
+  feature_names:
+  - hypothesis_score
+  - path_count_score
+  - path_compactness
+  - raw_score
+  selection_order:
+  - brier
+  - ece_equal_width
+  - aurc
+  - model_name
+  ece_bins: 10
+  optimization:
+    l2: 0.05
+    iterations: 3000
+    learning_rate: 0.1
+  routing:
+    target_accept_precision: 0.8
+    target_verify_recall: 0.8
+    max_abstain_positive_rate: 0.05
+    minimum_accept_count: 20
+    minimum_accept_groups: 3
+    accept_wilson_lower_bound: 0.8
+    fallback_verified: VERIFY
+    fallback_unverified: ABSTAIN
+    unverified_is_negative: false
+execution:
+  entrypoint: b9_benchmark_end_to_end
+  config_path: configs/experiments/b9_benchmark_120_90s.yaml
+  overwrite: false
+  clean_snapshot_for_full: true
+  historical_test_allowed: true
+  confirmatory_test_split: null
+  pilot_project_id: proj_7341ff37e347ec3be4ce
+  llm_request_interval_seconds: 90
+  cache_cleanup_after_project: true
+  api_retry:
+    max_stage_retries: 6
+    cooldown_seconds: 90
+    cooldown_max_seconds: 900
+upstream_reuse:
+  config_path: configs/experiments/pipeline_v2_recovery_003.yaml
+  config_sha256: 19717da96518d6c7fc0e0d873682f5643d8f9061d0abcfee703ddeb683f3e127
+  phase6: &id001
+    run_root: results/hypotheses/grounded_v2/p6_hyp_dev_full_v2_003
+    manifest_sha256: f665b1161b6922cdd955d25ef66e9caa7671ea357851be22a80dfb7252d86d39
+    checksums_sha256: 84d23eff36bd738216247c58660647d206bf91f793fe8bcc72bfb07f9784cf82
+  phase7:
+    run_root: results/graphs/program_v2/p7_program_graph_dev_full_v2_003
+    manifest_sha256: 0014fe41253ebe69cc726f7a32b3f2df6525d6ad96c5937a78d0884d72134a44
+    checksums_sha256: 7bc770666491d1d00e2a50e90bb693b4557c7277b5e2cda4640142835adbb9e5
+  phase9:
+    run_root: results/graphs/useg_v2/p9_useg_dev_full_v2_003
+    manifest_sha256: c6349d89c7d0ceeb5dd64cdc37006607834fef05f5940aa1e87e7557097620bb
+    checksums_sha256: 1d280b5b702546db5838e8022b225172fb8c013f099b564bab9764a563dabe4f
+fixed_preparation:
+  parent_root: data/interim/phase11_fixed_codeql_databases
+  parent_manifest_sha256: 945f4acb11a154cf6c63c7d4e9aba636dd5671a3aada0f2a369e8aafc41a5edc
+  parent_status_sha256: fc20f535da33bf275b058c1bf212dde03586c4cefd6fce9d8858bf3373505754
+  source_root: data/interim/phase6_project_sources
+  build_timeout_seconds: 1800
+  fetch_timeout_seconds: 300
+  minimum_free_disk_gib: 30
+  diagnostic_parent:
+    root: data/interim/phase13_fixed_codeql_databases/p13_test_analysis_001
+    manifest_sha256: 38dff38ea589482b9d572b9771ae54872d27553417ec28eb56a7616719bee1b6
+    status_sha256: f60a8e9700d03ea18e4bf33193327ffa65f2ffec3d61a5fdbc15bd323db1792b
+benchmark:
+  confirmatory: false
+  calibration_fit_scope: development
+  seed_config_path: configs/experiments/b9_pipeline_v2.yaml
+  phase6_seed: *id001
+  synthesis_seed: results/specifications/v2/b9/b9_e2e_dev_pilot_v2_005_synth
+  vulnerable_parent_roots:
+  - data/interim/phase7_codeql_databases_v2_003
+  - data/interim/phase13_codeql_databases/p13_test_analysis_001
+  minimum_free_disk_gib: 30
+  comparison_scope: same 120 CVEs; D_extended snapshots; zero-hint; model/toolchain
+    substitution; diagnostic
+  paper_reference:
+    url: https://arxiv.org/html/2405.17238v3#S5.T1
+    version: 2405.17238v3
+    table: 1
+    metrics_scope: published patched-method overlap proxy
+    rows:
+    - method: CodeQL
+      detected: 27
+      avg_fdr: 0.9003
+      avg_f1: 0.076
+      cases: 120
+    - method: IRIS GPT-4
+      detected: 55
+      avg_fdr: 0.8482
+      avg_f1: 0.177
+      cases: 120
+    - method: IRIS GPT-3.5
+      detected: 47
+      avg_fdr: 0.9042
+      avg_f1: 0.096
+      cases: 120
+    - method: IRIS Llama3 8B
+      detected: 41
+      avg_fdr: 0.9555
+      avg_f1: 0.058
+      cases: 120
+    - method: IRIS Llama3 70B
+      detected: 54
+      avg_fdr: 0.9096
+      avg_f1: 0.113
+      cases: 120
+    - method: IRIS Qwen2.5Coder 32B
+      detected: 47
+      avg_fdr: 0.9238
+      avg_f1: 0.097
+      cases: 120
+    - method: IRIS Gemma2 27B
+      detected: 45
+      avg_fdr: 0.9123
+      avg_f1: 0.1
+      cases: 120
+    - method: IRIS DeepSeekCoder 7B
+      detected: 52
+      avg_fdr: 0.954
+      avg_f1: 0.062
+      cases: 120
+  reproduction_labels: data/processed/evaluator_only/D_repro_v1_labels.csv
+  reproduction_labels_sha256: 06639ba2a65f6e397d1dd5c26106b3a9234c043250b524403b14e9560e4d31a8
+  truth: data/processed/evaluator_only/D_extended_fix_locations.jsonl
+  truth_sha256: b9c987648dc4110f6dd797224604ff96caca0a4b075e6cb0bce7953abdf58b85
+  local_baseline_table: results/paper/table_reproduction.csv
+  local_baseline_table_sha256: 8b38add426e570f53632bd7566078f4619ca60ba0c87ae3dcd8584b6e97cd1dc
+  transport_recovery:
+    source_config: configs/experiments/b9_benchmark_120.yaml
+    source_config_sha256: 1aee2b873e31909816c959fd5fa82ac59df4aee57f496f9329b1d568bed40b26
+    checkpoint: results/pipeline_v2/benchmark_checkpoints/b9_benchmark_120_v2_002_synth_90s_001
+    manifest_sha256: c9b790ed33cb6d10ba274b1fcf08178467ff03a33eb32b2a81352c4c657ee216
+    checksums_sha256: ef84d67d27e7fc4a5b9d16ae109ddc994d6c681eaaee7acfba090efbf3fd1987

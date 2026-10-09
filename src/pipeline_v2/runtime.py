@@ -247,6 +247,10 @@ class Run:
             from src.pipeline_v2.benchmark_inputs import inherit_discovery
 
             inherit_discovery(self)
+        if diagnostic and phase == 10 and self.config["benchmark"].get("transport_recovery"):
+            from src.pipeline_v2.benchmark_recovery import restore_synthesis
+
+            restore_synthesis(self)
 
     def status(self, project: str, status: str, reason: str, **fields: Any) -> None:
         if project not in self.selected:

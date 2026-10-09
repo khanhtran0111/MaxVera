@@ -326,3 +326,14 @@ because prior inherited_from collided with new lock. Inputs recorded119DBready a
 1dirty-source rejection. Trial artifacts retained. Corrected forwarding and isolated
 vulnerable checkout preserve parent source; checkpoint beforemove supports resume.
 Next run002 reuses unchanged config/scientific inputs under new clean source snapshot.
+
+## 2026-10-09 — B9 full120 pacing90s recovery (D-043)
+
+User requests90s requestspacing and restart tmux. Register90s config +newrun003,
+retain frozen partial002checkpoint247specs/24success/5failed/91pending and all
+reservations/responses/terminalstates. Reuse9completed002input/upstream/dry/pilotstages
+after lock/scientific checks. Model/provider and all analysis/LLM budgets unchanged;
+interval15→90, mincontrollercooldown60→90, clientvalidationcap90. No retry-policy
+relaxation or new holdout claim. Old artifacts and sourceconfigs unchanged.
+Validation:216tests (12.34s), Ruff/mypy121files/shell/diff/smoke PASS; actual9stage
+reuse and120/120DB90s preflight PASS with0APIcalls. Clean commit required beforelaunch.

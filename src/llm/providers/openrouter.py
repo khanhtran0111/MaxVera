@@ -117,8 +117,8 @@ class OpenRouterClient:
         *,
         request_interval_seconds: float = 0,
     ):
-        if not 0 <= request_interval_seconds <= 60:
-            raise ValueError("request interval must be between 0 and 60 seconds")
+        if not 0 <= request_interval_seconds <= 90:
+            raise ValueError("request interval must be between 0 and 90 seconds")
         self.settings = settings
         self.call_log = call_log
         self.log_context = dict(log_context or {})

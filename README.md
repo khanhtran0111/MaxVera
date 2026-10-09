@@ -51,6 +51,14 @@ These are the same CVEs as the reproduction release; some source revisions, the 
 toolchain and hint condition differ. This is a diagnostic comparison with published
 IRIS results, not a new confirmatory holdout result. See D-042 in the decision log.
 
+The requested 90-second recovery uses
+[`b9_benchmark_120_90s.yaml`](configs/experiments/b9_benchmark_120_90s.yaml)
+and run `b9_benchmark_120_v2_003`. It restores the frozen partial002 checkpoint
+(247 specifications, all API reservations, responses and terminal states), reuses
+completed upstream/pilot stages, and resumes full synthesis. Request starts, including
+HTTP retries, are spaced at least90seconds; controller cooldown starts at90seconds.
+Model/provider/token budgets and the120-case cohort remain pinned. D-043 records lineage.
+
 MaxVera is a reproducible research scaffold for graph-grounded, zero-hint,
 repository-level vulnerability discovery in Java. The analysis pipeline uses
 CodeQL for static verification and `openai/gpt-oss-20b` through a pinned

@@ -24,10 +24,17 @@ def preflight(root: Path, config: dict[str, Any]) -> dict[str, Any]:
     base = configuration(root, root / config["benchmark"]["seed_config_path"])
     upstream_runs(root, base, development_ids(root))
     parent_databases(root, config)
+    if config["benchmark"].get("transport_recovery"):
+        from src.pipeline_v2.benchmark_recovery import checkpoint
+
+        checkpoint(root, config)
     available = sum(
         any(
             (root / parent / p / "codeql-database.yml").is_file()
-            for parent in config["benchmark"]["vulnerable_parent_roots"]
+            for parent in [
+                *config["benchmark"]["vulnerable_parent_roots"],
+                config["dataset"]["vulnerable_database_root"],
+            ]
         )
         for p in selected
     )
@@ -42,6 +49,7 @@ def preflight(root: Path, config: dict[str, Any]) -> dict[str, Any]:
         "available_vulnerable_databases": available,
         "source_repositories": sources,
         "api_calls": 0,
+        "request_interval_seconds": config["execution"]["llm_request_interval_seconds"],
         "confirmatory_result": False,
     }
 
@@ -80,37 +88,41 @@ def run(
         require_clean=True,
         dependencies={"phase6_seed": config["benchmark"]["phase6_seed"]},
     )
+
+    def upstream_stage(
+        name: str, suffix: str, output: str, phase: int, arguments: list[str], **options: Any
+    ) -> Path:
+        if config["benchmark"].get("transport_recovery"):
+            from src.pipeline_v2.benchmark_recovery import reuse_stage
+
+            return reuse_stage(controller, suffix, phase, selected)
+        return stage(
+            controller, name, run_id + suffix, output, phase, selected, arguments, **options
+        )
+
     try:
-        stage(
-            controller,
+        upstream_stage(
             "inputs",
-            run_id + "_inputs",
+            "_inputs",
             "results/pipeline_v2/benchmark_inputs",
             0,
-            selected,
             [],
             fixed=True,
             module_name="src.pipeline_v2.benchmark_inputs",
         )
-        p6 = stage(
-            controller, "phase6", run_id + "_p6", "results/hypotheses/grounded_v2", 6, selected, []
-        )
-        p7 = stage(
-            controller,
+        p6 = upstream_stage("phase6", "_p6", "results/hypotheses/grounded_v2", 6, [])
+        p7 = upstream_stage(
             "phase7",
-            run_id + "_p7",
+            "_p7",
             "results/graphs/program_v2",
             7,
-            selected,
             ["--phase6-run", p6.relative_to(root).as_posix()],
         )
-        p9 = stage(
-            controller,
+        p9 = upstream_stage(
             "phase9",
-            run_id + "_p9",
+            "_p9",
             "results/graphs/useg_v2",
             9,
-            selected,
             [
                 "--phase6-run",
                 p6.relative_to(root).as_posix(),
@@ -124,13 +136,11 @@ def run(
             "--phase9-run",
             p9.relative_to(root).as_posix(),
         ]
-        dry = stage(
-            controller,
+        dry = upstream_stage(
             "phase10",
-            run_id + "_dry",
+            "_dry",
             "results/specifications/v2/b9",
             10,
-            selected,
             [*inputs, "--baseline", "B9", "--dry-run"],
         )
         dry_summary = json.loads((dry / "summary.json").read_text())
@@ -141,13 +151,26 @@ def run(
         ):
             raise ValueError("120-case grounding dry-run failed")
         project = config["execution"]["pilot_project_id"]
-        pilot = branch(
-            controller,
-            [project],
-            run_id + "_pilot",
-            inputs,
-            inherit=root / config["benchmark"]["synthesis_seed"],
-        )
+        if config["benchmark"].get("transport_recovery"):
+            from src.pipeline_v2.benchmark_recovery import reuse_stage
+
+            pilot = {
+                name: reuse_stage(controller, suffix, phase, [project])
+                for name, suffix, phase in (
+                    ("synthesis", "_pilot_synth", 10),
+                    ("fixed_preparation", "_pilot_fixed", 0),
+                    ("verification", "_pilot_verify", 11),
+                    ("calibration", "_pilot_route", 12),
+                )
+            }
+        else:
+            pilot = branch(
+                controller,
+                [project],
+                run_id + "_pilot",
+                inputs,
+                inherit=root / config["benchmark"]["synthesis_seed"],
+            )
         gate = validate_stages(
             root, config, [project], pilot["synthesis"], pilot["verification"], pilot["calibration"]
         )

@@ -44,6 +44,9 @@ def compatible_synthesis(root: Path, config: Mapping[str, Any], path: Path) -> N
         if diagnostic
         else root / config["execution"]["config_path"]
     )
+    recovery = config.get("benchmark", {}).get("transport_recovery")
+    if recovery and manifest["config_sha256"] == recovery["source_config_sha256"]:
+        seed_config = root / recovery["source_config"]
     if manifest["config_sha256"] != sha256_file(seed_config):
         raise ValueError("B9 synthesis seed execution config changed")
     if diagnostic:
@@ -71,8 +74,23 @@ def compatible_synthesis(root: Path, config: Mapping[str, Any], path: Path) -> N
         "src/pipeline_v2/calibration.py",
         "src/pipeline_v2/fixed.py",
         "src/pipeline_v2/validate.py",
+        "src/pipeline_v2/benchmark.py",
     }
     previous = manifest["implementation_sha256"]
+    provider = "src/llm/providers/openrouter.py"
+    if provider in previous and previous[provider] != current[provider]:
+        old_provider = subprocess.check_output(
+            ["git", "show", f"{manifest['git']['commit']}:{provider}"], cwd=root, text=True
+        )
+        normalized = old_provider.replace(
+            "request_interval_seconds <= 60", "request_interval_seconds <= 90"
+        ).replace("between 0 and 60 seconds", "between 0 and 90 seconds")
+        if (
+            hashlib.sha256(old_provider.encode()).hexdigest() != previous[provider]
+            or normalized != (root / provider).read_text()
+        ):
+            raise ValueError("B9 synthesis seed provider scientific asset changed")
+        permitted.add(provider)
     additions = set(current) - set(previous)
     if (
         set(previous) - set(current)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -10,11 +11,17 @@ import pytest
 import yaml
 
 from src.common.provenance import sha256_file
-from src.pipeline_v2 import benchmark_evaluate, benchmark_inputs, calibration, runtime
+from src.pipeline_v2 import (
+    benchmark_evaluate,
+    benchmark_inputs,
+    benchmark_recovery,
+    calibration,
+    runtime,
+)
 from src.pipeline_v2.benchmark_evaluate import case_alignment, paper_aggregate, path_metric
 from src.pipeline_v2.benchmark_inputs import inherit_discovery
 from src.pipeline_v2.runtime import Run, configuration, dependency, selection_ids
-from src.reproduction.common import atomic_jsonl, read_jsonl
+from src.reproduction.common import atomic_json, atomic_jsonl, read_jsonl, write_checksums
 
 
 @pytest.fixture
@@ -77,6 +84,146 @@ def test_benchmark_cannot_claim_confirmatory_or_fit_test(benchmark_workspace: An
     config["benchmark"]["calibration_fit_scope"] = "all120"
     with pytest.raises(ValueError, match="development-only fitting"):
         selection_ids(root, config)
+
+
+@pytest.fixture
+def transport_workspace(benchmark_workspace: Any, monkeypatch: pytest.MonkeyPatch) -> Any:
+    root, old_config, old_path = benchmark_workspace
+    selected = selection_ids(root, old_config)
+    stage = Run(root, "results/p6", "seed", 6, old_path, selected)
+    for project in selected:
+        stage.status(project, "SUCCESS", "fixture")
+    p6 = stage.finalize({})
+    _, p6_lock = dependency(root, p6.relative_to(root).as_posix(), selected, 6)
+    stage = Run(root, "results/p9", "seed", 9, old_path, selected)
+    for project in selected:
+        stage.status(project, "SUCCESS", "fixture")
+    p9 = stage.finalize({})
+    _, p9_lock = dependency(root, p9.relative_to(root).as_posix(), selected, 9)
+    dependencies = {
+        "phase6": p6_lock,
+        "phase9": p9_lock,
+        "baseline_id": "B9",
+        "dry_run": False,
+        "phase10_recovery": {},
+    }
+    seed = Run(root, "results/p10", "partial", 10, old_path, selected, dependencies=dependencies)
+    seed.status("dev_0", "SUCCESS", "completed fixture")
+    seed.status("dev_1", "ANALYSIS_FAILED", "rejected fixture")
+    for project in ("dev_0", "dev_1", "dev_2"):
+        directory = seed.work / "projects" / project
+        atomic_jsonl(
+            directory / "api_attempts.jsonl",
+            [{"project_id": project, "request_estimate_tokens": 200, "outcome": "TRANSPORT_ERROR"}],
+        )
+        atomic_jsonl(directory / "plans.jsonl", [{"hypothesis_id": project, "status": "REJECTED"}])
+        atomic_jsonl(directory / "responses.jsonl", [{"response": "preserved raw response"}])
+        atomic_jsonl(directory / "specifications.jsonl", [{"specification_id": project}])
+    atomic_jsonl(seed.work / "llm_calls.jsonl", [{"status": "SUCCESS", "project_id": "dev_0"}])
+    snapshot = root / "results/pipeline_v2/benchmark_checkpoints/fixture"
+    shutil.copytree(seed.work, snapshot)
+    atomic_json(snapshot / "controller_manifest.json", {"run_id": "controller"})
+    atomic_json(
+        snapshot / "controller_steps.json",
+        {
+            "controller_p6": {
+                "output": p6.relative_to(root).as_posix(),
+                "status": "COMPLETE",
+                "manifest_sha256": p6_lock["manifest_sha256"],
+                "checksums_sha256": p6_lock["checksums_sha256"],
+            }
+        },
+    )
+    atomic_json(
+        snapshot / "checkpoint_snapshot.json", {"kind": "unfinished_synthesis_checkpoint_only"}
+    )
+    write_checksums(snapshot)
+    config = copy.deepcopy(old_config)
+    config["execution"]["config_path"] = "configs/90.yaml"
+    config["execution"]["llm_request_interval_seconds"] = 90
+    config["execution"]["api_retry"]["cooldown_seconds"] = 90
+    config["benchmark"]["transport_recovery"] = {
+        "source_config": old_path.relative_to(root).as_posix(),
+        "source_config_sha256": sha256_file(old_path),
+        "checkpoint": snapshot.relative_to(root).as_posix(),
+        "manifest_sha256": sha256_file(snapshot / "manifest.json"),
+        "checksums_sha256": sha256_file(snapshot / "checksums.sha256"),
+    }
+    config_path = root / config["execution"]["config_path"]
+    config_path.write_text(yaml.safe_dump(config))
+    monkeypatch.setattr(benchmark_recovery, "compatible_synthesis", lambda *_: None)
+    return root, config, config_path, snapshot, dependencies
+
+
+def test_transport_recovery_preserves_terminal_states_and_budgets_on_resume(
+    transport_workspace: Any,
+) -> None:
+    root, config, config_path, snapshot, dependencies = transport_workspace
+    run = Run(
+        root,
+        "results/p10",
+        "new",
+        10,
+        config_path,
+        selection_ids(root, config),
+        dependencies=dependencies,
+    )
+    assert run.statuses == read_jsonl(snapshot / "project_status.jsonl")
+    assert len(run.pending()) == 118
+    for relative in (
+        "projects/dev_1/plans.jsonl",
+        "projects/dev_2/responses.jsonl",
+        "llm_calls.jsonl",
+    ):
+        assert (run.work / relative).read_bytes() == (snapshot / relative).read_bytes()
+    reservations = run.work / "projects/dev_2/api_attempts.jsonl"
+    records = read_jsonl(reservations)
+    records.append({"project_id": "dev_2", "request_estimate_tokens": 300, "outcome": "SUCCESS"})
+    atomic_jsonl(reservations, records)
+    expected = reservations.read_bytes()
+    Run(
+        root,
+        "results/p10",
+        "new",
+        10,
+        config_path,
+        selection_ids(root, config),
+        dependencies=dependencies,
+        resume=True,
+    )
+    assert reservations.read_bytes() == expected
+    assert json.loads((run.work / "transport_recovery.json").read_text())["budget_reset"] is False
+
+
+def test_transport_recovery_rejects_scientific_drift_and_snapshot_tampering(
+    transport_workspace: Any,
+) -> None:
+    root, config, _, snapshot, _ = transport_workspace
+    benchmark_recovery.checkpoint(root, config)
+    changed = copy.deepcopy(config)
+    changed["budget"]["max_calls_per_project"] += 1
+    with pytest.raises(ValueError, match="only the registered"):
+        benchmark_recovery.checkpoint(root, changed)
+    changed = copy.deepcopy(config)
+    changed["execution"]["llm_request_interval_seconds"] = 15
+    with pytest.raises(ValueError, match="only the registered"):
+        benchmark_recovery.checkpoint(root, changed)
+    (snapshot / "projects/dev_1/plans.jsonl").write_text("[]\n")
+    with pytest.raises(ValueError, match="checksum"):
+        benchmark_recovery.checkpoint(root, config)
+
+
+def test_transport_recovery_reuses_only_locked_completed_upstream(transport_workspace: Any) -> None:
+    root, config, config_path, _, _ = transport_workspace
+    controller = Run(
+        root, "results/controller", "recovered", 0, config_path, selection_ids(root, config)
+    )
+    path = benchmark_recovery.reuse_stage(controller, "_p6", 6, controller.selected)
+    steps = json.loads((controller.work / "steps.json").read_text())
+    assert steps["controller_p6"]["output"] == path.relative_to(root).as_posix()
+    assert steps["controller_p6"]["transport_recovery"]["checksums_sha256"]
+    with pytest.raises(ValueError, match="upstream stage changed"):
+        benchmark_recovery.reuse_stage(controller, "_p6", 6, ["dev_0"])
 
 
 def test_paper_metric_denominators_path_dedup_and_no_file_fallback() -> None:
