@@ -322,7 +322,9 @@ class OpenRouterClient:
             except (OSError, ValueError, KeyError, urllib.error.URLError) as error:
                 last_error = str(error)[:500]
                 http_status = None
-                retryable = isinstance(error, (OSError, urllib.error.URLError))
+                retryable = isinstance(
+                    error, (OSError, urllib.error.URLError, json.JSONDecodeError)
+                )
                 self._append_log(
                     {
                         "schema_version": 1,

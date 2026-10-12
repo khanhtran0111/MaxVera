@@ -21,6 +21,7 @@ from src.data.build_projects import build_command_and_env
 from src.graphs.program.build_databases import _node_files, _preferred_attempt
 from src.graphs.program.runner import _run_command
 from src.pipeline_v2.calibration import _development_rows
+from src.pipeline_v2.coverage import require_coverage, source_coverage
 from src.pipeline_v2.recovery import database_environment
 from src.pipeline_v2.runtime import Run, codeql, configuration, dependency, selection_ids
 from src.reproduction.common import atomic_json, atomic_jsonl, read_csv, read_jsonl
@@ -111,6 +112,8 @@ def _build(
             raise RuntimeError("fixed revision checkout failed: " + method)
         modes = [(attempt, "manual") for attempt in _compatible_attempts(row, toolchain, checkout)]
         modes.append((_preferred_attempt(row), "none"))
+        if policy.get("no_build_first"):
+            modes = [modes[-1], *modes[:-1]]
         logs.mkdir(parents=True, exist_ok=True)
         attempts = []
         for number, (attempt, mode) in enumerate(modes, 1):
@@ -161,6 +164,9 @@ def _build(
                 )
                 if result.returncode or not (database / "src.zip").is_file():
                     raise RuntimeError("fixed extraction failed; see attempt log")
+                minimum = config.get("execution", {}).get("minimum_application_source_coverage")
+                if minimum is not None:
+                    require_coverage(database, source, float(minimum), revision)
                 java_files, error = _node_files(
                     binary,
                     database,
@@ -236,6 +242,19 @@ def prepare(
     if sha256_file(labels_path) != dataset["labels_sha256"]:
         raise ValueError("development fixed labels checksum mismatch")
     labels = _development_rows(labels_path, set(selected))
+    coverage_records: dict[str, Any] = {}
+    coverage_lock: dict[str, str] = {}
+    if config["fixed_preparation"].get("coverage_cache_root"):
+        cache_path = (
+            root / config["fixed_preparation"]["coverage_cache_root"] / "coverage_manifest.json"
+        )
+        cached = json.loads(cache_path.read_text())
+        if cached["config_sha256"] != sha256_file(config_path) or cached["status"] != "PASS":
+            raise ValueError(
+                "fixed coverage cache is not bound to the current successful preflight"
+            )
+        coverage_records = {row["project_id"]: row["fixed"] for row in cached["records"]}
+        coverage_lock = {"coverage_manifest_sha256": sha256_file(cache_path)}
     metadata = {
         row["project_id"]: row
         for row in read_csv(
@@ -256,6 +275,7 @@ def prepare(
             "phase10": upstream_lock,
             "fixed_parent": parent_lock,
             "labels_sha256": dataset["labels_sha256"],
+            **coverage_lock,
         },
     )
     run_manifest = json.loads((run.work / "manifest.json").read_text())
@@ -279,13 +299,23 @@ def prepare(
     }
     provenance = read_jsonl(run.work / "databases.jsonl")
     for project in run.pending():
-        if statuses[project]["status"] != "SUCCESS" or not target_files(specs, project):
+        if statuses[project]["status"] != "SUCCESS" or (
+            not target_files(specs, project)
+            and not config.get("execution", {}).get("empty_discovery_is_success")
+        ):
             run.status(
                 project, "EXCLUDED_WITH_REASON", "no successful synthesis requiring fixed DB"
             )
             continue
         destination = database_root / project
         try:
+            minimum = config.get("execution", {}).get("minimum_application_source_coverage")
+            source = root / config["fixed_preparation"]["source_root"] / project
+            revision = (
+                _resolve_fixed_revision(source, labels[project]["fix_commit_ids"].split(";")[-1])
+                if minimum is not None
+                else "HEAD"
+            )
             record = next((value for value in provenance if value["project_id"] == project), None)
             if destination.exists() or destination.is_symlink():
                 if record is None:
@@ -305,10 +335,28 @@ def prepare(
                 if project in diagnostic_success and diagnostic_parent is not None:
                     previous = diagnostic_parent / project
                     reuse_lock = diagnostic_lock
+                cached_record = coverage_records.get(project)
+                if cached_record is not None:
+                    previous = root / cached_record["database"]
+                    if (
+                        sha256_file(previous / "src.zip") != cached_record["source_archive_sha256"]
+                        or sha256_file(previous / "codeql-database.yml")
+                        != cached_record["metadata_sha256"]
+                    ):
+                        raise ValueError("fixed coverage cache database changed")
+                    reuse_lock = coverage_lock
                 if (
-                    (project in parent_success or project in diagnostic_success)
+                    (
+                        project in parent_success
+                        or project in diagnostic_success
+                        or cached_record is not None
+                    )
                     and (previous / "src.zip").is_file()
                     and (previous / "codeql-database.yml").is_file()
+                    and (
+                        minimum is None
+                        or source_coverage(previous, source, float(minimum), revision)["ready"]
+                    )
                 ):
                     destination.symlink_to(previous.resolve(), target_is_directory=True)
                     extra = {"build_mode": "historical", "parent": reuse_lock}
@@ -332,6 +380,11 @@ def prepare(
                 }
                 provenance.append(record)
                 atomic_jsonl(run.work / "databases.jsonl", provenance)
+            if minimum is not None:
+                record["application_source_coverage"] = require_coverage(
+                    destination, source, float(minimum), revision
+                )
+                atomic_jsonl(run.work / "databases.jsonl", provenance)
             run.status(
                 project, "SUCCESS", "opaque fixed database prepared with recorded provenance"
             )
@@ -345,7 +398,11 @@ def prepare(
         "analysis_scope": config["analysis_scope"],
         "confirmatory_result": False,
         "identity_mapping_persisted": False,
-        "preparation_complete": not run.pending(),
+        "preparation_complete": not run.pending()
+        and (
+            not config.get("execution", {}).get("require_all_projects_success")
+            or all(row["status"] == "SUCCESS" for row in run.statuses)
+        ),
         "development_split_sha256": dataset["development_split_sha256"],
         "labels_sha256": dataset["labels_sha256"],
         "phase10_manifest_sha256": upstream_lock["manifest_sha256"],

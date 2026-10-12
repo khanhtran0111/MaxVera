@@ -75,6 +75,291 @@ def test_exact120_registration_and_development_boundary(benchmark_workspace: Any
         configuration(root, config_path)
 
 
+def test_strict_gate_retains_failed_checkpoint_and_resume_budget(benchmark_workspace: Any) -> None:
+    root, config, config_path = benchmark_workspace
+    config["execution"].update(
+        require_all_projects_success=True, retry_failed_projects_on_resume=True
+    )
+    config_path.write_text(yaml.safe_dump(config))
+    selected = ["dev_0", "test_0"]
+    stage = Run(root, "results/strict", "gate", 7, config_path, selected)
+    atomic_jsonl(stage.work / "projects/test_0/api_attempts.jsonl", [{"reservation": "retained"}])
+    stage.status("dev_0", "SUCCESS", "completed")
+    stage.status("test_0", "ANALYSIS_FAILED", "query timeout")
+    with pytest.raises(ValueError, match="strict completion gate"):
+        stage.finalize({})
+    assert not stage.final.exists()
+    assert (stage.work / "strict_gate.json").is_file()
+    resumed = Run(root, "results/strict", "gate", 7, config_path, selected, resume=True)
+    assert resumed.pending() == ["test_0"]
+    assert read_jsonl(resumed.work / "projects/test_0/api_attempts.jsonl") == [
+        {"reservation": "retained"}
+    ]
+    resumed.status("test_0", "SUCCESS", "query completed")
+    result = resumed.finalize({"projects": 1, "analysis_failures": 99})
+    summary = json.loads((result / "summary.json").read_text())
+    assert summary["projects"] == 2 and summary["analysis_failures"] == 0
+
+
+def test_dependency_rejects_silently_missing_project_even_with_valid_checksums(
+    benchmark_workspace: Any,
+) -> None:
+    root, _, config_path = benchmark_workspace
+    stage = Run(root, "results/dependency", "missing", 7, config_path, ["dev_0", "test_0"])
+    for project in stage.selected:
+        stage.status(project, "SUCCESS", "completed")
+    output = stage.finalize({})
+    atomic_jsonl(output / "project_status.jsonl", [{"project_id": "dev_0", "status": "SUCCESS"}])
+    write_checksums(output)
+    with pytest.raises(ValueError, match="missing, duplicate or unfinished project statuses"):
+        dependency(root, output.relative_to(root).as_posix(), ["dev_0", "test_0"], 7)
+
+
+@pytest.mark.parametrize("artifact_exists", [True, False])
+def test_empty_discovery_is_completed_but_missing_artifact_is_an_error(
+    benchmark_workspace: Any,
+    artifact_exists: bool,
+) -> None:
+    from src.pipeline_v2.graphs import phase7
+
+    root, config, config_path = benchmark_workspace
+    config["execution"].update(empty_discovery_is_success=True)
+    config_path.write_text(yaml.safe_dump(config))
+    stage = Run(root, "results/p6", "empty", 6, config_path, ["dev_0"])
+    if artifact_exists:
+        atomic_jsonl(stage.work / "projects/dev_0/hypotheses.jsonl", [])
+    stage.status("dev_0", "SUCCESS", "completed discovery with no candidate")
+    upstream = stage.finalize({})
+    path = phase7(root, config_path, ["dev_0"], "empty", upstream.relative_to(root).as_posix())
+    status = read_jsonl(path / "project_status.jsonl")[0]
+    if artifact_exists:
+        assert status["status"] == "SUCCESS" and status["analysis_outcome"] == "NO_CANDIDATES"
+        assert (path / "graphs/dev_0/nodes.jsonl").is_file()
+    else:
+        assert status["status"] == "ANALYSIS_FAILED"
+
+
+def test_all120_empty_cases_finish_graph_synthesis_verification_and_routing_without_api(
+    benchmark_workspace: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.pipeline_v2 import graphs, specifications, verification
+    from src.pipeline_v2.validate import validate_stages
+
+    root, config, config_path = benchmark_workspace
+    selected = selection_ids(root, config)
+    config["execution"].update(require_all_projects_success=True, empty_discovery_is_success=True)
+    config["execution"]["cache_cleanup_after_project"] = False
+    kg = root / "results/kg"
+    atomic_json(kg / "manifest.json", {"fixture": "empty knowledge graph"})
+    atomic_jsonl(kg / "deterministic/nodes.jsonl", [])
+    write_checksums(kg)
+    config["phase8"].update(
+        run_root="results/kg", manifest_sha256=sha256_file(kg / "manifest.json")
+    )
+    for name, body in {
+        "labels": "project_id,ground_truth_cwe\n" + "".join(f"{p},CWE-22\n" for p in selected),
+        "split_groups": "project_id,repository_group,split\n"
+        + "".join(
+            f"{p},{p},{'development' if p.startswith('dev_') else 'test_locked'}\n"
+            for p in selected
+        ),
+    }.items():
+        path = root / config["dataset"][name]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(body)
+        config["dataset"][name + "_sha256"] = sha256_file(path)
+    config_path.write_text(yaml.safe_dump(config))
+    for module in (runtime, specifications, verification):
+        monkeypatch.setattr(module, "codeql", lambda *_: Path("/fixture/codeql"))
+    monkeypatch.setattr(runtime, "query_csv", lambda *_: [])
+
+    def inventory(project: str, database: Path, *_args: Any) -> tuple[list[Any], dict[str, Any]]:
+        database.mkdir(parents=True)
+        (database / "codeql-database.yml").write_text("fixture database")
+        (database / "src.zip").write_text("fixture archive")
+        return [], {
+            "database_metadata_sha256": sha256_file(database / "codeql-database.yml"),
+            "source_archive_sha256": sha256_file(database / "src.zip"),
+        }
+
+    monkeypatch.setattr(runtime, "endpoint_inventory", inventory)
+    monkeypatch.setattr(specifications.OpenRouterSettings, "load", lambda *_: object())
+
+    def unexpected_api(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("no-candidate cases must never call the provider")
+
+    monkeypatch.setattr(specifications.OpenRouterClient, "complete", unexpected_api)
+    p6 = runtime.phase6(root, config, config_path, selected, "empty120")
+    p7 = graphs.phase7(root, config_path, selected, "empty120", p6.relative_to(root).as_posix())
+    p9 = graphs.phase9(
+        root,
+        config,
+        config_path,
+        selected,
+        "empty120",
+        p6.relative_to(root).as_posix(),
+        p7.relative_to(root).as_posix(),
+    )
+    p10 = specifications.phase10(
+        root,
+        config,
+        config_path,
+        selected,
+        "empty120",
+        p6.relative_to(root).as_posix(),
+        p9.relative_to(root).as_posix(),
+        "B9",
+        confirm_api_spend=True,
+    )
+    fixed_root = root / config["dataset"]["fixed_database_root"]
+    atomic_jsonl(
+        fixed_root / "build_status.jsonl",
+        [{"project_id": p, "status": "SUCCESS"} for p in selected],
+    )
+    atomic_json(
+        fixed_root / "preparation_manifest.json",
+        {
+            "development_only": False,
+            "locked_test_prepared": True,
+            "identity_mapping_persisted": False,
+            "preparation_complete": True,
+            "development_split_sha256": config["dataset"]["development_split_sha256"],
+            "status_sha256": sha256_file(fixed_root / "build_status.jsonl"),
+        },
+    )
+    monkeypatch.setenv("MAXVERA_DATA_ROLE", "evaluator")
+    p11 = verification.phase11(
+        root, config, config_path, selected, "empty120", p10.relative_to(root).as_posix()
+    )
+    p12 = calibration.phase12(
+        root,
+        config,
+        config_path,
+        selected,
+        "empty120",
+        p6.relative_to(root).as_posix(),
+        p10.relative_to(root).as_posix(),
+        p11.relative_to(root).as_posix(),
+    )
+    result = validate_stages(root, config, selected, p10, p11, p12)
+    assert result["status"] == "PASS" and result["analysis_misses"] == 0
+    assert result["specifications"] == 0 and result["verified_findings"] == 0
+    for path in (p6, p7, p9, p10, p11, p12):
+        summary = json.loads((path / "summary.json").read_text())
+        assert summary["projects"] == 120 and summary["analysis_failures"] == 0
+        assert summary["llm_calls"] == 0
+    # A stale SUCCESS status must not hide an operational failure in a finding.
+    atomic_jsonl(p10 / "specifications.jsonl", [{"specification_id": "failed-query"}])
+    atomic_jsonl(
+        p11 / "verification_results.jsonl",
+        [
+            {
+                "specification_id": "failed-query",
+                "status": "UNVERIFIED_QUERY_OR_BUDGET_FAILURE",
+            }
+        ],
+    )
+    atomic_jsonl(p12 / "routing.jsonl", [{"specification_id": "failed-query"}])
+    for path in (p10, p11, p12):
+        write_checksums(path)
+    with pytest.raises(ValueError, match="verification contains operational failures"):
+        validate_stages(root, config, selected, p10, p11, p12)
+
+
+def test_controller_validate_only_cannot_enter_paid_branch(
+    benchmark_workspace: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.pipeline_v2 import benchmark
+
+    root, config, config_path = benchmark_workspace
+    config["execution"].update(require_all_projects_success=True, empty_discovery_is_success=True)
+    config["benchmark"]["fresh_discovery"] = True
+    config_path.write_text(yaml.safe_dump(config))
+    monkeypatch.setattr(benchmark, "preflight", lambda *_: {"coverage_manifest_sha256": "fixture"})
+    steps: list[str] = []
+
+    def stage(controller: Run, name: str, *_args: Any, **_kwargs: Any) -> Path:
+        steps.append(name)
+        directory = controller.work / "fixture" / name
+        atomic_json(
+            directory / "summary.json",
+            {
+                "llm_calls": 0,
+                "rejected_hypotheses": 0,
+                "api_eligible": 0,
+            },
+        )
+        atomic_jsonl(
+            directory / "project_status.jsonl",
+            [{"project_id": p, "status": "SUCCESS"} for p in controller.selected],
+        )
+        return directory
+
+    def forbidden_branch(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("a no-API preflight must never synthesize")
+
+    monkeypatch.setattr(benchmark, "stage", stage)
+    monkeypatch.setattr(benchmark, "branch", forbidden_branch)
+    result = benchmark.run(
+        root, config_path, "no-api", resume=False, confirm_api_spend=False, validate_only=True
+    )
+    assert isinstance(result, Path)
+    summary = json.loads((result / "summary.json").read_text())
+    assert summary["projects"] == 120 and summary["api_calls"] == 0
+    assert summary["verification_with_generated_specs_validated"] is False
+    assert steps == ["inputs", "phase6", "phase7", "phase9", "phase10"]
+
+
+def test_readiness_accounts_for_all120_when_one_archive_is_broken(
+    benchmark_workspace: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.pipeline_v2 import readiness
+
+    root, config, config_path = benchmark_workspace
+    selected = selection_ids(root, config)
+    config["fixed_preparation"]["coverage_cache_root"] = "data/interim/coverage-cache"
+    config["execution"]["minimum_application_source_coverage"] = 1.0
+    policy = root / "src/pipeline_v2/coverage.py"
+    policy.parent.mkdir(parents=True)
+    policy.write_text("fixture policy")
+    labels = root / config["dataset"]["labels"]
+    labels.parent.mkdir(parents=True, exist_ok=True)
+    labels.write_text("project_id,fix_commit_ids\n" + "".join(f"{p},abc\n" for p in selected))
+    config["dataset"]["labels_sha256"] = sha256_file(labels)
+    config_path.write_text(yaml.safe_dump(config))
+    for relative in (
+        config["benchmark"]["vulnerable_parent_roots"][0],
+        config["fixed_preparation"]["parent_root"],
+    ):
+        for project in selected:
+            database = root / relative / project
+            database.mkdir(parents=True)
+            (database / "codeql-database.yml").write_text("fixture metadata")
+            (database / "src.zip").write_text("fixture source archive")
+
+    def coverage(database: Path, *_args: Any) -> dict[str, Any]:
+        if database.name == "test_0":
+            raise ValueError("corrupt source archive")
+        return {"ready": True, "coverage_ratio": 1.0}
+
+    monkeypatch.setenv("MAXVERA_DATA_ROLE", "evaluator")
+    monkeypatch.setattr(readiness.subprocess, "check_output", lambda *_a, **_kw: "abc")
+    monkeypatch.setattr(readiness, "_resolve_fixed_revision", lambda *_: "abc")
+    monkeypatch.setattr(readiness, "source_coverage", coverage)
+    monkeypatch.setattr(readiness, "require_coverage", coverage)
+    report = readiness.inspect(root, config_path, root / "results/diagnostics/readiness", workers=3)
+    assert report["status"] == "BLOCKED" and report["projects"] == 120
+    assert report["ready"] == 119 and report["blocked"] == 1 and report["api_calls"] == 0
+    rows = json.loads((root / "results/diagnostics/readiness/projects.json").read_text())[
+        "projects"
+    ]
+    assert [row["project_id"] for row in rows] == selected
+    assert next(row for row in rows if row["project_id"] == "test_0")["status"] == "BLOCKED"
+
+
 def test_benchmark_cannot_claim_confirmatory_or_fit_test(benchmark_workspace: Any) -> None:
     root, config, _ = benchmark_workspace
     config["benchmark"]["confirmatory"] = True

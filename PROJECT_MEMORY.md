@@ -633,3 +633,55 @@ reuse preflight PASS, full120/120DB90s zeroAPI preflight PASS. Run requires new 
 source commit; do not edit tracked code/config while live. Launcher must pass explicit
 --config configs/experiments/b9_benchmark_120_90s.yaml --run-id b9_benchmark_120_v2_003.
 Existing old session is idle afterexit75; inspect before closing/relaunching same name.
+
+## B9 full120 completed and failure audit — 2026-10-12
+
+Run003 finished 2026-10-11T11:56:41Z (18:56+07), controller exit0;
+independent validator PASS_WITH_ANALYSIS_FAILURES. All120 retained,97analysis successes,
+23failures,892specifications,1differential finding. Raw patched-method proxy24/120,
+verified/routed1/120; ACCEPT disabled and calibration ineligible (dev verified0).
+Tmux maxvera-b9-benchmark-120 is now idle; progress window only tails logs.
+
+User authorized offline audit of17dev raw-detected cases and23analysis failures.
+Final artifact results/diagnostics/b9_benchmark_120_v2_003_audit_005; intermediate001–004
+retained. src.experiments.b9_failure_audit requires evaluator role, refuses overwrite,
+pins/rechecks inputs and reconstructs all240raw/verified metric rows exactly. ZeroAPI
+and zero newCodeQLqueries. Frozen benchmark artifacts/config/analysis code unchanged.
+
+17dev cases:62overlap-producing specs (46persist,16mapping);10cases persistence-only,
+2mapping-only,5mixed. All62candidateCWE22;4cases have trueCWE79/94, so location proxy
+does not establish same-CWE detection. All892specs preserve P6physical endpoint pair,
+no LLMsanitizers/propagators; preconditions not compiled into query. Mappingcounterfactual:
+17/18unresolved endpoint occurrences have one exact unchanged-span semantic match;
+existing policy explicitly rejects same-callable repetitions, so new version required.
+This does not establish newverified findings or accuracy improvement.
+
+23failures:13no candidate relation,2no modeled endpoints,3no modeled source,2no modeled
+sink,2P6timeouts,1fatal API JSON decode. Dev20/testdiagnostic3. One bad hypothesis
+caused9retained specs to be skipped downstream at project level. Prioritized repair/pilot
+plan and17case notes: docs/20_B9_BENCHMARK_FAILURE_AUDIT.md. Audit completed; proposed
+transport/partial-state/mapping/guard/discovery fixes and new pilots not yet implemented.
+
+Additional source coverage evidence: Spring4Shell/CVE-2022-22965 vulnerable src.zip
+contains3Java files, allbuildSrc and no annotated application file. DBbuild success
+does not ensure application extraction; application-coverage gate and corrected build
+are P0. Retrofit zero-endpoint has219Java files; HL7timeout cases7496/7514Java files.
+Audit verification:46related unit tests PASS, Ruff/mypy PASS, guards/checksums PASS,
+independent benchmark validator still PASS_WITH_ANALYSIS_FAILURES.
+
+
+2026-10-12 completeness audit / current work:
+New default benchmark profile: configs/experiments/b9_benchmark_120_complete.yaml.
+Strict success gates, empty-discovery completion, bounded JSON-envelope retries,
+coverage checks on vulnerable/fixed DBs, explicit resume retaining reservations,
+and --validate-only (no LLM) implemented; model/mapping/scoring unchanged.
+230 tests PASS; Ruff/mypy PASS. Original run003 remains immutable.
+Readiness005: all120 accounted,64READY/56BLOCKED under current full-file coverage
+policy; no queries certificate,0API. This is input quality, not56new analysis failures.
+Bulk no-API repairs004 still running in exec session89905 (PID2680658); no paid
+benchmark restarted. Critical xwiki/oauth vulnerable rebuilds full coverage PASS;
+Spring rebuild3982/3983 missing spring-test MockEnvironment remains BLOCKED.
+See docs/21_B9_PIPELINE_COMPLETENESS.md for status, gates and exact commands.
+
+No-API real CodeQL pilot b9_application_db_pilot_001 PASS: xwiki1168/1168source,254endpoints,81relations,10hypotheses; oauth372/372source,71endpoints,0relations/0hypotheses(valid no-candidate). No LLM or P11 claim.
+Maintenance monitor/follow-up: tmux maxvera-b9-readiness-120; waits bulk PID2680658, rescans with current code into readiness006, runs --validate-only only if input scan PASS.

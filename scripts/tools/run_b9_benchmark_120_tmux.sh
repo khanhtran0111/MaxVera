@@ -17,6 +17,6 @@ for pipeline_argument in "$@"; do
   printf -v pipeline_quoted ' %q' "$pipeline_argument"
   pipeline_command+="$pipeline_quoted"
 done
-pipeline_command+=' >> logs/pipeline_v2/b9_benchmark_120.log 2>&1; pipeline_exit=$?; printf "Controller exit code: %s\n" "$pipeline_exit"; exec bash'
+pipeline_command+=' 2>&1 | tee -a logs/pipeline_v2/b9_benchmark_120.log; pipeline_exit=${PIPESTATUS[0]}; printf "Controller exit code: %s\n" "$pipeline_exit"; exec bash'
 tmux new-session -d -s "$pipeline_session" "$pipeline_command"
 printf 'Started: tmux attach -t %s\nLog: logs/pipeline_v2/b9_benchmark_120.log\n' "$pipeline_session"

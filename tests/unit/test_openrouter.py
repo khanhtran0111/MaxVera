@@ -212,3 +212,79 @@ def test_exhausted_http_error_retains_retry_classification(
     assert captured.value.retryable is retryable
     assert captured.value.http_status == status
     assert "unit-test-secret" not in str(captured.value)
+
+
+@pytest.mark.parametrize("failure", ["broken_json", "wrong_model", "wrong_provider"])
+def test_transport_json_recovers_but_route_drift_stays_fatal(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    failure: str,
+) -> None:
+    from src.llm.providers.openrouter import OpenRouterError
+
+    valid = {
+        "model": "openai/gpt-oss-20b",
+        "provider": "AkashML",
+        "choices": [{"message": {"content": "OK"}}],
+    }
+    first = {**valid}
+    if failure == "wrong_model":
+        first["model"] = "unexpected-model"
+    elif failure == "wrong_provider":
+        first["provider"] = "unexpected-provider"
+    bodies = [
+        b"<html>temporary gateway response</html>"
+        if failure == "broken_json"
+        else json.dumps(first).encode(),
+        json.dumps(valid).encode(),
+    ]
+    starts: list[float] = []
+    clock = [100.0]
+
+    class Response:
+        def __enter__(self) -> Response:
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            pass
+
+        def read(self) -> bytes:
+            return bodies.pop(0)
+
+    def urlopen(*_args: Any, **_kwargs: Any) -> Response:
+        starts.append(clock[0])
+        return Response()
+
+    def sleep(seconds: float) -> None:
+        clock[0] += seconds
+
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    monkeypatch.setattr("src.llm.providers.openrouter.time.sleep", sleep)
+    monkeypatch.setattr("src.llm.providers.openrouter.time.monotonic", lambda: clock[0])
+    monkeypatch.setattr(OpenRouterClient, "_last_request_started", None)
+    client = OpenRouterClient(
+        replace(_settings(), max_retries=2), tmp_path / "calls.jsonl", request_interval_seconds=90
+    )
+    if failure == "broken_json":
+        assert client.complete([]) == "OK"
+        assert starts == [100, 190]
+        logs = [json.loads(line) for line in (tmp_path / "calls.jsonl").read_text().splitlines()]
+        assert [row["status"] for row in logs] == ["RETRY", "SUCCESS"]
+        assert [row["call"] for row in logs] == [1, 1]
+    else:
+        with pytest.raises(OpenRouterError) as captured:
+            client.complete([])
+        assert not captured.value.retryable
+        assert starts == [100]
+
+
+def test_exhausted_transport_json_is_retryable(monkeypatch: pytest.MonkeyPatch) -> None:
+    from src.llm.providers.openrouter import OpenRouterError
+
+    def invalid_envelope(*_args: Any, **_kwargs: Any) -> None:
+        raise json.JSONDecodeError("invalid gateway response", "", 0)
+
+    monkeypatch.setattr("urllib.request.urlopen", invalid_envelope)
+    with pytest.raises(OpenRouterError) as captured:
+        OpenRouterClient(_settings()).complete([])
+    assert captured.value.retryable

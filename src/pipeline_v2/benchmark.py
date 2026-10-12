@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from src.common.provenance import utc_now
+from src.common.provenance import sha256_file, utc_now
 from src.pipeline_v2.b9 import branch, stage, upstream_runs
 from src.pipeline_v2.fixed import parent_databases
 from src.pipeline_v2.runtime import Run, configuration, development_ids, selection_ids
@@ -16,13 +16,14 @@ from src.pipeline_v2.specifications import RetryableSynthesisError
 from src.pipeline_v2.validate import validate_stages
 from src.reproduction.common import atomic_json, atomic_jsonl, read_jsonl
 
-DEFAULT_CONFIG = "configs/experiments/b9_benchmark_120.yaml"
+DEFAULT_CONFIG = "configs/experiments/b9_benchmark_120_complete.yaml"
 
 
 def preflight(root: Path, config: dict[str, Any]) -> dict[str, Any]:
     selected = selection_ids(root, config)
-    base = configuration(root, root / config["benchmark"]["seed_config_path"])
-    upstream_runs(root, base, development_ids(root))
+    if not config["benchmark"].get("fresh_discovery"):
+        base = configuration(root, root / config["benchmark"]["seed_config_path"])
+        upstream_runs(root, base, development_ids(root))
     parent_databases(root, config)
     if config["benchmark"].get("transport_recovery"):
         from src.pipeline_v2.benchmark_recovery import checkpoint
@@ -41,6 +42,37 @@ def preflight(root: Path, config: dict[str, Any]) -> dict[str, Any]:
     sources = sum(
         (root / config["fixed_preparation"]["source_root"] / p / ".git").exists() for p in selected
     )
+    if sources != len(selected):
+        raise ValueError("input preflight: at least one selected source repository is unavailable")
+    cache_lock = None
+    if config.get("execution", {}).get("require_all_projects_success"):
+        cache_path = (
+            root / config["fixed_preparation"]["coverage_cache_root"] / "coverage_manifest.json"
+        )
+        report = json.loads(cache_path.read_text())
+        if (
+            report["status"] != "PASS"
+            or report["selected_project_ids"] != selected
+            or report["config_sha256"] != sha256_file(root / config["execution"]["config_path"])
+            or report.get("coverage_policy_sha256")
+            != sha256_file(root / "src/pipeline_v2/coverage.py")
+        ):
+            raise ValueError(
+                "input preflight: all selected vulnerable/fixed inputs must pass readiness"
+            )
+        ids = [row["project_id"] for row in report["records"]]
+        if len(ids) != len(selected) or set(ids) != set(selected):
+            raise ValueError("input preflight: readiness has missing or duplicate projects")
+        for row in report["records"]:
+            for side in ("vulnerable", "fixed"):
+                record = row[side]
+                database = root / record["database"]
+                if (
+                    sha256_file(database / "src.zip") != record["source_archive_sha256"]
+                    or sha256_file(database / "codeql-database.yml") != record["metadata_sha256"]
+                ):
+                    raise ValueError("input preflight: a readiness database changed")
+        cache_lock = sha256_file(cache_path)
     return {
         "status": "INPUT_PREFLIGHT_PASS",
         "cases": len(selected),
@@ -51,6 +83,7 @@ def preflight(root: Path, config: dict[str, Any]) -> dict[str, Any]:
         "api_calls": 0,
         "request_interval_seconds": config["execution"]["llm_request_interval_seconds"],
         "confirmatory_result": False,
+        "coverage_manifest_sha256": cache_lock,
     }
 
 
@@ -62,6 +95,7 @@ def run(
     resume: bool,
     confirm_api_spend: bool,
     dry_run: bool = False,
+    validate_only: bool = False,
 ) -> Path | dict[str, Any]:
     config = configuration(root, config_path)
     if (
@@ -74,19 +108,28 @@ def run(
     check = preflight(root, config)
     if dry_run:
         return check
-    if not confirm_api_spend:
+    if not confirm_api_spend and not validate_only:
         raise ValueError("benchmark synthesis requires --confirm-api-spend")
     selected = selection_ids(root, config)
     controller = Run(
         root,
-        "results/pipeline_v2/benchmark",
+        "results/pipeline_v2/benchmark_preflight"
+        if validate_only
+        else "results/pipeline_v2/benchmark",
         run_id,
         0,
         config_path,
         selected,
         resume=resume,
         require_clean=True,
-        dependencies={"phase6_seed": config["benchmark"]["phase6_seed"]},
+        dependencies=(
+            {
+                "discovery_mode": "fresh",
+                "coverage_manifest_sha256": check["coverage_manifest_sha256"],
+            }
+            if config["benchmark"].get("fresh_discovery")
+            else {"phase6_seed": config["benchmark"]["phase6_seed"]}
+        ),
     )
 
     def upstream_stage(
@@ -147,10 +190,35 @@ def run(
         if (
             dry_summary["llm_calls"]
             or dry_summary["rejected_hypotheses"]
-            or not dry_summary["api_eligible"]
+            or (
+                not dry_summary["api_eligible"]
+                and not config["execution"].get("empty_discovery_is_success")
+            )
         ):
             raise ValueError("120-case grounding dry-run failed")
+        if validate_only:
+            dry_statuses = {
+                row["project_id"]: row for row in read_jsonl(dry / "project_status.jsonl")
+            }
+            for project in controller.pending():
+                controller.status(
+                    project,
+                    dry_statuses[project]["status"],
+                    "input/discovery/graph/grounding preflight completed without API",
+                )
+            return controller.finalize(
+                {
+                    "kind": "b9_benchmark_no_api_preflight",
+                    "api_calls": 0,
+                    "api_eligible_hypotheses": dry_summary["api_eligible"],
+                    "verification_with_generated_specs_validated": False,
+                }
+            )
         project = config["execution"]["pilot_project_id"]
+        pilot_empty = config["execution"].get("empty_discovery_is_success") and not any(
+            row["project_id"] == project and row["status"] == "API_ELIGIBLE"
+            for row in read_jsonl(dry / "dry_run_plan.jsonl")
+        )
         if config["benchmark"].get("transport_recovery"):
             from src.pipeline_v2.benchmark_recovery import reuse_stage
 
@@ -169,7 +237,11 @@ def run(
                 [project],
                 run_id + "_pilot",
                 inputs,
-                inherit=root / config["benchmark"]["synthesis_seed"],
+                inherit=(
+                    root / config["benchmark"]["synthesis_seed"]
+                    if config["benchmark"].get("synthesis_seed")
+                    else None
+                ),
             )
         gate = validate_stages(
             root, config, [project], pilot["synthesis"], pilot["verification"], pilot["calibration"]
@@ -177,7 +249,7 @@ def run(
         prepared = json.loads((pilot["fixed_preparation"] / "summary.json").read_text())
         if (
             gate["analysis_misses"]
-            or not gate["specifications"]
+            or (not gate["specifications"] and not pilot_empty)
             or prepared["prepared_databases"] != 1
             or gate["verification_status_counts"].get("UNVERIFIED_QUERY_OR_BUDGET_FAILURE", 0)
         ):
@@ -293,6 +365,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--validate-only",
+        action="store_true",
+        help="run all input/discovery/graph/grounding stages without LLM requests",
+    )
     parser.add_argument("--confirm-api-spend", action="store_true")
     args = parser.parse_args(argv)
     root = Path(__file__).resolve().parents[2]
@@ -305,6 +382,7 @@ def main(argv: list[str] | None = None) -> int:
             resume=args.resume,
             confirm_api_spend=args.confirm_api_spend,
             dry_run=args.dry_run,
+            validate_only=args.validate_only,
         )
     except RetryableSynthesisError as error:
         print(str(error), flush=True)

@@ -130,9 +130,13 @@ def phase7(
             run.status(project, "ANALYSIS_FAILED", "inherited Phase 6 analysis failure")
             continue
         try:
-            hypotheses = read_jsonl(upstream / "projects" / project / "hypotheses.jsonl")
+            hypothesis_path = upstream / "projects" / project / "hypotheses.jsonl"
+            if not hypothesis_path.is_file():
+                raise ValueError("completed discovery is missing its hypothesis artifact")
+            hypotheses = read_jsonl(hypothesis_path)
             nodes, edges = program_graph(hypotheses)
-            if not nodes:
+            empty_success = run.config.get("execution", {}).get("empty_discovery_is_success", False)
+            if not nodes and not empty_success:
                 raise ValueError("NO_GROUNDED_HYPOTHESIS: no nonempty semantic program graph")
             directory = run.work / "graphs" / project
             atomic_jsonl(directory / "nodes.jsonl", nodes)
@@ -140,7 +144,10 @@ def phase7(
             run.status(
                 project,
                 "SUCCESS",
-                "semantic endpoint/callable graph built",
+                "semantic endpoint/callable graph built"
+                if nodes
+                else "NO_CANDIDATES: discovery completed with no grounded hypothesis",
+                analysis_outcome="CANDIDATES" if nodes else "NO_CANDIDATES",
                 hypotheses=len(hypotheses),
                 nodes=len(nodes),
                 edges=len(edges),
@@ -376,6 +383,7 @@ def phase9(
                 project,
                 "SUCCESS",
                 "both endpoint roles have complete grounding provenance",
+                analysis_outcome="CANDIDATES" if hypotheses else "NO_CANDIDATES",
                 hypotheses=len(hypotheses),
                 nodes=len(nodes),
                 edges=len(edges),

@@ -286,3 +286,12 @@ cannot be promoted, and full results are never overwritten.
 
 The source implementation plan is
 [`ke_hoach_trien_khai_zero_hint_repository_vulnerability_research.md`](ke_hoach_trien_khai_zero_hint_repository_vulnerability_research.md).
+
+The completed B9 full120 run and its development failure analysis are documented in
+the [B9 benchmark audit](docs/20_B9_BENCHMARK_FAILURE_AUDIT.md), including case-level
+evidence and a prioritized repair/pilot plan.
+
+The new benchmark default is the strict fresh diagnostic profile
+`configs/experiments/b9_benchmark_120_complete.yaml`. See
+[pipeline completeness and no-API validation](docs/21_B9_PIPELINE_COMPLETENESS.md)
+for input coverage blockers, completed repairs, and launch gates.

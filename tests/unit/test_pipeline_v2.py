@@ -596,3 +596,23 @@ def test_cancelled_query_terminates_its_process_group(monkeypatch: Any) -> None:
     with pytest.raises(KeyboardInterrupt):
         runner._run_command(["fixture"], timeout=1)
     assert stopped == [child]
+
+
+def test_readiness_cancellation_stops_running_command() -> None:
+    import sys
+    import threading
+
+    from src.graphs.program.runner import _run_command
+
+    cancelled = threading.Event()
+    timer = threading.Timer(0.1, cancelled.set)
+    timer.start()
+    try:
+        with pytest.raises(RuntimeError, match="command cancelled"):
+            _run_command(
+                [sys.executable, "-c", "import time; time.sleep(30)"],
+                timeout=60,
+                cancelled=cancelled,
+            )
+    finally:
+        timer.join()

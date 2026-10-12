@@ -16,6 +16,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from collections import Counter
 from collections.abc import Mapping, Sequence
@@ -86,6 +87,7 @@ def _run_command(
     timeout: int,
     cwd: Path | None = None,
     env: Mapping[str, str] | None = None,
+    cancelled: threading.Event | None = None,
 ) -> subprocess.CompletedProcess[str]:
     process = subprocess.Popen(
         list(command),
@@ -97,7 +99,21 @@ def _run_command(
         env=env,
     )
     try:
-        stdout, stderr = process.communicate(timeout=timeout)
+        if cancelled is None:
+            stdout, stderr = process.communicate(timeout=timeout)
+        else:
+            deadline = time.monotonic() + timeout
+            while True:
+                if cancelled.is_set():
+                    raise RuntimeError("command cancelled by readiness controller")
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired(command, timeout)
+                try:
+                    stdout, stderr = process.communicate(timeout=min(1, remaining))
+                    break
+                except subprocess.TimeoutExpired:
+                    continue
     except subprocess.TimeoutExpired as error:
         stdout, stderr = _terminate_process_group(process)
         raise subprocess.TimeoutExpired(
@@ -141,9 +157,7 @@ def _codeql_version(binary: Path) -> str:
 def _validate_config(config: Mapping[str, Any]) -> None:
     scope = analysis_scope(config)
     expected_status = (
-        "frozen_phase_7_development"
-        if scope == "development"
-        else "frozen_phase_13_test_analysis"
+        "frozen_phase_7_development" if scope == "development" else "frozen_phase_13_test_analysis"
     )
     if config.get("status") != expected_status:
         raise ValueError(f"Phase 7 experiment config is not frozen for {scope}")

@@ -337,3 +337,42 @@ interval15→90, mincontrollercooldown60→90, clientvalidationcap90. No retry-p
 relaxation or new holdout claim. Old artifacts and sourceconfigs unchanged.
 Validation:216tests (12.34s), Ruff/mypy121files/shell/diff/smoke PASS; actual9stage
 reuse and120/120DB90s preflight PASS with0APIcalls. Clean commit required beforelaunch.
+
+## 2026-10-12 — Completed B9 full120 and offline development audit
+
+Run b9_benchmark_120_v2_003 completed 2026-10-11T11:56:41Z, exit0, independently
+validated PASS_WITH_ANALYSIS_FAILURES. Coverage120, analysis97success/23failure,
+892specs, raw patched-method detection24/120, differential/routed1/120. Calibration
+ineligible and ACCEPT disabled. All120 remain in metrics; no confirmatory claim.
+
+Authorized audit:17development raw-detected cases,23failure inventory. Artifact
+results/diagnostics/b9_benchmark_120_v2_003_audit_005; report
+[B9 failure audit](20_B9_BENCHMARK_FAILURE_AUDIT.md). All240raw/verified metric rows
+reconstructed exactly, inputs pinned/rechecked unchanged,0API/0newCodeQLqueries.
+Overlap specs62:46persist and16mapping. All62CWE22, including4location-proxy cases
+with labelsCWE79/94. All892specs preserve P6physical endpoint pair; no LLMsanitizers
+or propagators. Mappingcounterfactual17/18unresolved occurrences have one exact
+unchanged-span semantic candidate; this does not change frozen verdicts.
+Failures:13relation misses,2no endpoints,3no source,2no sink,2P6timeouts,1APIdecode.
+Audit and prioritized repair/pilot plan complete; fixes and new experiment runs pending.
+
+Source coverage refinement: Spring4Shell vulnerableDB src.zip contains only3buildSrc
+Java files and lacks annotated application file; recorded DBbuild success is not a
+coverage gate. Application extraction/gate repair is P0. Audit validation:46related
+unit tests, Ruff/mypy, role/overwrite guards and artifact/input checksums PASS.
+
+
+## 2026-10-12 — Completeness hardening and no-API input audit
+
+Fresh strict120 config is now benchmark default; legacy90s config and run003
+remain unchanged. Added no-candidate completion, transport-envelope retry, strict
+stage/verifier/dependency gates, coverage checks and no-API full upstream mode.
+230 tests PASS; Ruff and mypy PASS. Readiness005 records120 cases,64ready and
+56blocked by input coverage policy; no paid rerun, no new detected claims.
+No-API extraction repairs004 ongoing. Critical xwiki/oauth vulnerable rebuilds
+PASS full source archive coverage; Spring3982/3983 stays blocked. Actual CodeQL
+endpoint pilot for the two repaired databases is running separately.
+Details: [pipeline completeness](21_B9_PIPELINE_COMPLETENESS.md).
+
+No-API real CodeQL pilot b9_application_db_pilot_001 PASS: xwiki1168/1168source,254endpoints,81relations,10hypotheses; oauth372/372source,71endpoints,0relations/0hypotheses(valid no-candidate). No LLM or P11 claim.
+Maintenance monitor/follow-up: tmux maxvera-b9-readiness-120; waits bulk PID2680658, rescans with current code into readiness006, runs --validate-only only if input scan PASS.

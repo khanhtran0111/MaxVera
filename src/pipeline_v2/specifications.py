@@ -603,6 +603,7 @@ def phase10(
                 eligible=sum(row["status"] == "API_ELIGIBLE" for row in plans),
                 rejected=failures,
                 api_attempts=len(reserved),
+                analysis_outcome="CANDIDATES" if hypotheses else "NO_CANDIDATES",
             )
         except (OSError, ValueError) as error:
             run.status(project, "ANALYSIS_FAILED", str(error), specifications=0)

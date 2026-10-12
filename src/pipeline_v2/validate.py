@@ -12,7 +12,7 @@ from typing import Any
 from src.common.provenance import sha256_file
 from src.experiments.development_audit import snapshot_run
 from src.pipeline_v2.runtime import configuration, development_ids, selection_ids
-from src.pipeline_v2.verification import differential_status
+from src.pipeline_v2.verification import OPERATIONAL_FAILURES, differential_status
 from src.reproduction.common import read_jsonl
 
 
@@ -67,6 +67,10 @@ def validate_stages(
         ):
             raise ValueError("stage summary does not match project statuses")
         statuses[phase] = stage_status
+        if config.get("execution", {}).get("require_all_projects_success") and successes != len(
+            selected
+        ):
+            raise ValueError(f"strict completion gate: Phase {phase} has processing errors")
     for key in ("config_sha256", "model_config_sha256", "implementation_sha256"):
         if any(manifest.get(key) != manifests[0].get(key) for manifest in manifests):
             raise ValueError("end-to-end stage snapshot mismatch")
@@ -90,6 +94,10 @@ def validate_stages(
     routes = unique_rows(read_jsonl(calibration / "routing.jsonl"), "specification_id")
     if set(specifications) != set(results) or set(results) != set(routes):
         raise ValueError("each specification must have exactly one verification and routing result")
+    if config.get("execution", {}).get("require_all_projects_success") and any(
+        row["status"] in OPERATIONAL_FAILURES for row in results.values()
+    ):
+        raise ValueError("strict completion gate: verification contains operational failures")
     for spec_id, specification in specifications.items():
         result, route = results[spec_id], routes[spec_id]
         if specification["project_id"] not in selected_set or any(

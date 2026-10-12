@@ -243,6 +243,19 @@ class Run:
                 ignore=shutil.ignore_patterns("*.qlx", ".cache"),
             )
         self.statuses = read_jsonl(self.work / "project_status.jsonl")
+        if resume and self.config.get("execution", {}).get("retry_failed_projects_on_resume"):
+            # Explicit resume retries failed projects only. Artifact and API/query budget
+            # checkpoints remain authoritative; never erase reservations to obtain a retry.
+            for row in list(self.statuses):
+                if row["status"] not in {"PENDING", "SUCCESS"}:
+                    history_path = self.work / "retry_history.jsonl"
+                    atomic_jsonl(history_path, [*read_jsonl(history_path), row])
+                    self.status(
+                        row["project_id"],
+                        "PENDING",
+                        "explicit resume of failed project",
+                    )
+            (self.work / "strict_gate.json").unlink(missing_ok=True)
         if diagnostic and phase == 6:
             from src.pipeline_v2.benchmark_inputs import inherit_discovery
 
@@ -286,9 +299,20 @@ class Run:
     def finalize(self, summary: Mapping[str, Any]) -> Path:
         if self.pending():
             raise ValueError("cannot finalize a run with pending projects")
+        if self.config.get("execution", {}).get("require_all_projects_success") and any(
+            row["status"] != "SUCCESS" for row in self.statuses
+        ):
+            failures = [row["project_id"] for row in self.statuses if row["status"] != "SUCCESS"]
+            atomic_json(
+                self.work / "strict_gate.json", {"status": "BLOCKED", "failed_projects": failures}
+            )
+            raise ValueError(
+                f"strict completion gate: {len(failures)} projects have processing errors"
+            )
         atomic_json(
             self.work / "summary.json",
             {
+                **summary,
                 "schema_version": 2,
                 "phase": self.phase,
                 "run_id": self.run_id,
@@ -296,7 +320,6 @@ class Run:
                 "projects": len(self.selected),
                 "analysis_successes": sum(row["status"] == "SUCCESS" for row in self.statuses),
                 "analysis_failures": sum(row["status"] != "SUCCESS" for row in self.statuses),
-                **summary,
             },
         )
         (self.work / "STATUS").write_text(
@@ -343,6 +366,18 @@ def dependency(
     ):
         raise ValueError("pipeline v2 dependency is not a compatible development run")
     snapshot_run(path)
+    declared = manifest["selected_project_ids"]
+    statuses = read_jsonl(path / "project_status.jsonl")
+    actual_ids = [row["project_id"] for row in statuses]
+    if (
+        len(set(declared)) != len(declared)
+        or len(set(actual_ids)) != len(actual_ids)
+        or set(actual_ids) != set(declared)
+        or any(row["status"] == "PENDING" for row in statuses)
+    ):
+        raise ValueError(
+            "pipeline dependency has missing, duplicate or unfinished project statuses"
+        )
     return path, {
         "run_id": manifest["run_id"],
         "run_root": path.relative_to(root).as_posix(),
@@ -628,6 +663,8 @@ def phase6(
             endpoints, provenance = endpoint_inventory(
                 project, database, binary, run.work / "query_pack", directory, policy
             )
+            atomic_jsonl(directory / "endpoints.jsonl", endpoints)
+            atomic_json(directory / "database_provenance.json", provenance)
             flows = query_csv(
                 binary, database, run.work / "query_pack/flows.ql", directory / "flows", policy
             )
@@ -657,6 +694,7 @@ def phase6(
                 "SUCCESS",
                 "typed endpoints and discovery complete; hypotheses remain unverified",
                 endpoints=len(endpoints),
+                analysis_outcome="CANDIDATES" if hypotheses else "NO_CANDIDATES",
                 flow_pairs=len(flows),
                 hypotheses=len(hypotheses),
                 wall_seconds=round(time.monotonic() - started, 3),

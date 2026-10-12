@@ -26,6 +26,17 @@ from src.reproduction.common import atomic_json, atomic_jsonl, read_jsonl
 from src.verification.remap import archive_source, unchanged_line_mapping
 from src.verification.runner import _interpret_paths
 
+OPERATIONAL_FAILURES = frozenset(
+    {
+        "UNVERIFIED_QUERY_OR_BUDGET_FAILURE",
+        "UNVERIFIED_VULNERABLE_QUERY_FAILED",
+        "UNVERIFIED_FIXED_QUERY_FAILED",
+        "UNVERIFIED_FIXED_NOT_RUN",
+        "UNVERIFIED_VULNERABLE_ENDPOINT_RESOLUTION",
+        "UNVERIFIED_FIXED_ENDPOINT_RESOLUTION",
+    }
+)
+
 
 def differential_status(vulnerable: Mapping[str, Any], fixed: Mapping[str, Any] | None) -> str:
     if vulnerable.get("resolution_complete") is not True:
@@ -289,6 +300,16 @@ def phase11(
         or preparation.get("preparation_complete") is not True
     ):
         raise ValueError("fixed databases do not satisfy the opaque development-only contract")
+    if config.get("execution", {}).get("require_all_projects_success"):
+        fixed_statuses = read_jsonl(fixed_root / "build_status.jsonl")
+        fixed_by_id = {row["project_id"]: row for row in fixed_statuses}
+        if len(fixed_by_id) != len(fixed_statuses) or any(
+            project not in fixed_by_id or fixed_by_id[project]["status"] != "SUCCESS"
+            for project in selected
+        ):
+            raise ValueError(
+                "strict completion gate: fixed preparation has missing/failed projects"
+            )
     run = Run(
         root,
         "results/verification/v3",
@@ -360,6 +381,17 @@ def phase11(
         fixed_inventory: list[dict[str, Any]] | None = None
         fixed_endpoint_batch: dict[str, list[dict[str, str]]] | None = None
         results = read_jsonl(run.work / "projects" / project / "verification_results.jsonl")
+        if resume and config.get("execution", {}).get("retry_failed_projects_on_resume"):
+            failed = [row for row in results if row["status"] in OPERATIONAL_FAILURES]
+            if failed:
+                history_path = (
+                    run.work / "projects" / project / "previous_verification_failures.jsonl"
+                )
+                atomic_jsonl(history_path, [*read_jsonl(history_path), *failed])
+                results = [row for row in results if row["status"] not in OPERATIONAL_FAILURES]
+                atomic_jsonl(
+                    run.work / "projects" / project / "verification_results.jsonl", results
+                )
         completed_ids = {result["specification_id"] for result in results}
         pending_specs = [s for s in project_specs if s["specification_id"] not in completed_ids]
         endpoint_batch = None
@@ -526,11 +558,18 @@ def phase11(
                 )
             results.append(record)
             atomic_jsonl(run.work / "projects" / project / "verification_results.jsonl", results)
+        operational_errors = [r for r in results if r["status"] in OPERATIONAL_FAILURES]
+        strict = config.get("execution", {}).get("require_all_projects_success", False)
         run.status(
             project,
-            "SUCCESS",
-            "every specification has a path or explicit unverified state",
+            "ANALYSIS_FAILED" if strict and operational_errors else "SUCCESS",
+            (
+                "verification has operational failures"
+                if operational_errors
+                else "every specification has a path or explicit unverified state"
+            ),
             specifications=len(results),
+            operational_errors=len(operational_errors),
             query_invocations=used,
             verified=sum(row["status"] == "VERIFIED_DIFFERENTIAL" for row in results),
         )

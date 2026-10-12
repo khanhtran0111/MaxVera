@@ -16,6 +16,7 @@ from src.common.envfile import effective_env
 from src.common.provenance import sha256_file
 from src.graphs.program.runner import _run_command
 from src.pipeline_v2.b9 import upstream_runs
+from src.pipeline_v2.coverage import require_coverage, source_coverage
 from src.pipeline_v2.recovery import database_environment
 from src.pipeline_v2.runtime import Run, codeql, configuration, development_ids, selection_ids
 from src.reproduction.common import atomic_json, read_csv, read_jsonl
@@ -24,6 +25,8 @@ from src.verification.prepare_fixed import _checkout_fixed_revision
 
 def inherit_discovery(run: Run) -> None:
     policy = run.config["benchmark"]
+    if policy.get("fresh_discovery"):
+        return
     dev = [p for p in run.selected if p in set(development_ids(run.root))]
     if not dev:
         return
@@ -104,6 +107,7 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
         raise ValueError("benchmark database root is outside data/interim")
     destination.mkdir(parents=True, exist_ok=True)
     binary = codeql(root, config["codeql"])
+    minimum_coverage = config.get("execution", {}).get("minimum_application_source_coverage")
     toolchain = yaml.safe_load((root / "configs/toolchains/cwe_bench_java.yaml").read_text())
     for project in run.pending():
         target = destination / project
@@ -125,14 +129,24 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
                 if candidate != target:
                     shutil.move(str(candidate), str(target))
             else:
-                parent = next(
-                    (
-                        root / rel / project
-                        for rel in policy["vulnerable_parent_roots"]
-                        if (root / rel / project / "codeql-database.yml").is_file()
-                    ),
-                    None,
-                )
+                parent = None
+                for relative in policy["vulnerable_parent_roots"]:
+                    candidate = root / relative / project
+                    if not (candidate / "codeql-database.yml").is_file():
+                        continue
+                    if minimum_coverage is not None:
+                        try:
+                            coverage = source_coverage(
+                                candidate,
+                                root / config["fixed_preparation"]["source_root"] / project,
+                                float(minimum_coverage),
+                            )
+                        except (OSError, ValueError, subprocess.SubprocessError):
+                            continue
+                        if not coverage["ready"]:
+                            continue
+                    parent = candidate
+                    break
                 if parent is not None:
                     if not target.exists():
                         target.symlink_to(parent.resolve(), target_is_directory=True)
@@ -195,6 +209,8 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
                     )
                     if result.returncode or not (database / "src.zip").is_file():
                         raise RuntimeError("benchmark no-build extraction failed")
+                    if minimum_coverage is not None:
+                        require_coverage(database, source, float(minimum_coverage), revision)
                     if target.exists():
                         raise ValueError("unregistered benchmark database destination")
                     extra = {
@@ -219,6 +235,13 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
                     "metadata_sha256": sha256_file(target / "codeql-database.yml"),
                     **extra,
                 }
+                atomic_json(provenance_path, record)
+            if minimum_coverage is not None:
+                record["application_source_coverage"] = require_coverage(
+                    target,
+                    root / config["fixed_preparation"]["source_root"] / project,
+                    float(minimum_coverage),
+                )
                 atomic_json(provenance_path, record)
             run.status(
                 project,
