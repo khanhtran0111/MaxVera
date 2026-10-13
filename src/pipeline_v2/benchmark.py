@@ -56,6 +56,8 @@ def preflight(root: Path, config: dict[str, Any]) -> dict[str, Any]:
             or report["config_sha256"] != sha256_file(root / config["execution"]["config_path"])
             or report.get("coverage_policy_sha256")
             != sha256_file(root / "src/pipeline_v2/coverage.py")
+            or report.get("extraction_policy_sha256")
+            != sha256_file(Path(__file__).with_name("extraction.py"))
         ):
             raise ValueError(
                 "input preflight: all selected vulnerable/fixed inputs must pass readiness"
@@ -67,9 +69,12 @@ def preflight(root: Path, config: dict[str, Any]) -> dict[str, Any]:
             for side in ("vulnerable", "fixed"):
                 record = row[side]
                 database = root / record["database"]
+                model_check = database / "supplement_model_check.json"
                 if (
                     sha256_file(database / "src.zip") != record["source_archive_sha256"]
                     or sha256_file(database / "codeql-database.yml") != record["metadata_sha256"]
+                    or (sha256_file(model_check) if model_check.exists() else None)
+                    != record.get("coverage", {}).get("supplement_model_check_sha256")
                 ):
                     raise ValueError("input preflight: a readiness database changed")
         cache_lock = sha256_file(cache_path)

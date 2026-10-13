@@ -358,6 +358,113 @@ def test_readiness_accounts_for_all120_when_one_archive_is_broken(
     ]
     assert [row["project_id"] for row in rows] == selected
     assert next(row for row in rows if row["project_id"] == "test_0")["status"] == "BLOCKED"
+    repaired = root / "results/diagnostics/repair"
+    attempts = []
+
+    def unrepairable(*args: Any, **_kwargs: Any) -> None:
+        snapshot = json.loads((repaired / "projects.json").read_text())["projects"]
+        assert len(snapshot) == 120
+        assert all(row["status"] != "PENDING" for row in snapshot)
+        attempts.append(args[2])
+        raise RuntimeError("fixture extraction failure")
+
+    monkeypatch.setattr(readiness, "extract", unrepairable)
+    report = readiness.inspect(root, config_path, repaired, workers=3, repair=True)
+    assert report["ready"] == 119 and report["blocked"] == 1
+    assert attempts == ["test_0", "test_0"]
+
+
+def test_readiness_retains_database_when_post_extraction_gate_raises(
+    benchmark_workspace: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from src.pipeline_v2 import readiness
+
+    root, config, _ = benchmark_workspace
+    config["benchmark"]["minimum_free_disk_gib"] = 0
+    config["execution"]["minimum_application_source_coverage"] = 1.0
+    source = root / config["fixed_preparation"]["source_root"] / "dev_0"
+    source.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q"], cwd=source, check=True)
+    toolchain = root / "configs/toolchains/cwe_bench_java.yaml"
+    toolchain.parent.mkdir(parents=True)
+    toolchain.write_text("{}")
+    monkeypatch.setattr(readiness, "database_environment", lambda *_: ({}, {}))
+    monkeypatch.setattr(readiness, "codeql", lambda *_: Path("/fixture/codeql"))
+    monkeypatch.setattr(readiness, "_checkout_fixed_revision", lambda *_a, **_kw: (True, "fixture"))
+
+    def create(_binary: Path, _checkout: Path, database: Path, *_a: Any, **_kw: Any) -> None:
+        database.mkdir()
+        (database / "src.zip").write_bytes(b"retained native extraction")
+
+    def reject(*_a: Any, **_kw: Any) -> None:
+        raise ValueError("supplemental model check not passed")
+
+    monkeypatch.setattr(readiness, "create_complete_database", create)
+    monkeypatch.setattr(readiness, "source_coverage", reject)
+    destination = root / "data/interim/coverage-cache/fixed/dev_0"
+    with pytest.raises(ValueError, match="supplemental model check not passed"):
+        readiness.extract(root, config, "dev_0", {}, "abc", destination, root / "logs")
+    assert not destination.exists()
+    retained = list((destination.parent / "rejected/dev_0").glob("*/src.zip"))
+    assert len(retained) == 1
+    assert retained[0].read_bytes() == b"retained native extraction"
+
+
+def test_readiness_persists_peer_reuse_across_fresh_scans(
+    benchmark_workspace: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from src.pipeline_v2 import readiness
+
+    root, config, config_path = benchmark_workspace
+    selected = selection_ids(root, config)
+    config["fixed_preparation"].update(
+        coverage_cache_root="data/interim/coverage-cache", reuse_exact_revision_databases=True
+    )
+    config["execution"]["minimum_application_source_coverage"] = 1.0
+    policy = root / "src/pipeline_v2/coverage.py"
+    policy.parent.mkdir(parents=True)
+    policy.write_text("fixture policy")
+    labels = root / config["dataset"]["labels"]
+    labels.parent.mkdir(parents=True, exist_ok=True)
+    labels.write_text("project_id,fix_commit_ids\n" + "".join(f"{p},abc\n" for p in selected))
+    config["dataset"]["labels_sha256"] = sha256_file(labels)
+    config_path.write_text(yaml.safe_dump(config))
+    cache = root / config["fixed_preparation"]["coverage_cache_root"]
+    for side in ("vulnerable", "fixed"):
+        for project in selected:
+            database = cache / side / project
+            database.mkdir(parents=True)
+            (database / "codeql-database.yml").write_text("fixture metadata")
+            (database / "src.zip").write_text("valid")
+    stale = cache / "vulnerable/dev_0"
+    (stale / "src.zip").write_text("stale")
+
+    def coverage(database: Path, *_a: Any) -> dict[str, Any]:
+        ready = (database / "src.zip").read_text() == "valid"
+        return {"ready": ready, "coverage_ratio": 1.0 if ready else 0.0}
+
+    def unexpected_extraction(*_a: Any, **_kw: Any) -> None:
+        raise AssertionError("checked same-revision database must be reused")
+
+    monkeypatch.setenv("MAXVERA_DATA_ROLE", "evaluator")
+    monkeypatch.setattr(readiness.subprocess, "check_output", lambda *_a, **_kw: "abc")
+    monkeypatch.setattr(readiness, "_resolve_fixed_revision", lambda *_: "abc")
+    monkeypatch.setattr(readiness, "source_coverage", coverage)
+    monkeypatch.setattr(readiness, "require_coverage", coverage)
+    monkeypatch.setattr(readiness, "extract", unexpected_extraction)
+    initial = readiness.inspect(root, config_path, root / "results/diagnostics/initial", workers=1)
+    assert initial["blocked"] == 1
+    repaired = readiness.inspect(
+        root, config_path, root / "results/diagnostics/repair", repair=True, workers=1
+    )
+    assert repaired["ready"] == 120
+    assert stale.is_symlink()
+    assert not (cache / "vulnerable/dev_1").is_symlink()
+    assert (stale / "src.zip").read_text() == "valid"
+    retained = list((cache / "vulnerable/rejected/dev_0").glob("peer-alias-*/src.zip"))
+    assert len(retained) == 1 and retained[0].read_text() == "stale"
+    final = readiness.inspect(root, config_path, root / "results/diagnostics/final", workers=1)
+    assert final["status"] == "PASS" and final["ready"] == 120 and final["blocked"] == 0
 
 
 def test_benchmark_cannot_claim_confirmatory_or_fit_test(benchmark_workspace: Any) -> None:
@@ -369,6 +476,38 @@ def test_benchmark_cannot_claim_confirmatory_or_fit_test(benchmark_workspace: An
     config["benchmark"]["calibration_fit_scope"] = "all120"
     with pytest.raises(ValueError, match="development-only fitting"):
         selection_ids(root, config)
+
+
+def test_readiness_excludes_concurrent_cache_writers_and_records_interruptions(
+    benchmark_workspace: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import fcntl
+
+    from src.pipeline_v2 import readiness
+
+    root, config, config_path = benchmark_workspace
+    config["fixed_preparation"]["coverage_cache_root"] = "data/interim/coverage-cache"
+    config_path.write_text(yaml.safe_dump(config))
+    monkeypatch.setenv("MAXVERA_DATA_ROLE", "evaluator")
+    cache = root / config["fixed_preparation"]["coverage_cache_root"]
+    cache.mkdir(parents=True)
+    output = root / "results/diagnostics/interrupted"
+    with (cache / ".readiness.lock").open("a+") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        with pytest.raises(RuntimeError, match="another readiness process"):
+            readiness.inspect(root, config_path, output)
+    assert not output.exists()
+
+    def interrupted(*_args: Any, **_kwargs: Any) -> Any:
+        raise KeyboardInterrupt("intentional test interruption")
+
+    monkeypatch.setattr(readiness, "_inspect", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        readiness.inspect(root, config_path, output)
+    lifecycle = json.loads((output / "lifecycle.json").read_text())
+    assert lifecycle["status"] == "INTERRUPTED"
+    assert lifecycle["started_at"] and lifecycle["finished_at"]
+    assert not (cache / "coverage_manifest.json").exists()
 
 
 @pytest.fixture

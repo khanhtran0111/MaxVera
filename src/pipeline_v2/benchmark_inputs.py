@@ -17,6 +17,7 @@ from src.common.provenance import sha256_file
 from src.graphs.program.runner import _run_command
 from src.pipeline_v2.b9 import upstream_runs
 from src.pipeline_v2.coverage import require_coverage, source_coverage
+from src.pipeline_v2.extraction import create_complete_database
 from src.pipeline_v2.recovery import database_environment
 from src.pipeline_v2.runtime import Run, codeql, configuration, development_ids, selection_ids
 from src.reproduction.common import atomic_json, read_csv, read_jsonl
@@ -188,27 +189,40 @@ def prepare(root: Path, config_path: Path, run_id: str, *, resume: bool = False)
                     database = scratch / "database"
                     if database.exists():
                         shutil.rmtree(database)
-                    result = _run_command(
-                        [
-                            str(binary),
-                            "database",
-                            "create",
-                            str(database),
-                            "--language=java",
-                            "--build-mode=none",
-                            f"--threads={config['codeql']['threads']}",
-                            f"--ram={config['codeql']['ram_mb']}",
-                            f"--source-root={checkout}",
-                        ],
-                        cwd=checkout,
-                        env=environment,
-                        timeout=config["codeql"]["timeout_seconds"],
-                    )
-                    (scratch / "build.log").write_text(
-                        f"exit_code={result.returncode}\n{result.stdout}\n{result.stderr}"
-                    )
-                    if result.returncode or not (database / "src.zip").is_file():
-                        raise RuntimeError("benchmark no-build extraction failed")
+                    if minimum_coverage is not None:
+                        create_complete_database(
+                            binary,
+                            checkout,
+                            database,
+                            scratch / "extraction",
+                            {
+                                **config["codeql"],
+                                **config["fixed_preparation"].get("extraction_resources", {}),
+                            },
+                            environment,
+                        )
+                    else:
+                        result = _run_command(
+                            [
+                                str(binary),
+                                "database",
+                                "create",
+                                str(database),
+                                "--language=java",
+                                "--build-mode=none",
+                                f"--threads={config['codeql']['threads']}",
+                                f"--ram={config['codeql']['ram_mb']}",
+                                f"--source-root={checkout}",
+                            ],
+                            cwd=checkout,
+                            env=environment,
+                            timeout=config["codeql"]["timeout_seconds"],
+                        )
+                        (scratch / "build.log").write_text(
+                            f"exit_code={result.returncode}\n{result.stdout}\n{result.stderr}"
+                        )
+                        if result.returncode or not (database / "src.zip").is_file():
+                            raise RuntimeError("benchmark no-build extraction failed")
                     if minimum_coverage is not None:
                         require_coverage(database, source, float(minimum_coverage), revision)
                     if target.exists():

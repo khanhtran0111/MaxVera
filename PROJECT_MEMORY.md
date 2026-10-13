@@ -685,3 +685,102 @@ See docs/21_B9_PIPELINE_COMPLETENESS.md for status, gates and exact commands.
 
 No-API real CodeQL pilot b9_application_db_pilot_001 PASS: xwiki1168/1168source,254endpoints,81relations,10hypotheses; oauth372/372source,71endpoints,0relations/0hypotheses(valid no-candidate). No LLM or P11 claim.
 Maintenance monitor/follow-up: tmux maxvera-b9-readiness-120; waits bulk PID2680658, rescans with current code into readiness006, runs --validate-only only if input scan PASS.
+
+2026-10-12 maintenance continuation (supersedes the running-job notes above):
+Repair004 stopped after46cases; no final exception/exit code, no retained kernel OOM
+evidence, root signal/cause unproven. Read-only scan006 completed120:68READY/52BLOCKED.
+Repair007 intentionally interrupted with SIGTERM to switch to durable two-pass mode.
+Current tmux maxvera-b9-readiness-120 window repair runs readiness008 with2workers.
+It first scanned all120 (69READY/51BLOCKED), then reuses cache and repairs blocked
+cases, retaining all120 rows. Snapshot gap_audit002:73READY/47BLOCKED,79blocked sides,
+0API/0queries/0waivers. These are changing checkpoints, not final readiness.
+Launcher scripts/tools/run_b9_readiness_120_tmux.sh logs lifecycle/exit status,
+serializes cache writers, rescans into008_final and only auto-runs --validate-only
+if all120 inputs PASS. It never starts paid synthesis. Window remains visible on exit.
+Added production-vs-test no-build exclusion, testFixtures/test-*/src/it/demo path
+classification, and DB metadata revision/finalization checks. No score/mapping change.
+Real collision toy pilot PASS for production source selection; this is not proof that
+Spring real DB is fixed. Duplicate-production-FQN index-files workaround rejected:
+archive2files but only1of2methods queried, never applied to benchmark/cache inputs.
+231 tests PASS, Ruff/mypy124src PASS. Offline gap auditor under scripts/tools pins
+full120 snapshot and emits cases.csv + source/module hints without changing gates.
+
+2026-10-13 unblock maintenance (supersedes prior running008 note):
+008_final finished85READY/35BLOCKED,120/120 inspected,0API. 34coverage gaps,
+1AWSfixed extraction Java heap OOM at4096MiB. New no-code blob check exempts only
+empty/comment-only pinned sources; unavailable blobs stay missing, threshold1.0.
+HL7 two cases now inputREADY (not query validated). Added extraction.py: native
+init/trace, supplements by source root with distinct -d and class-origin tracking.
+Toy pilot005 queries both duplicate-FQN methods a/b;003/004 failed without tracking.
+Real DSpace vulnerable pilot001 PASS1445/1445 and modeled-type query, copied cache.
+Supplement PENDING/BLOCKED cannot reuse; model check + extraction policy hashes pinned.
+Strict vulnerable/fixed fallback share repair mechanism. Large>=50000Java uses12GiB,
+others4GiB,2workers. 236testsPASS,Ruff/mypy125srcPASS,bash-n/diffcheckPASS.
+Tmux maxvera-b9-readiness-120 new repair window3 runs009 --inputs-only: initial
+full scan87READY/33BLOCKED then repairs. Final009_final authoritative after completion;
+no paid B9, no automatic upstream validation in this input-only maintenance job.
+
+2026-10-13 pinned-driver correction (supersedes009 checkpoint claims):
+009 intentionally SIGTERM-stopped03:36:41Z (INTERRUPTED,exit130) after discovering
+supplement wrapper used bundled Java instead of pinned project driver. Old model
+markers now rejected without pinned-driver + exact extraction-policy provenance.
+Helper now uses JAVA_HOME/bin/java wrapper (bundled native extractor still internal).
+Toy006 runs production helper on pinnedJDK8:2/2source,bothmethods,bothlocalflowsPASS.
+Real DSpace pilot002 pinned driver PASS1445/1445+typequery; installedcache withold
+pilot001 copy preserved rejected. Pilot001/implementation001 markedSUPERSEDED.
+238testsPASS,RuffPASS,mypy125src+promotiontoolPASS. Added same-SHA/same-side/same
+JDK/Maven/Gradle reuse within readiness process; source/model checks still mandatory.
+Tmux readiness010 started03:44Z,2workers,--inputs-only; final010_final authoritative.
+Promotion tool can expose validated vulnerable DBs through canonical opaque cache
+symlinks after complete PASS, then fresh scan; refuses premature/in-progress input.
+No paid benchmark restarted. Old run003/config remains unchanged.
+
+2026-10-13 follow-up, checkpoint 04:57Z: run010 has 107 READY/13 BLOCKED,
+with 22/32 repair jobs finished. Extraction file formatting changed at 04:35Z
+(logic unchanged), producing raw hash 6676fc7b; restored snapshot002's exact hash
+d120d06c. Three Keycloak cases/four sides were rejected during this interval.
+Do not edit markers into PASS. Run010 continues; recovery will reuse valid DBs.
+Fixed readiness.extract to retain DBs on post-extraction gate exceptions too.
+239 tests PASS, Ruff PASS, mypy 126 files PASS; frozen implementation003.
+
+Tmux window `finish-inputs` runs `results/diagnostics/b9_finish_inputs_001.py`.
+After launcher010 finishes, if BLOCKED, perform recovery011 and final scan012.
+Only full PASS permits promotion001, scan013 and benchmark --dry-run (no LLM).
+Acceptance002 requires all 35 formerly blocked IDs READY and 120 unique cases.
+Final acceptance remains pending; do not claim full PASS yet.
+
+2026-10-13 checkpoint 06:16Z:010 now116 READY/4 BLOCKED. AWS root extraction
+passed at actual-Xmx12288m, raw archive109920 app Java files; finalize running.
+All NiFi/Payara/Flink/Camel ready. Independent Keycloak recovery pilot002 has
+2/3 unique DBs checked; covers4failed sides via same-revision vulnerable reuse.
+Pilot001 intentionally interrupted to replace process-stop coordination; first
+PASS DB reused with SHA recheck. Current tmux windows recovery-pilot-002 and
+finish-inputs-002. Current scripts results/diagnostics/b9_keycloak_recovery_pilot_002.py
+and b9_finish_inputs_002.py: pilot installs only AFTER010launcher+finalscan ends,
+underlock; finisher waits for pilot terminal state before any recovery/scan.
+Acceptance output is now b9_unblock_acceptance_003 (002 historical empty wait).
+Final scan remains b9_full_pipeline_readiness_013_final; not yet120PASS.0LLM.
+
+2026-10-13 FINAL INPUT ACCEPTANCE (supersedes pending notes above):35/35 formerly
+blocked cases now READY; exact same120 IDs,240 sides at100% application coverage.
+Readiness014 and014_final PASS120; promotion001 PASS120 (73 canonical vulnerable
+cache paths updated);015_final PASS120/0BLOCKED/0PENDING. Benchmark--dry-run PASS,
+96development+24diagnostic,90second pacing,0LLM. Authoritative certificate:
+results/diagnostics/b9_unblock_acceptance_004/summary.json, final report015_final.
+AWS fixed native12GiB extraction+finalize PASS109920/109920. Keycloak pilot002
+installed3 checked DBs. Discovered011 PASS depended on transient peer pool;
+012 fresh scan118/2failed. Fixed readiness peer reuse to persist missing/invalid
+cache aliases, preserve valid physical DBs;240testsPASS,RuffPASS,mypy126filesPASS.
+Frozen implementation004. All240 database archive/metadata/model SHA rechecked.
+No full query validation/no paid end-to-end/no new detection numbers; workspace
+still dirty, actual benchmark Run requires a clean snapshot. Original003 untouched.
+
+2026-10-13: user explicitly authorized a new full B9 end-to-end run in tmux,
+including the configured LLM calls. Prepare a clean commit of tested maintenance
+changes, then launch run b9_benchmark_120_complete_001 in maxvera-b9-e2e-120.
+Use configs/experiments/b9_benchmark_120_complete.yaml unchanged: all120 cases,
+90-second request pacing, original LLM budgets and pinned provider. The full
+controller performs inputs/discovery/graph/grounding checks before API synthesis;
+do not duplicate those stages with a separate validate-only run. Launch metadata,
+controller logs and monitoring live under logs/pipeline_v2/b9_benchmark_120_complete_001.
+This is a fresh run; preserve original003 and all readiness certificates.

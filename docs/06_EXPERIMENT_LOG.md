@@ -376,3 +376,91 @@ Details: [pipeline completeness](21_B9_PIPELINE_COMPLETENESS.md).
 
 No-API real CodeQL pilot b9_application_db_pilot_001 PASS: xwiki1168/1168source,254endpoints,81relations,10hypotheses; oauth372/372source,71endpoints,0relations/0hypotheses(valid no-candidate). No LLM or P11 claim.
 Maintenance monitor/follow-up: tmux maxvera-b9-readiness-120; waits bulk PID2680658, rescans with current code into readiness006, runs --validate-only only if input scan PASS.
+
+## 2026-10-12 — Durable maintenance continuation
+
+Repair004 interrupted after46records; scan006 inspected all120 with68READY/52BLOCKED.
+No retained evidence identifies the original terminating signal or establishes OOM.
+Repair007 intentionally stopped while moving to two-pass scan-then-repair mode.
+Tmux readiness window repair now runs008,2workers; initial full scan69READY/51BLOCKED.
+Frozen offline gap audit002 records73READY/47BLOCKED,79blocked sides,0API/0queries,
+no coverage waivers. All counts are maintenance checkpoints, not benchmark outcomes.
+
+Added cache lock, lifecycle/exit logging, cancellation, retained invalid-cache DBs,
+full population scan before any heavy build, revision/finalization checks and test
+source exclusions for new no-build extraction.231testsPASS,Ruff/mypyPASS.
+Real toy production/test collision pilot passed source-selection check. A separate
+index-files duplicate-production prototype archived2files but queried only1of2
+methods; workaround rejected and not applied to benchmark. Full Spring/HL7 queries
+and all120 input readiness remain unproven. Paid benchmark has not restarted.
+See [completeness status](21_B9_PIPELINE_COMPLETENESS.md) and gap audit002 artifacts.
+
+## 2026-10-13 — Coverage-directed extraction with class origins
+
+008_final:85READY/35BLOCKED,120case/0API; AWSfixed Java heap OOM4096MiB.
+Added pinned-content empty/comment-only exemptions, preserving real code/string
+tokens and blocking unavailable blobs. Keep threshold1.0 and full120 cohort.
+New native per-source-root supplements enable class-origin tracking and separate
+compiler outputs. Toy005 queried both duplicate-FQN methods; real DSpace pilot001
+PASS1445/1445 plus modeled-type check. PENDING/failed supplement checks cannot be
+reused, and input preflight pins check/policy hashes. Shared strict preparation
+fallback; large repository extraction12GiB, usual4GiB.236testsPASS,Ruff/mypyPASS.
+Readiness009 launched in existing tmux, input-only,2workers, initial87READY/33BLOCKED.
+Final result pending; no LLM or new detection claims. Details in completeness doc.
+
+### Pinned-driver correction and readiness010
+
+009 intentionally interrupted03:36:41Z,exit130: supplement wrapper incorrectly used
+bundled Java rather than pinned project JDK. Model provenance now binds driver and
+extraction-policy SHA; old supplement markers refused. Toy006 production helper on
+pinnedJDK8 PASS2/2sources,bothmethods andbothlocalflows; DSpace real pilot002 pinned
+PASS1445/1445+typequery and installedcache, preservingoldcopy.238testsPASS,Ruff/mypyPASS.
+Readiness010 launched03:44Z,2workers,input-only; exactcommit+side+toolchain reuse.
+Final full input status pending. Promotion tool for canonical vulnerable cache links
+requires full PASS and verifies SHA underlock; premature promotion guard checked.
+No LLM/newbenchmark. Pilot001/implementation001 superseded for driver correctness.
+
+### Post-extraction failure retention and automatic acceptance
+
+Readiness010 checkpoint 04:57Z: 107 READY/13 BLOCKED, 22/32 repair jobs finished.
+A whitespace-only extraction.py edit at 04:35Z changed the raw policy hash;
+restored exact snapshot002. Three Keycloak cases/four sides were correctly
+rejected during the interval. Recovery must re-extract or reuse checked DBs,
+never manually rewrite PASS markers. Added retention when the post-extraction
+coverage gate raises: 239 tests PASS, Ruff PASS, mypy 126 files PASS;
+implementation003 snapshot.
+
+Tmux `finish-inputs` waits for010, then, if needed, runs recovery011 and scan012.
+Only full PASS allows canonical vulnerable promotion, scan013 and a benchmark
+dry-run without API calls. Acceptance002 checks the 35 formerly blocked IDs
+and all 120 case IDs. Final acceptance pending; no paid pipeline/detection rerun.
+
+### 2026-10-13 — Input acceptance complete:35/35 unblocked
+
+AWS fixed extraction/finalize at12 GiB passed109920/109920 application files.
+Keycloak recovery pilot002 installed3 checked DBs covering4 sides.011 initially
+reported120 READY but independent012 found2 transient peer-cache dependencies.
+Persisted checked aliases for missing/invalid cache entries; valid physical DBs
+remain stable for concurrent readers. Added fresh-process regression coverage.
+240 tests PASS,Ruff PASS,mypy126 files PASS; frozen implementation004.
+
+014 repair and014_final PASS120/120; promotion001 verified120 inputs and updated
+73 canonical vulnerable cache paths. Independent015_final PASS120/0BLOCKED/
+0PENDING. B9 input dry-run PASS:120 cases,96 development+24 diagnostic,90-second
+request interval,0 LLM calls. Acceptance004 proves the same120 case IDs as008,
+all35 originally blocked now READY, and rechecks archive/metadata/model hashes
+for240 sides. Authoritative artifact:results/diagnostics/b9_unblock_acceptance_004.
+This is input maintenance only; no full query validation or new end-to-end/
+detection result. Original benchmark003 remains unchanged.
+
+### 2026-10-13 — Authorized launch of fresh B9 end-to-end
+
+User requested the full run through tmux after successful input acceptance.
+Launch ID: `b9_benchmark_120_complete_001`; session: `maxvera-b9-e2e-120`.
+Commit the tested maintenance changes to satisfy the clean-snapshot gate.
+Use the complete120 profile with the same120 IDs,90-second request pacing and
+unchanged LLM budgets/provider. The controller checks upstream inputs, discovery,
+graphs and grounding before synthesis, then runs pilot verification, full
+analysis, calibration/routing and independent evaluation. Runtime status and
+logs belong to `logs/pipeline_v2/b9_benchmark_120_complete_001`; this launch
+does not overwrite original003 or convert input readiness into detection results.

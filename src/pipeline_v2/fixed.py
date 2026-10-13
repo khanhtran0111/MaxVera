@@ -22,6 +22,7 @@ from src.graphs.program.build_databases import _node_files, _preferred_attempt
 from src.graphs.program.runner import _run_command
 from src.pipeline_v2.calibration import _development_rows
 from src.pipeline_v2.coverage import require_coverage, source_coverage
+from src.pipeline_v2.extraction import create_complete_database
 from src.pipeline_v2.recovery import database_environment
 from src.pipeline_v2.runtime import Run, codeql, configuration, dependency, selection_ids
 from src.reproduction.common import atomic_json, atomic_jsonl, read_csv, read_jsonl
@@ -153,18 +154,28 @@ def _build(
                     if mode == "manual"
                     else "--build-mode=none",
                 ]
-                result = _run_command(
-                    command,
-                    cwd=checkout,
-                    env=environment,
-                    timeout=int(policy["build_timeout_seconds"]),
-                )
-                (logs / f"attempt_{number}.log").write_text(
-                    f"exit_code={result.returncode}\n{result.stdout}\n{result.stderr}",
-                )
-                if result.returncode or not (database / "src.zip").is_file():
-                    raise RuntimeError("fixed extraction failed; see attempt log")
                 minimum = config.get("execution", {}).get("minimum_application_source_coverage")
+                if mode == "none" and minimum is not None:
+                    create_complete_database(
+                        binary,
+                        checkout,
+                        database,
+                        logs / f"attempt_{number}",
+                        {**config["codeql"], **policy.get("extraction_resources", {})},
+                        environment,
+                    )
+                else:
+                    result = _run_command(
+                        command,
+                        cwd=checkout,
+                        env=environment,
+                        timeout=int(policy["build_timeout_seconds"]),
+                    )
+                    (logs / f"attempt_{number}.log").write_text(
+                        f"exit_code={result.returncode}\n{result.stdout}\n{result.stderr}",
+                    )
+                    if result.returncode or not (database / "src.zip").is_file():
+                        raise RuntimeError("fixed extraction failed; see attempt log")
                 if minimum is not None:
                     require_coverage(database, source, float(minimum), revision)
                 java_files, error = _node_files(

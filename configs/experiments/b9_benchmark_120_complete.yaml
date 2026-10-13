@@ -119,10 +119,15 @@ fixed_preparation:
     manifest_sha256: 38dff38ea589482b9d572b9771ae54872d27553417ec28eb56a7616719bee1b6
     status_sha256: f60a8e9700d03ea18e4bf33193327ffa65f2ffec3d61a5fdbc15bd323db1792b
   no_build_first: true
+  reuse_exact_revision_databases: true
   coverage_cache_root: data/interim/b9_coverage_repairs_001
   extraction_resources:
     threads: 2
     ram_mb: 4096
+    large_repository_resources:
+      minimum_application_files: 50000
+      threads: 2
+      ram_mb: 12288
   coverage_parent_roots:
   - data/interim/b9_benchmark_fixed_001/b9_benchmark_120_v2_003_fixed
 benchmark:
