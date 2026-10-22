@@ -17,7 +17,10 @@ seed: 1234
 reasoning_effort: low
 reasoning_exclude: true
 parallel_requests: 1
-timeout_seconds: 900
+timeout_seconds: 1800
+request_interval_seconds: 30
+rate_limit_backoff_seconds: 60
+rate_limit_max_backoff_seconds: 600
 max_retries: 5
 routing:
   allow_fallbacks: false

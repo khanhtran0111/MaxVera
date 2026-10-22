@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-10-21T02:17:33Z",
+  "authorization": "User explicitly requested removal of previous run outputs/logs",
+  "allowlist": [
+    "results",
+    "logs",
+    "data/interim",
+    ".cache/models",
+    ".cache/experiments",
+    ".cache/logs",
+    ".cache/preflight",
+    ".cache/phase4_diagnostics",
+    ".cache/phase13_adapter_preflight",
+    ".cache/downloads"
+  ],
+  "retained": "tracked compact legacy exports, datasets, .venv, .env, source and toolchains",
+  "free_bytes_before": 237686517760,
+  "free_bytes_after": 325080879104,
+  "reclaimed_bytes": 87394361344
+}

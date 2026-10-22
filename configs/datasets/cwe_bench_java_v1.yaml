@@ -1,0 +1,15 @@
+schema_version: 1
+dataset_id: D_repro_v1
+status: frozen
+upstream_url: https://github.com/iris-sast/cwe-bench-java.git
+revision: 698fb7248ae30cb7f7782d59c841f05ad70ea9cc
+expected_cves: 120
+expected_cwes: [CWE-22, CWE-78, CWE-79, CWE-94]
+tuning_allowed: false
+analysis_view: data/processed/analysis_input
+evaluator_view: data/processed/evaluator_only
+ground_truth_policy:
+  artifact_compatible: patch_intersection
+  canonical: one_ground_truth_row_per_cve_project
+  stricter: vulnerable_fixed_differential
+license: MIT

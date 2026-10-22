@@ -1,0 +1,30 @@
+runtime:
+  project_workers: 1
+  llm_concurrency: 1
+  timeout_case_s: 7200
+  dry_run_default: true
+budgets:
+  max_calls_per_case: 30
+  max_input_tokens_per_case: 160000
+  max_output_tokens_per_case: 60000
+  max_cost_usd_per_case: 1.0
+  timeout_case_s: 7200
+llm:
+  model_config: configs/models/gpt_oss_20b_openrouter.yaml
+  model: openai/gpt-oss-20b
+  provider_route: akashml
+  max_output_tokens: 2048
+codeql:
+  repro_binary: .cache/toolchains/iris-codeql-0.8.3-patched/codeql
+  research_binary: .cache/toolchains/codeql-2.26.2/codeql
+  repro_java_all_version: 0.8.3
+  compatibility: iris_v1_patched
+  reference_suite: .cache/toolchains/iris-codeql-0.8.3-patched/qlpacks/codeql/java-queries/0.8.3/Security/CWE/CWE-{cwe}
+  generic_suite: .cache/toolchains/codeql-2.26.2/qlpacks/codeql/java-queries/1.11.7/codeql-suites/java-security-extended.qls
+  per_query_timeout_s: 600
+  ram_mb: 8192
+  threads: 1
+evidence:
+  top_k: [5, 10, 20]
+  max_graph_hops: 5
+  max_context_tokens_per_call: 8192

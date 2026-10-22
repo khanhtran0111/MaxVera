@@ -197,6 +197,13 @@ def test_rate_limit_retry_uses_retry_after_or_bounded_backoff() -> None:
     assert OpenRouterClient._retry_delay(5, without_header) == 60.0
 
 
+def test_retry_after_is_not_shortened_to_sixty_seconds() -> None:
+    error = urllib.error.HTTPError(
+        "https://example.invalid", 429, "rate limited", {"Retry-After": "900"}, None
+    )
+    assert OpenRouterClient._retry_delay(1, error) == 900
+
+
 @pytest.mark.parametrize("status,retryable", [(429, True), (503, True), (401, False)])
 def test_exhausted_http_error_retains_retry_classification(
     monkeypatch: Any, status: int, retryable: bool
@@ -215,7 +222,7 @@ def test_exhausted_http_error_retains_retry_classification(
 
 
 @pytest.mark.parametrize("failure", ["broken_json", "wrong_model", "wrong_provider"])
-def test_transport_json_recovers_but_route_drift_stays_fatal(
+def test_unreadable_response_and_route_drift_are_not_automatically_retried(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     failure: str,
@@ -265,20 +272,18 @@ def test_transport_json_recovers_but_route_drift_stays_fatal(
     client = OpenRouterClient(
         replace(_settings(), max_retries=2), tmp_path / "calls.jsonl", request_interval_seconds=90
     )
-    if failure == "broken_json":
-        assert client.complete([]) == "OK"
-        assert starts == [100, 190]
-        logs = [json.loads(line) for line in (tmp_path / "calls.jsonl").read_text().splitlines()]
-        assert [row["status"] for row in logs] == ["RETRY", "SUCCESS"]
-        assert [row["call"] for row in logs] == [1, 1]
-    else:
-        with pytest.raises(OpenRouterError) as captured:
-            client.complete([])
-        assert not captured.value.retryable
-        assert starts == [100]
+    with pytest.raises(OpenRouterError) as captured:
+        client.complete([])
+    assert not captured.value.retryable
+    assert starts == [100]
+    logs = [json.loads(line) for line in (tmp_path / "calls.jsonl").read_text().splitlines()]
+    assert logs[0]["http_status"] == 200
+    assert logs[0]["status"] == "INVALID_RESPONSE"
 
 
-def test_exhausted_transport_json_is_retryable(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_unparseable_transport_outcome_is_not_automatically_retryable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     from src.llm.providers.openrouter import OpenRouterError
 
     def invalid_envelope(*_args: Any, **_kwargs: Any) -> None:
@@ -287,4 +292,4 @@ def test_exhausted_transport_json_is_retryable(monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr("urllib.request.urlopen", invalid_envelope)
     with pytest.raises(OpenRouterError) as captured:
         OpenRouterClient(_settings()).complete([])
-    assert captured.value.retryable
+    assert not captured.value.retryable

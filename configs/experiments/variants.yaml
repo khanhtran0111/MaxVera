@@ -1,0 +1,32 @@
+schema_version: '2.0'
+variants:
+  static_only:
+    candidate_sources: [static_alerts]
+    graph_enabled: false
+    retrieval: null
+    llm_enabled: false
+    targeted_verification: false
+  text_only:
+    candidate_sources: [text_chunks_and_generic_api_patterns]
+    graph_enabled: false
+    retrieval: fixed_budget_text_chunks
+    llm_enabled: true
+    targeted_verification: false
+  graph_only:
+    candidate_sources: [static_alerts, sink_backward_slice, source_forward_slice]
+    graph_enabled: true
+    retrieval: minimal_subgraph
+    llm_enabled: false
+    targeted_verification: false
+  graph_llm:
+    candidate_sources: [static_alerts, sink_backward_slice, source_forward_slice]
+    graph_enabled: true
+    retrieval: minimal_subgraph
+    llm_enabled: true
+    targeted_verification: false
+  graph_llm_verify:
+    candidate_sources: [static_alerts, sink_backward_slice, source_forward_slice]
+    graph_enabled: true
+    retrieval: minimal_subgraph
+    llm_enabled: true
+    targeted_verification: true

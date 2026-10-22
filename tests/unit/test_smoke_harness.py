@@ -16,8 +16,23 @@ from src.smoke.harness import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_smoke_manifest_is_opaque_and_covers_each_available_cwe() -> None:
-    rows = validate_smoke_manifest(REPO_ROOT)
+@pytest.fixture
+def smoke_root(tmp_path: Path) -> Path:
+    """Unit validation uses fixture directories, never downloaded benchmark databases."""
+    import shutil
+
+    manifest = tmp_path / "data/processed/manifests/smoke.csv"
+    manifest.parent.mkdir(parents=True)
+    shutil.copyfile(REPO_ROOT / "data/processed/manifests/smoke.csv", manifest)
+    rows = list(csv.DictReader(manifest.open()))
+    for row in rows:
+        for field in ("source_dir", "codeql_database"):
+            (tmp_path / row[field]).mkdir(parents=True)
+    return tmp_path
+
+
+def test_smoke_manifest_is_opaque_and_covers_each_available_cwe(smoke_root: Path) -> None:
+    rows = validate_smoke_manifest(smoke_root)
     with (REPO_ROOT / "data/processed/evaluator_only/D_repro_v1_labels.csv").open(
         "r", encoding="utf-8", newline=""
     ) as handle:
@@ -31,31 +46,11 @@ def test_smoke_manifest_is_opaque_and_covers_each_available_cwe() -> None:
     assert all("cwe" not in field.lower() and "cve" not in field.lower() for field in rows[0])
 
 
-def test_smoke_selection_reproduces_fastest_success_per_cwe() -> None:
-    rows = validate_smoke_manifest(REPO_ROOT)
-    with (REPO_ROOT / "data/processed/manifests/cwe_bench_v1.csv").open(
-        "r", encoding="utf-8", newline=""
-    ) as handle:
-        canonical = list(csv.DictReader(handle))
-    statuses = {
-        item["project_id"]: item
-        for item in (
-            json.loads(line)
-            for line in (
-                REPO_ROOT / "data/interim/build_info/build_status.jsonl"
-            ).read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        )
-    }
-    candidates: dict[str, list[tuple[float, str]]] = {}
-    for item in canonical:
-        status = statuses[item["project_id"]]
-        if status["status"] == "SUCCESS":
-            candidates.setdefault(item["ground_truth_cwe"], []).append(
-                (float(status["codeql_seconds"]), item["project_id"])
-            )
-    expected = {min(items)[1] for items in candidates.values()}
-    assert {row["project_id"] for row in rows} == expected
+def test_smoke_validation_rejects_missing_database(smoke_root: Path) -> None:
+    rows = validate_smoke_manifest(smoke_root)
+    (smoke_root / rows[0]["codeql_database"]).rmdir()
+    with pytest.raises(ValueError, match="smoke input is missing"):
+        validate_smoke_manifest(smoke_root)
 
 
 def test_candidate_schema_is_strict() -> None:

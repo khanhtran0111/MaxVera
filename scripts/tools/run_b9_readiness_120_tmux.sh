@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DEPRECATED COMPATIBILITY: use python -m maxvera pipeline reproduce|research.
+printf '%s\n' 'Deprecated compatibility command; use python -m maxvera (see README).' >&2
 # Durable, local-only maintenance. This script never starts paid synthesis.
 set -Eeuo pipefail
 readiness_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd -P)"

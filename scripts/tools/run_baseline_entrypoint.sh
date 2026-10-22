@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DEPRECATED COMPATIBILITY: use python -m maxvera pipeline reproduce|research.
+printf '%s\n' 'Deprecated compatibility command; use python -m maxvera (see README).' >&2
 set -Eeuo pipefail
 
 if [[ "$#" -lt 2 ]]; then

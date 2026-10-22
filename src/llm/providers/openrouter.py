@@ -5,11 +5,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
+import os
 import sys
 import time
 import urllib.error
 import urllib.request
 from collections.abc import Mapping, Sequence
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -17,6 +20,12 @@ from typing import Any, cast
 import yaml
 
 from src.common.envfile import effective_env
+from src.llm.providers.openrouter_response import (
+    ResponseFailure,
+    completion_text,
+    known_cost,
+    response_metadata,
+)
 
 CANONICAL_BASE_URL = "https://openrouter.ai/api/v1"
 CANONICAL_MODEL = "openai/gpt-oss-20b"
@@ -43,6 +52,19 @@ class OpenRouterError(RuntimeError):
         self.retry_after_seconds = retry_after_seconds
 
 
+class OpenRouterResponseError(OpenRouterError):
+    """An HTTP response was received; preserve its identity and actual usage."""
+
+    def __init__(self, failure: ResponseFailure, metadata: dict[str, Any]):
+        super().__init__(
+            f"OpenRouter {failure.kind}: {failure}",
+            retryable=failure.retryable and known_cost(metadata.get("usage", {}).get("cost")),
+            http_status=200,
+        )
+        self.failure_kind = failure.kind
+        self.response_metadata = metadata
+
+
 @dataclass(frozen=True)
 class OpenRouterSettings:
     base_url: str
@@ -56,6 +78,24 @@ class OpenRouterSettings:
     reasoning_effort: str
     timeout_seconds: int
     max_retries: int
+    request_interval_seconds: float = 0
+    rate_limit_backoff_seconds: float = 5
+    rate_limit_max_backoff_seconds: float = 60
+
+    def __post_init__(self) -> None:
+        if self.timeout_seconds <= 0 or self.max_retries < 0:
+            raise ValueError("request timeout must be positive and retries nonnegative")
+        pacing = (
+            self.request_interval_seconds,
+            self.rate_limit_backoff_seconds,
+            self.rate_limit_max_backoff_seconds,
+        )
+        if not all(math.isfinite(value) for value in pacing):
+            raise ValueError("request pacing must be finite")
+        if self.request_interval_seconds < 0 or self.rate_limit_backoff_seconds <= 0:
+            raise ValueError("request interval must be nonnegative and backoff positive")
+        if self.rate_limit_max_backoff_seconds < self.rate_limit_backoff_seconds:
+            raise ValueError("maximum backoff must be at least the initial backoff")
 
     @classmethod
     def load(
@@ -101,6 +141,9 @@ class OpenRouterSettings:
             reasoning_effort=str(config["reasoning_effort"]),
             timeout_seconds=int(config["timeout_seconds"]),
             max_retries=int(config["max_retries"]),
+            request_interval_seconds=float(config.get("request_interval_seconds", 0)),
+            rate_limit_backoff_seconds=float(config.get("rate_limit_backoff_seconds", 5)),
+            rate_limit_max_backoff_seconds=float(config.get("rate_limit_max_backoff_seconds", 60)),
         )
 
 
@@ -116,6 +159,7 @@ class OpenRouterClient:
         log_context: Mapping[str, Any] | None = None,
         *,
         request_interval_seconds: float = 0,
+        response_directory: Path | None = None,
     ):
         if not 0 <= request_interval_seconds <= 90:
             raise ValueError("request interval must be between 0 and 90 seconds")
@@ -124,6 +168,7 @@ class OpenRouterClient:
         self.log_context = dict(log_context or {})
         self.call_number = 0
         self.request_interval_seconds = request_interval_seconds
+        self.response_directory = response_directory
 
     def _pace_request(self) -> None:
         previous = OpenRouterClient._last_request_started
@@ -177,7 +222,20 @@ class OpenRouterClient:
         self.call_log.parent.mkdir(parents=True, exist_ok=True)
         with self.call_log.open("a", encoding="utf-8", newline="\n") as handle:
             merged = {**self.log_context, **dict(record)}
-            handle.write(json.dumps(merged, sort_keys=True, ensure_ascii=False) + "\n")
+            serialized = json.dumps(merged, sort_keys=True, ensure_ascii=False)
+            handle.write(serialized.replace(self.settings.api_key, "[REDACTED]") + "\n")
+
+    def _save_response(self, raw: bytes, attempt: int) -> None:
+        if self.response_directory is None:
+            return
+        self.response_directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+        os.chmod(self.response_directory, 0o700)
+        path = self.response_directory / f"response-{self.call_number}-{attempt}.body"
+        # Exact wire body except any echoed credential; private audit evidence
+        # stays out of public provenance and never includes request headers.
+        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(raw.replace(self.settings.api_key.encode(), b"[REDACTED]"))
 
     @staticmethod
     def _error_detail(error: urllib.error.HTTPError) -> str:
@@ -199,7 +257,9 @@ class OpenRouterClient:
             retry_after = error.headers.get("Retry-After")
             if retry_after:
                 try:
-                    return min(60.0, max(1.0, float(retry_after)))
+                    delay = float(retry_after)
+                    if math.isfinite(delay):
+                        return max(1.0, delay)
                 except ValueError:
                     pass
             if error.code == 429:
@@ -230,6 +290,8 @@ class OpenRouterClient:
         http_status = None
         self.call_number += 1
         for attempt in range(1, self.settings.max_retries + 2):
+            received_http_status = None
+            metadata: dict[str, Any] = {"usage": {}}
             self._pace_request()
             retry_delay = self._retry_delay(attempt)
             request = urllib.request.Request(
@@ -246,55 +308,90 @@ class OpenRouterClient:
                 with urllib.request.urlopen(
                     request, timeout=self.settings.timeout_seconds
                 ) as response:
-                    loaded = json.loads(response.read().decode("utf-8"))
-                if not isinstance(loaded, dict):
-                    raise ValueError("OpenRouter response is not an object")
-                choices = loaded.get("choices")
-                if not isinstance(choices, list) or not choices:
-                    raise ValueError("OpenRouter response has no choices")
-                choice = choices[0]
-                if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
-                    raise ValueError("OpenRouter response choice has no message")
-                content = choice["message"].get("content")
-                if not isinstance(content, str):
-                    raise ValueError("OpenRouter response content is not text")
-                returned_model = loaded.get("model")
-                if returned_model != self.settings.model:
-                    raise ValueError(
-                        "returned model mismatch: expected "
-                        f"{self.settings.model}, got {returned_model}"
-                    )
-                returned_provider = loaded.get("provider")
-                if _provider_slug(returned_provider) != _provider_slug(self.settings.provider):
-                    raise ValueError(
-                        "returned provider mismatch: expected "
-                        f"{self.settings.provider}, got {returned_provider}"
-                    )
-                self._append_log(
-                    {
-                        "schema_version": 1,
-                        "status": "SUCCESS",
-                        "call": self.call_number,
-                        "request_id": loaded.get("id"),
-                        "requested_model": self.settings.model,
-                        "returned_model": returned_model,
-                        "provider": returned_provider,
-                        "provider_route": self.settings.provider,
-                        "system_fingerprint": loaded.get("system_fingerprint"),
-                        "prompt_sha256": prompt_sha256,
-                        "attempt": attempt,
-                        "http_status": 200,
-                        "seconds": round(time.monotonic() - started, 3),
-                        "usage": loaded.get("usage", {}),
-                        "finish_reason": choice.get("finish_reason"),
-                        "max_output_tokens": payload["max_tokens"],
-                        "reasoning_effort": self.settings.reasoning_effort,
-                        "response_format_type": payload.get("response_format", {}).get("type"),
-                    }
+                    received_http_status = 200
+                    raw_body = response.read()
+                parse_error = None
+                try:
+                    loaded = json.loads(raw_body.decode("utf-8"))
+                except (ValueError, UnicodeError) as decoding_error:
+                    loaded = None
+                    parse_error = decoding_error
+                metadata = response_metadata(loaded)
+                # Metadata also reaches the durable journal through exceptions.
+                metadata = json.loads(
+                    json.dumps(metadata).replace(self.settings.api_key, "[REDACTED]")
                 )
+                record = {
+                    "schema_version": 1,
+                    "call": self.call_number,
+                    "requested_model": self.settings.model,
+                    "provider_route": self.settings.provider,
+                    "prompt_sha256": prompt_sha256,
+                    "attempt": attempt,
+                    "http_status": 200,
+                    "seconds": round(time.monotonic() - started, 3),
+                    "max_output_tokens": payload["max_tokens"],
+                    "reasoning_effort": self.settings.reasoning_effort,
+                    "response_format_type": payload.get("response_format", {}).get("type"),
+                    **metadata,
+                }
+                try:
+                    self._save_response(raw_body, attempt)
+                except OSError as writing_error:
+                    failure = ResponseFailure(
+                        "EVIDENCE_WRITE_FAILED", "received response could not be persisted"
+                    )
+                    self._append_log(
+                        {
+                            **record,
+                            "status": "INVALID_RESPONSE",
+                            "failure_kind": failure.kind,
+                            "retryable": False,
+                        }
+                    )
+                    raise OpenRouterResponseError(failure, metadata) from writing_error
+                if parse_error:
+                    failure = ResponseFailure(
+                        "MALFORMED_RESPONSE", "completion envelope is not valid UTF-8 JSON"
+                    )
+                    self._append_log(
+                        {
+                            **record,
+                            "status": "INVALID_RESPONSE",
+                            "failure_kind": failure.kind,
+                            "retryable": False,
+                        }
+                    )
+                    raise OpenRouterResponseError(failure, metadata) from parse_error
+                try:
+                    content = completion_text(
+                        loaded,
+                        model=self.settings.model,
+                        provider=self.settings.provider,
+                    )
+                except ResponseFailure as failure:
+                    received_error = OpenRouterResponseError(failure, metadata)
+                    # Only received, accounted failures can use transport retries.
+                    # The journal disables these and enforces its own ceilings.
+                    can_retry = failure.retryable and known_cost(metadata["usage"].get("cost"))
+                    self._append_log(
+                        {
+                            **record,
+                            "status": "INVALID_RESPONSE",
+                            "failure_kind": failure.kind,
+                            "retryable": can_retry,
+                        }
+                    )
+                    if can_retry and attempt <= self.settings.max_retries:
+                        time.sleep(retry_delay)
+                        continue
+                    raise received_error from failure
+                self._append_log({**record, "status": "SUCCESS"})
                 return content
+            except OpenRouterResponseError:
+                raise
             except urllib.error.HTTPError as error:
-                last_error = self._error_detail(error)
+                last_error = self._error_detail(error).replace(self.settings.api_key, "[REDACTED]")
                 http_status = error.code
                 retryable = error.code in {408, 409, 429, 500, 502, 503, 504}
                 retry_delay = self._retry_delay(attempt, error)
@@ -320,11 +417,28 @@ class OpenRouterClient:
                 if error.code not in {408, 409, 429, 500, 502, 503, 504}:
                     break
             except (OSError, ValueError, KeyError, urllib.error.URLError) as error:
-                last_error = str(error)[:500]
-                http_status = None
-                retryable = isinstance(
-                    error, (OSError, urllib.error.URLError, json.JSONDecodeError)
-                )
+                last_error = str(error)[:500].replace(self.settings.api_key, "[REDACTED]")
+                http_status = received_http_status
+                # An unreadable response, network interruption or local write
+                # failure does not prove that the provider accepted no charge.
+                retryable = False
+                if received_http_status == 200:
+                    persistence_failure = ResponseFailure(
+                        "RESPONSE_PERSISTENCE_FAILED",
+                        "received response could not be read or recorded durably",
+                    )
+                    # The typed exception retains evidence if logging also fails.
+                    with suppress(OSError):
+                        self._append_log(
+                            {
+                                "status": "INVALID_RESPONSE",
+                                "failure_kind": persistence_failure.kind,
+                                "http_status": 200,
+                                "retryable": False,
+                                **metadata,
+                            }
+                        )
+                    raise OpenRouterResponseError(persistence_failure, metadata) from error
                 self._append_log(
                     {
                         "schema_version": 1,
@@ -336,7 +450,7 @@ class OpenRouterClient:
                         "provider_route": self.settings.provider,
                         "prompt_sha256": prompt_sha256,
                         "attempt": attempt,
-                        "http_status": None,
+                        "http_status": received_http_status,
                         "seconds": round(time.monotonic() - started, 3),
                         "error_type": type(error).__name__,
                         "retry_delay_seconds": retry_delay,

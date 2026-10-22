@@ -1,0 +1,218 @@
+{
+  "schema_version": "2.0",
+  "legacy_only": true,
+  "entries": [
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B0__manifest.json",
+      "sha256": "82f335bccfb70d946017e6b2bb1cd064578632a4d4aefc4993a7528a922db6db",
+      "bytes": 5006
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B0__metrics_artifact_compatible.json",
+      "sha256": "3bb0f534beb3960fbc9799c0d207751efcf726e513b7ba6733fc3755da796ad7",
+      "bytes": 576
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B0__metrics_dataset_canonical.json",
+      "sha256": "f011ad41164f94a8e28e320231c45f540de60836d30381f09c8a94f8097d2a7e",
+      "bytes": 515
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B0__metrics_project.jsonl",
+      "sha256": "01a51465ba9e421888235084139d818b0090a0aed01c1d5f2e55ef8f6dcabe56",
+      "bytes": 35179
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B0__project_status.jsonl",
+      "sha256": "11a5bbc3c96000374f3b12157fa25a7c658b4c71f2e79d6035f05db215a0b6d8",
+      "bytes": 35043
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B0__reproduction_variance.md",
+      "sha256": "68a78dfadfb554f235e47fc81abb706bab209446cb2870ac8395a74c2585e192",
+      "bytes": 1228
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B0__status_summary.json",
+      "sha256": "dd54a9bcdd36a170c29e506e5d5eb34466c9520d54eff9a8c9627ff367cb41a8",
+      "bytes": 131
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B1__manifest.json",
+      "sha256": "b560f20275f021675161f955f9d083e3de5a219136174259edb25558773ab189",
+      "bytes": 5002
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B1__metrics_artifact_compatible.json",
+      "sha256": "afead70692d767230e8127de96966cf16135b1ac821a4092a55f851a1cf4e0c0",
+      "bytes": 570
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B1__metrics_dataset_canonical.json",
+      "sha256": "5e6a3ab25e8e091cc29d606dee7d2ebd5a8a90e9b6e7eed4ea42144e343b31b5",
+      "bytes": 513
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B1__metrics_project.jsonl",
+      "sha256": "b6a61269a82927c6b2340b3e23283be289a42322022c072ef27fd46b98bff3fe",
+      "bytes": 33988
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B1__project_status.jsonl",
+      "sha256": "d94045b6f185b3910ce8af55de79e3ba1f583a4262d3cda19cab8f0f0504d5d0",
+      "bytes": 34276
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B1__reproduction_variance.md",
+      "sha256": "857c669fad430966c4aa17a0c42f28211e24f8863dacc14e2f2406131ab5b1e6",
+      "bytes": 1228
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B1__status_summary.json",
+      "sha256": "dd54a9bcdd36a170c29e506e5d5eb34466c9520d54eff9a8c9627ff367cb41a8",
+      "bytes": 131
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B2__manifest.json",
+      "sha256": "80de737e327ec6eda66e5f077e3a72d6b579dedc62f22cdf726743ef6c1b1710",
+      "bytes": 5574
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B2__metrics_artifact_compatible.json",
+      "sha256": "60af872e39a028b8f01249a38339611599a5a65421b3a12c7d02d7ca49b38f51",
+      "bytes": 573
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B2__metrics_dataset_canonical.json",
+      "sha256": "4cf9e07bee7fe113e8f7e08a28a642164733ae22b6588585b211f6d6f75c7268",
+      "bytes": 511
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B2__metrics_project.jsonl",
+      "sha256": "c5d312fc7fee49f4fffdc0a596e0ce1e35977a80c7510ed72d990765fa9fe309",
+      "bytes": 35013
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B2__project_status.jsonl",
+      "sha256": "af377fd9f29baabb95eb1681b3d56c866d116c405d843ff697b4ddac04a06c6f",
+      "bytes": 45407
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B2__reproduction_variance.md",
+      "sha256": "1baced28803728a4406e04d419d147eeafd26bcac4c931222a36e9b656fb7811",
+      "bytes": 1228
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__B2__status_summary.json",
+      "sha256": "88419534c3d6af7b7e14bfcc905332e6458419df91a36b063e7997c774e4acbc",
+      "bytes": 156
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__README.md",
+      "sha256": "073ae982fa3735d4bd4618bc1909aae7561a96a0cc5ab30a53fe1753914e77c2",
+      "bytes": 3205
+    },
+    {
+      "path": "results/reproduction/phase4_gptoss20b_full_001__table_reproduction.csv",
+      "sha256": "8b38add426e570f53632bd7566078f4619ca60ba0c87ae3dcd8584b6e97cd1dc",
+      "bytes": 1343
+    },
+    {
+      "path": "results/reproduction/codeql_zero_hint/phase4_b0_isolation_validation/project_status.jsonl",
+      "sha256": "6f47a59236cdf780e8b1e43ede561d9fe49403b386a2c06c2d58bc40ace72ef1",
+      "bytes": 23203,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_zero_hint/phase4_dry_validation/project_status.jsonl",
+      "sha256": "3737d8b408990baab7fa6c933a9bad861a527966fac5f4e94739861b64887448",
+      "bytes": 23062,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_zero_hint/phase4_full_001/project_status.jsonl",
+      "sha256": "fc3cc9d931df150990609f416462f5b830e8f57d23c68f05a1572af458f9d49a",
+      "bytes": 34012,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_zero_hint/phase4_gptoss20b_full_001/project_status.jsonl",
+      "sha256": "11a5bbc3c96000374f3b12157fa25a7c658b4c71f2e79d6035f05db215a0b6d8",
+      "bytes": 35043,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_zero_hint/phase4_gptoss20b_pilot_001/project_status.jsonl",
+      "sha256": "f758aa963858150b4583458ea4d11a89357b910001fb4cf09d5165d41b0d1355",
+      "bytes": 23199,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_zero_hint/phase4_gptoss20b_pilot_002/project_status.jsonl",
+      "sha256": "bf4299feb3d9bb9da9083d760d0d7846d15b86c45920e69dfcf4bc6ada06e271",
+      "bytes": 23199,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_zero_hint/phase4_pilot_validation/project_status.jsonl",
+      "sha256": "77f24871dd67a3338309e330e678d84644e714233ba96afcec08338355d659f2",
+      "bytes": 23196,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_v1/phase4_dry_validation/project_status.jsonl",
+      "sha256": "3f931d4eeef3555ac3faba5e276a7fd95eda8c9eaea2e340f66b99af2db5776d",
+      "bytes": 23062,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_v1/phase4_full_001/project_status.jsonl",
+      "sha256": "ebad6dc383c43cc332b9e3ff3bef97650bd2c920eb23488a938f8d564ec3efce",
+      "bytes": 33235,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_v1/phase4_gptoss20b_full_001/project_status.jsonl",
+      "sha256": "d94045b6f185b3910ce8af55de79e3ba1f583a4262d3cda19cab8f0f0504d5d0",
+      "bytes": 34276,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_v1/phase4_gptoss20b_pilot_001/project_status.jsonl",
+      "sha256": "bd1ee07a1b486fd9820519aa75ed9590fb2e104a6b0d5cdeed6f80c94fc5ce80",
+      "bytes": 23191,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_v1/phase4_gptoss20b_pilot_002/project_status.jsonl",
+      "sha256": "667c1a98309c88f963c0e6140a77f816d9a6050311de6cc397b7a1169fffa106",
+      "bytes": 23191,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/codeql_v1/phase4_pilot_validation/project_status.jsonl",
+      "sha256": "e2aa9af2ab3eab2ec8071baf798e9d47c52c7e449f4885ba9ed8a41eca0cb763",
+      "bytes": 23188,
+      "disposition": "generated raw output removed by user request"
+    },
+    {
+      "path": "results/reproduction/iris_gptoss20b/phase4_gptoss20b_full_001/project_status.jsonl",
+      "sha256": "a4ebce87d1d769fdab525be67417a795f50c7f12ee6ad57a461269c4bcf96892",
+      "bytes": 45544,
+      "disposition": "generated raw output removed by user request"
+    }
+  ],
+  "canonical_B2": {
+    "total": 120,
+    "SUCCESS": 99,
+    "ANALYSIS_FAILED": 5,
+    "BUILD_FAILED": 11,
+    "CODEQL_DB_FAILED": 5,
+    "detected": 36
+  },
+  "artifact_B2": {
+    "rows": 121,
+    "detected": 37
+  },
+  "raw_disposal": "Explicit user cleanup request overrides plan preservation of large raw outputs. Compact tracked exports retained; missing raw evidence cannot be reimported as new findings."
+}

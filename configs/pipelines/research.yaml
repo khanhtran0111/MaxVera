@@ -1,0 +1,15 @@
+extends: ../runtime.yaml
+pipeline: research
+dataset:
+  config: configs/datasets/cwe_bench_extended.yaml
+  analysis_manifest: data/processed/analysis_input/D_extended_projects.csv
+  expected_cases: 120
+  split: data/processed/splits/development.csv
+  track: development_seen_benchmark
+research:
+  default_variant: graph_only
+  graph_signal_approved: false
+  max_nodes: 200000
+  max_edges: 1000000
+variants:
+  config: configs/experiments/variants.yaml

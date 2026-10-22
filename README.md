@@ -1,297 +1,77 @@
 # MaxVera
 
-Project state and phase handoff memory:
-[`PROJECT_MEMORY.md`](PROJECT_MEMORY.md).
+Pipeline-first Java vulnerability research with two separate tracks:
 
-Current development work is the pipeline v2 restart from Phase 6. The completed
-development-only Phase 6–10 audit and implementation gates are in
-[`docs/19_PIPELINE_V2_RESTART.md`](docs/19_PIPELINE_V2_RESTART.md).
-`p13_test_analysis_001` is corrective/incomplete and future reruns on its test
-split are diagnostic only. The locks described below remain historical.
-The development v2 runner and verifier v3 are implemented in `src/pipeline_v2`,
-with a separate [execution config](configs/experiments/pipeline_v2_execution.yaml).
-Full development outputs and the final pipeline lock must complete before a new holdout is opened.
+1. **reproduce**: pinned IRIS v1 with oracle CWE and GPT-OSS-20B through OpenRouter, plus an independent CodeQL reference.
+2. **research**: zero-hint static/graph candidate discovery with opaque inputs and an OS filesystem firewall.
+3. **evaluate / compare**: independent evaluation of immutable raw output; labels stay outside research.
 
-B9 v2 now has a separate development end-to-end controller using pinned recovery003
-inputs, synthesis, fixed preparation, verifier v3, conditional routing and validation:
+**Current acceptance status:** reproduction adapter and graph-only core are implemented with explicit validation gaps. Research LLM/verification variants are gated on a measured graph-only dev signal. Full reproduction `repro_fast_20261021T142440Z` is running with the measured fast profile (fixed Groq route, no artificial completion delay) after 393 tests and live API checks; no successful full result is claimed. Read [implementation status](docs/IMPLEMENTATION_STATUS.md) and the [execution record](docs/reproduction_full_2026-10-21.md).
+
+## Safe checks — actually executed during this refactor
+
+From this workspace, using its existing Python 3.10 environment:
 
 ```bash
-bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --mode full \
-  --run-id b9_e2e_dev_full_v2_005 --dry-run
-bash scripts/tools/run_b9_v2_tmux.sh --mode pilot \
-  --run-id b9_e2e_dev_pilot_v2_005 \
-  --inherit-run results/specifications/v2/b9/b9_e2e_dev_pilot_v2_004_synth \
-  --confirm-api-spend
+.venv/bin/python -m maxvera doctor --config configs/runtime.yaml
+.venv/bin/python -m maxvera pipeline reproduce --config configs/pipelines/reproduce.yaml --mode full --run-id repro_dry_001 --dry-run
+.venv/bin/python -m maxvera pipeline research --config configs/pipelines/research.yaml --variant graph_only --mode full --run-id graph_dry_001 --dry-run
+.venv/bin/python -m pytest -q
 ```
 
-Pilot `b9_e2e_dev_pilot_v2_005` passes the independent end-to-end validator:
-10 specifications, 23 verification queries, 10 `UNVERIFIED_PERSISTS_FIXED` and
-10 `ABSTAIN`; no new LLM attempts (responses inherited from pilot004).
-Full96 development has not run; calibration and ACCEPT remain disabled.
+Doctor checks local binaries/key presence and makes no network request; it does not claim the provider route is live. Dry-run prints the DAG, resolved redacted config, case count and configured request/cost ceilings without creating a run. Default `dry_run_default: true` requires `--execute` to enable real work.
 
-Full mode requires a clean committed snapshot and runs an end-to-end pilot gate
-before full synthesis. Add `--resume` after a checkpointed failure; validate a
-completed controller with `scripts/tools/validate_b9_v2.sh --run-root PATH`.
-Without `--pipeline-v2`, B9 retains historical synthesis-only behavior. See
-[D-041](docs/07_DECISION_LOG.md) and the [v2 runbook](docs/19_PIPELINE_V2_RESTART.md).
+## Prepare and run — operational examples, not executed benchmark results
 
-For the requested comparison on all **120 cases** (96 development + 24 diagnostic),
-use the registered [benchmark config](configs/experiments/b9_benchmark_120.yaml):
+The commands below are **not end-to-end benchmark validated in this migration**. Metadata preparation reuses the existing pinned dataset implementation. `--sources` downloads sources and can consume substantial disk space; preparation is trusted and may read labels.
 
 ```bash
-bash scripts/10_run_b9_full_useg.sh --pipeline-v2 --benchmark-120 \
-  --run-id b9_benchmark_120_v2_002 --dry-run
-bash scripts/tools/run_b9_benchmark_120_tmux.sh \
-  --run-id b9_benchmark_120_v2_002 --confirm-api-spend
+# Metadata only, or add --sources explicitly to fetch/materialize source snapshots.
+python -m maxvera dataset prepare --config configs/datasets/cwe_bench_java_v1.yaml
+python -m maxvera dataset prepare --config configs/datasets/cwe_bench_extended.yaml --sources
+
+# Reproduction: begin with 1–2 cases; hosted-model calls require existing .env credentials.
+python -m maxvera pipeline reproduce --config configs/pipelines/reproduce.yaml --mode smoke --limit 2 --run-id repro_smoke_001 --execute
+python -m maxvera pipeline reproduce --config configs/pipelines/reproduce.yaml --mode full --run-id repro_gptoss20b_001 --execute
+python -m maxvera pipeline reproduce --config configs/pipelines/reproduce.yaml --mode full --run-id repro_gptoss20b_001 --resume --execute
+
+# Research: the default is the existing frozen 96-project development split.
+python -m maxvera pipeline research --config configs/pipelines/research.yaml --variant graph_only --mode smoke --limit 2 --run-id graph_smoke_001 --execute
+python -m maxvera pipeline research --config configs/pipelines/research.yaml --variant static_only --mode full --run-id zh_static_001 --execute
+python -m maxvera pipeline research --config configs/pipelines/research.yaml --variant graph_only --mode full --run-id zh_graph_001 --execute
 ```
 
-Calibration fits development only. The evaluator reports paper-formula patched-method
-path metrics for all120/development96/test24, with explicit failed-case denominators.
-These are the same CVEs as the reproduction release; some source revisions, the model,
-toolchain and hint condition differ. This is a diagnostic comparison with published
-IRIS results, not a new confirmatory holdout result. See D-042 in the decision log.
-
-The requested 90-second recovery uses
-[`b9_benchmark_120_90s.yaml`](configs/experiments/b9_benchmark_120_90s.yaml)
-and run `b9_benchmark_120_v2_003`. It restores the frozen partial002 checkpoint
-(247 specifications, all API reservations, responses and terminal states), reuses
-completed upstream/pilot stages, and resumes full synthesis. Request starts, including
-HTTP retries, are spaced at least90seconds; controller cooldown starts at90seconds.
-Model/provider/token budgets and the120-case cohort remain pinned. D-043 records lineage.
-
-MaxVera is a reproducible research scaffold for graph-grounded, zero-hint,
-repository-level vulnerability discovery in Java. The analysis pipeline uses
-CodeQL for static verification and `openai/gpt-oss-20b` through a pinned
-OpenRouter provider route for bounded, evidence-grounded reasoning.
-
-Phase 0 (protocol), Phase 1 (environment/provenance), Phase 2 (data/build),
-Phase 3 (disposable smoke harness), the Phase 4 reproduction runner, and the
-immediately runnable Phase 5 context baselines B3-B5 are implemented.
-The Phase 6 development-only hypothesis generator is locked at static
-family-balanced v2 with Top-k=10; optional GPT-OSS reranking is exploratory; see
-[`docs/11_PHASE6_RUNBOOK.md`](docs/11_PHASE6_RUNBOOK.md).
-The Phase 7 CodeQL program graph is locked at canonical development run
-`p7_pg_dev_full_004` with 81/96 successful graphs and 15 recorded
-intention-to-analyze misses; its extractor, integrity validator, and
-neighborhood/slice query CLI are documented in
-[`docs/12_PHASE7_RUNBOOK.md`](docs/12_PHASE7_RUNBOOK.md).
-Phase 8 implements a global, versioned Security Knowledge Graph from pinned
-MITRE CWE 4.20, OWASP Top 10:2021 and CodeQL Java API semantics. It separates
-deterministic and inferred facts, requires per-fact provenance/confidence, runs
-offline with zero LLM calls, and is documented in
-[`docs/13_PHASE8_RUNBOOK.md`](docs/13_PHASE8_RUNBOOK.md).
-Canonical development run `p8_skg_global_full_002`, built from clean commit
-`50ed53e`, contains 2,619 nodes and 5,285 edges (7,904 deterministic facts).
-Its graph digest matches the final pilot and dirty-tree diagnostic full 001;
-source, dependency, provenance, checksum and per-CWE audit gates all pass.
-Phase 9 implements the iteration-0 Evidence Graph/USEG that joins locked Phase 6
-hypotheses, Phase 7 source-backed Program nodes, and Phase 8 Security facts while
-keeping confidence components and provenance separate. Run
-`p9_useg_dev_full_003`, built from clean commit `2395d21`, is the locked
-canonical development run. It covers all 96 statuses (81 graphs and 15
-inherited misses), with 7,527 nodes, 16,398 edges, 823/823 candidate taint paths
-traceable across Program and Security layers, zero cycles, and lossless JSONL
-round-trip. See [`docs/14_PHASE9_RUNBOOK.md`](docs/14_PHASE9_RUNBOOK.md).
-Phase 10 implements and locks B6/B7/B8 graph retrieval and the synthesis-only
-portion of B9. The canonical full development runs are
-`p10_b6_dev_full_001` through `p10_b9_dev_full_001`; B9 emits 801/806 grounded
-specifications for the 81 usable Phase 9 projects and all 801 final templates
-compile. The separate evaluator-only annotated gate
-`p10_dev_spec_eval_003` reports paper-compatible fix-location proxy metrics on
-91 development projects without modifying the immutable synthesis artifacts.
-These metrics are not static verification. Outputs remain
-`SYNTHESIZED_UNVERIFIED`; see
-[`docs/15_PHASE10_RUNBOOK.md`](docs/15_PHASE10_RUNBOOK.md).
-Phase 11 is implemented as deterministic CodeQL global-taint verification. It
-records endpoint resolution, SARIF taint paths, explicit negative evidence and
-an acyclic USEG iteration-1 delta. Vulnerable-only results remain unverified;
-only vulnerable-path/fixed-no-path differential results may be verified. The
-locked development run `p11_diff_dev_full_002` covers all 96 projects, retains
-18 inherited analysis misses, and produces 28 `VERIFIED_DIFFERENTIAL` plus 748
-explicit unverified specification states with zero LLM calls. See
-[`docs/16_PHASE11_RUNBOOK.md`](docs/16_PHASE11_RUNBOOK.md).
-The frozen 120-row release has 120 final build statuses and 104 successful
-CodeQL databases. Phase 4 provides B0-B2 results. Phase 5 enables B3 raw
-context, B4 text-RAG, and B5 static hypotheses. B6-B8 and B9 synthesis are
-locked for development; Phase 11 differential findings are locked as Phase 12
-input, while final routed decisions remain fail-closed until calibration is
-locked.
-Phase 12 implements development-only grouped calibration over differential
-findings, compares Platt/isotonic/logistic models, reports ECE/Brier/AURC and
-materializes `ACCEPT`/`VERIFY`/`ABSTAIN` without treating abstention as a
-negative. Canonical run `p12_calibration_dev_full_001` locks Platt calibration
-and fail-closed thresholds for Phase 13: zero `ACCEPT`, 25 `VERIFY`, and 3
-`ABSTAIN`. See [`docs/17_PHASE12_RUNBOOK.md`](docs/17_PHASE12_RUNBOOK.md).
-Phase 13 now has a frozen A0-A5/Full matrix and a resumable, role-separated
-locked-test analyzer pass for B0 and B3-B9. Its preflight verifies all 24 opaque
-test projects plus the exact Phase 12 model/threshold locks before any long
-job. The evaluator pass (B1/B2, differential verification, frozen calibration,
-statistics and five-seed robustness) intentionally remains closed until the
-analyzer snapshot is immutable. See
-[`docs/18_PHASE13_RUNBOOK.md`](docs/18_PHASE13_RUNBOOK.md).
-Every entrypoint fails closed if any smoke artifact remains.
-
-## Bootstrap
-
-Prerequisites for the Phase 1 profile are Git, Bash, `curl`, and enough disk
-and memory for the research workload. The setup script installs the pinned
-Python environment and creates a local, ignored `.env` when needed.
+A new run ID cannot overwrite an existing run. Full mode rejects `--limit` and accounts for every selected case. `--resume` requires matching source/code/tool/config/schema fingerprints and verified checkpoints. Paid stages interrupted at an uncertain remote-call boundary stop for journal inspection instead of repeating charges automatically.
 
 ```bash
-bash scripts/tools/setup_environment.sh
-bash scripts/tools/preflight.sh --profile phase1
+# These CLI handlers are tested on temporary frozen fixture runs; real run IDs must exist.
+python -m maxvera status --run-id repro_gptoss20b_001
+python -m maxvera evaluate --run-id repro_gptoss20b_001 --protocol iris_paper
+python -m maxvera evaluate --run-id zh_graph_001 --protocol zero_hint
+python -m maxvera compare --runs zh_static_001,zh_graph_001 --output results/aggregate/graph_discovery_comparison
 ```
 
-Checks are run manually on the research workstation. This repository has no
-GitHub Actions workflows or automatic build/deployment pipeline.
+`text_only`, `graph_llm` and `graph_llm_verify` are reserved variants in the shared catalogue. They currently return an explicit `NOT_IMPLEMENTED` error. Follow the plan's graph-only dev gate before implementing them at scale.
 
-Run the local checks:
+## Data and output
+
+Research receives only opaque `data/processed/analysis_input` snapshots and generic build/runtime metadata. A Linux Landlock ABI >=3 worker denies reads and writes of `.env`, raw metadata, canonical manifests, reproduction output and `evaluator_only`, including symlink access. Only the current run/private caches are writable; build copies preserve the shared source snapshots. Unsupported kernels fail closed. Keep original sources free of oracle hints before publishing zero-hint claims.
+
+Full runs live at `results/reproduction/<run_id>` or `results/research/<run_id>`. Smoke uses `results/_smoke/<pipeline>/<run_id>` and never populates full-run caches. Runs retain manifests, per-case/stage statuses, private model journals, findings, usage and checksums. Evaluator output lives separately at `results/evaluations/<run_id>/<protocol>`.
+
+Graph paths are candidate evidence, not verified exploits. Location-only matches are weak; unreviewed findings are unknown, not automatic false positives. Oracle reproduction and zero-hint methods belong in separate comparison panels.
+
+## Development and migration
 
 ```bash
-uv run --frozen pytest
-uv run --frozen ruff check .
-uv run --frozen mypy src
-bash scripts/tools/preflight.sh --profile local
+# Explicit opt-in: tiny local Java/CodeQL extractor fixture, no benchmark or model calls.
+MAXVERA_RUN_CODEQL_FIXTURE=1 .venv/bin/python -m pytest -q tests/integration/test_pipeline_codeql_fixture.py
 ```
 
-Materialize and validate Phase 2:
+The default test suite requires no external model calls. The opt-in fixture additionally requires the retained local CodeQL 2.26.2 and Java 17 toolchains. See [validation report](docs/validation_report.md).
 
-```bash
-make phase2-data
-make phase2-build       # requires pinned JDK 7u80, 8u202, 17 and CodeQL
-make phase2-validate
-```
+[Migration inventory](docs/migration_inventory.md) records the pre-edit SHA and destination of every old source/config/script/test. Existing `src` implementations are reused internally; phase/baseline shell entrypoints are deprecated compatibility commands. Historical phase runbooks have been removed from the current docs; their backups remain in the local documentation-cleanup log.
 
-`phase2-validate` intentionally fails while any project remains `PENDING` or a
-successful build lacks its CodeQL database. See `docs/02_DATA_CARD.md` for the
-split, checksums, leakage boundary, and pinned-extended snapshot caveat.
+The user's cleanup request reclaimed **81.39 GiB** of old generated data. Compact tracked Phase 4 exports remain unchanged; historical raw outputs were removed and cannot be reconstructed from aggregate CSVs. See [cleanup record](docs/storage_cleanup.json) and [legacy evidence index](docs/legacy_reproduction_index.json).
 
-The Phase 3 smoke profile checks the disposable technical harness:
-
-```bash
-bash scripts/tools/preflight.sh --profile full
-```
-
-It reports missing variable **names**, never their values. Put machine-specific
-paths or secrets only in `.env`; reproducible non-secret settings belong under
-`configs/`.
-
-Install the pinned Phase 3 dependencies and run the pass/failure cleanup gate:
-
-```bash
-make setup-phase3
-make phase3-smoke
-```
-
-The smoke command exercises a disposable endpoint contract, strict candidate JSON,
-four Java CodeQL databases, SARIF parsing, and the separate evaluator. It then
-injects a failure after analysis. Both paths must end with zero files under the
-smoke output allowlist; no smoke finding is retained or reusable.
-
-Prepare Phase 4 and run a one-project pilot:
-
-```bash
-bash scripts/tools/preflight.sh --profile phase4
-bash scripts/tools/validate_openrouter.sh \
-  --model-config configs/models/gpt_oss_20b_openrouter_groq.yaml
-make setup-phase4
-make phase4-pilot
-```
-
-Set `OPENROUTER_API_KEY` by editing `.env` directly; do not paste the real key
-into shell history. A historical Phase 4 rerun also requires temporarily setting
-`MAXVERA_OPENROUTER_PROVIDER=groq`; Phase 5 uses `akashml`. The Phase 4 runner reuses the 104
-Phase 2 databases, calls GPT-OSS 20B through OpenRouter, and records both the
-CodeQL and hosted-model substitutions explicitly. See
-`docs/05_REPRODUCTION_REPORT.md` for its outputs and validation gate.
-
-## Phase 4 reproduction baselines
-
-Phase 4 compares three conditions on the same frozen 120-project release. The
-104 projects with a successful Phase 2 CodeQL database are selected for
-analysis; the remaining build/database failures stay in the 120-row metrics as
-misses.
-
-| Baseline | Condition | CWE ground truth available to analyzer | LLM |
-|---|---|---:|---:|
-| **B0** | CodeQL zero-hint reference | No | No |
-| **B1** | CodeQL CWE-oracle reference | Yes | No |
-| **B2** | IRIS pipeline reproduction with GPT-OSS 20B via OpenRouter | Yes | Yes |
-
-- **B0** runs the zero-hint CodeQL reference without providing CVE/CWE labels.
-- **B1** receives the known CWE for query selection, so it is an oracle
-  reference rather than a zero-hint condition.
-- **B2** reproduces the IRIS stages with the known CWE and replaces the paper's
-  model with pinned `openai/gpt-oss-20b`/OpenRouter inference. It is a
-  method-reproduction condition, not an exact-model or zero-hint baseline.
-
-Run `phase4_gptoss20b_full_001` produced canonical metrics for all 120 statuses:
-B0 completed 104 analyses and detected 36 projects; B1 completed 104 and
-detected 21; B2 completed 99, recorded 5 analysis failures, and detected 36.
-Failures remain explicit misses. The B2 strict all-selected-success gate is
-therefore not passed, even though the independently recomputed metrics and
-checksums are complete.
-
-The curated export is indexed at
-[`results/reproduction/phase4_gptoss20b_full_001__README.md`](results/reproduction/phase4_gptoss20b_full_001__README.md),
-with the cross-baseline table at
-[`results/reproduction/phase4_gptoss20b_full_001__table_reproduction.csv`](results/reproduction/phase4_gptoss20b_full_001__table_reproduction.csv).
-
-## Phase 5 controlled context baselines
-
-B3-B5 use the frozen `D_repro_v1` analysis view so they can be evaluated beside
-the completed Phase 4 release without rebuilding or exposing evaluator labels.
-B3 and B4 share the same prompt, GPT-OSS 20B route, schema and protocol caps;
-the OpenRouter provider is pinned to `akashml`, and only context selection
-differs. B5 is deterministic and does not call an API. The completed Phase 4
-artifact remains the historical protocol 1.1.1/Groq snapshot and is not
-provider-controlled against the new Phase 5 runs.
-
-No Phase 5 baseline execution contacts OpenRouter unless
-`--confirm-api-spend` is supplied. The optional connection validator makes one
-small billed request.
-Estimate the token/cost envelope offline and follow the pilot-to-full sequence:
-
-```bash
-bash scripts/tools/estimate_phase5_budget.sh
-bash scripts/04_run_b3_raw_context_gptoss20b.sh \
-  --mode pilot --limit 1 --dry-run --run-id p5_b3_dry_001
-```
-
-See [`docs/10_PHASE5_RUNBOOK.md`](docs/10_PHASE5_RUNBOOK.md) for the complete
-execution, evaluator and validation commands.
-
-## Frozen protocol
-
-Read these files before changing research code or configuration:
-
-- [`docs/00_RESEARCH_SCOPE.md`](docs/00_RESEARCH_SCOPE.md)
-- [`docs/01_EXPERIMENT_PROTOCOL.md`](docs/01_EXPERIMENT_PROTOCOL.md)
-- [`docs/07_DECISION_LOG.md`](docs/07_DECISION_LOG.md)
-
-Any change to research questions, datasets, splits, budgets, metrics, model,
-tool versions, or thresholds requires a decision-log entry and a new protocol
-version. `data/raw/` is immutable, test labels are evaluator-only, smoke output
-cannot be promoted, and full results are never overwritten.
-
-## Repository policy
-
-- `scripts/` contains exactly the ten numbered B0-B9 entrypoints.
-- Supporting automation lives only in `scripts/tools/`.
-- Generated data, models, databases, caches, secrets, and raw experiment
-  artifacts are ignored by Git. Only explicitly allowlisted compact result
-  exports are versioned.
-- Every future run must carry an immutable manifest, environment report,
-  project statuses, logs, and checksums.
-
-The source implementation plan is
-[`ke_hoach_trien_khai_zero_hint_repository_vulnerability_research.md`](ke_hoach_trien_khai_zero_hint_repository_vulnerability_research.md).
-
-The completed B9 full120 run and its development failure analysis are documented in
-the [B9 benchmark audit](docs/20_B9_BENCHMARK_FAILURE_AUDIT.md), including case-level
-evidence and a prioritized repair/pilot plan.
-
-The new benchmark default is the strict fresh diagnostic profile
-`configs/experiments/b9_benchmark_120_complete.yaml`. See
-[pipeline completeness and no-API validation](docs/21_B9_PIPELINE_COMPLETENESS.md)
-for input coverage blockers, completed repairs, and launch gates.
+Start with the [documentation index](docs/README.md). Protocol details: [reproduction](docs/reproduction_protocol.md), [research](docs/research_protocol.md), [evaluation](docs/evaluation_protocol.md). The [authoritative implementation plan](ke_hoach_trien_khai_zero_hint_repository_vulnerability_research.md) governs remaining acceptance gates.

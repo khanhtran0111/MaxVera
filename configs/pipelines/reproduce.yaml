@@ -1,0 +1,28 @@
+extends: ../runtime.yaml
+pipeline: reproduce
+runtime:
+  timeout_case_s: 86400
+budgets:
+  # IRIS uses 30 APIs per prompt: the DSpace smoke alone needs 112 prompts.
+  # Attempts include 429/JSON retries. Reservations conservatively use UTF-8
+  # bytes for input and the full output cap; these are not actual token usage.
+  max_calls_per_case: 1000
+  max_input_tokens_per_case: 8000000
+  max_output_tokens_per_case: 2048000
+  max_cost_usd_per_case: 1.0
+  timeout_case_s: 86400
+codeql:
+  per_query_timeout_s: 1800
+dataset:
+  config: configs/datasets/cwe_bench_java_v1.yaml
+  oracle_manifest: data/processed/manifests/cwe_bench_v1.csv
+  labels: data/processed/evaluator_only/D_repro_v1_labels.csv
+  fix_locations: data/processed/evaluator_only/D_repro_v1_fix_locations.jsonl
+  expected_cases: 120
+  track: repro_iris_v1
+reproduction:
+  iris_root: third_party/iris
+  raw_root: data/raw/cwe_bench_java_v1
+  toolchains: configs/toolchains/cwe_bench_java.yaml
+  iris_commit: 67140e84e6a01da2b44803a6208be2ea7bd4bd51
+  dataset_commit: 698fb7248ae30cb7f7782d59c841f05ad70ea9cc

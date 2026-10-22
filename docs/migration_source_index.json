@@ -1,0 +1,1724 @@
+[
+  {
+    "path": "configs/baselines/b0_codeql_zero_hint.yaml",
+    "sha256": "baf2e8d1be63842711bbdf3996b5298664b45f850c4f64728f6e71c07763ec2e",
+    "bytes": 247,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/b1_codeql_oracle_cwe.yaml",
+    "sha256": "ace4028d3c0829c96f5f64209eb810993f94f04acc25f618b1c72c69e149b2d1",
+    "bytes": 351,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/b2_iris_gptoss20b.yaml",
+    "sha256": "96db77542d94c75a21c9794308c538234ca072e2f7cc69e91664c6c90fa82fce",
+    "bytes": 542,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/b3_raw_context.yaml",
+    "sha256": "d5b1c762102f3cef6da7ed314d9d95efbea44faab0a223204d2dc7dbe62279d6",
+    "bytes": 547,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/b4_text_rag.yaml",
+    "sha256": "4b79facbb3492dbbfbe569590f0c947e41cfe795ae5b3fe9ca441e9f78c3ba0e",
+    "bytes": 553,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/b5_static_hypothesis.yaml",
+    "sha256": "8e95c266a23bf1b571fc5ab1a3baa12b3cea2d478cbc663e0209f4ef37a7e29c",
+    "bytes": 400,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/b6_program_graph_only.yaml",
+    "sha256": "ee40487127d952e1ad7fc74f86c534cae8cb0c64d5d38d98fe98ceba1c532b49",
+    "bytes": 403,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/b7_security_kg_only.yaml",
+    "sha256": "fa1ded6f05793cc971ff44f30ce13b67d02520892bb233a25d384406b8efdfb2",
+    "bytes": 412,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/b8_useg_no_pruning.yaml",
+    "sha256": "15c2c0a1dd1602100daa42535f4846292294530df7112db57716c581aa39f18f",
+    "bytes": 407,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/b9_full_useg.yaml",
+    "sha256": "3a71e11e25c1a3defd99951c00b44e0d40fa919389c05bb961bcd236521f5016",
+    "bytes": 527,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/baselines/matrix.yaml",
+    "sha256": "d314aa2d171d267978df98f23771c43c1a3718b4f8a65991e9ffcb49b589312d",
+    "bytes": 1856,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/datasets/cwe_bench_extended.yaml",
+    "sha256": "9dc4a26992de9a66ead25333251f1eee3df5b0d7d5fb3df2011d25b8673d19f8",
+    "bytes": 566,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/datasets/cwe_bench_v1.yaml",
+    "sha256": "84c9f2ac744b3691f6a6ff86e6a38105e922d1c22fd23d4aa1e7b5f5fa494a45",
+    "bytes": 517,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/ablation.yaml",
+    "sha256": "9b9dcce873df80ab9607816efd8b352744d0eed4a675650c49e5177a03112324",
+    "bytes": 1009,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/b9_benchmark_120.yaml",
+    "sha256": "1aee2b873e31909816c959fd5fa82ac59df4aee57f496f9329b1d568bed40b26",
+    "bytes": 6513,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/b9_benchmark_120_90s.yaml",
+    "sha256": "7b4f4f00d775b4c12960510ba7b480deca2f6683d1863c48eda611f8d6e3ce66",
+    "bytes": 6960,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/b9_benchmark_120_complete.yaml",
+    "sha256": "5542e129052ebf1e88314667aaaa445615cbafc8009ff7a121b30db92b9dae0a",
+    "bytes": 7193,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/b9_pipeline_v2.yaml",
+    "sha256": "c4afa4609d464fbc445d918ece59e454d68a9155614135691e0ea39752cce1fa",
+    "bytes": 3969,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/generalization.yaml",
+    "sha256": "c7adb240069ec9d8627578143d096c06799d60a38e0255fd1cc702e7b63b16b6",
+    "bytes": 174,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/main.yaml",
+    "sha256": "473dc5b15906667deb9c368eac58d8b569698ec9e530b53e5c75fa58052fd175",
+    "bytes": 11357,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase10_retrieval_specification.yaml",
+    "sha256": "710825e7c8b1411ad02429d407caba92da2fc19a135d2a73578ea049a455e022",
+    "bytes": 3154,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase10_spec_evaluation.yaml",
+    "sha256": "fc24b679e99dd0fe882b0a652a0a3240dbe612b3361055db955bf9c19e43b292",
+    "bytes": 2033,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase11_static_verification.yaml",
+    "sha256": "5a1ff345633d4bebbdd2670c00d4feee11f2934aaba7c571d456cce76cb6c477",
+    "bytes": 3381,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase12_calibration.yaml",
+    "sha256": "9e7261f76c4cb773028181642d15f6f3e2a77b9e38218ea86a08776d9b10611c",
+    "bytes": 3497,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase13.yaml",
+    "sha256": "19aca3966b6bb65f3e5b442bf43810863183480211339a9e1a24b0719abeb309",
+    "bytes": 1769,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase5_baselines.yaml",
+    "sha256": "eb7e8d8c77368b05e2441265678aedf1ddc957bfa50b30624c9a87187b335ffd",
+    "bytes": 1200,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase6_hypotheses.yaml",
+    "sha256": "9d4d91b85e46fcc42f1eecd94ba73818af5e829c6e9e199e369b8dde5b6e359c",
+    "bytes": 1785,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase7_program_graph.yaml",
+    "sha256": "8d731ef8134e25fb1c85d228093a583a52bd89896dce6212b1034644796bffeb",
+    "bytes": 2491,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase8_security_kg.yaml",
+    "sha256": "045b3bc3b9a22c5807585ca7a2d0efa5c6aa7a209afdea1c0f80faae87e474d8",
+    "bytes": 3404,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/phase9_useg.yaml",
+    "sha256": "15d748a92f2682f794ed7cf7c34c5f3739f187dce91871be5f48c2395c3fec37",
+    "bytes": 3664,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/pilot.yaml",
+    "sha256": "abf660772584bbdd0e8968a1a03b5f4c3fbbe5f6c47e801a3d8af6b3d93a592b",
+    "bytes": 155,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/pipeline_v2.yaml",
+    "sha256": "bb39346c8e82946dd80316cf9838fda798280268e2c784d4400e7e8afe6ae638",
+    "bytes": 4683,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/pipeline_v2_execution.yaml",
+    "sha256": "eaa22e0942b8109df285a64ef96438ee866e5e30483486a2d61f3e02604cf79f",
+    "bytes": 2420,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/pipeline_v2_recovery.yaml",
+    "sha256": "290afc4ef61ae590b4dea0bcd54a7ec20e6a9a47fe8a5f77a5988ef793e1bc30",
+    "bytes": 3110,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/pipeline_v2_recovery_003.yaml",
+    "sha256": "19717da96518d6c7fc0e0d873682f5643d8f9061d0abcfee703ddeb683f3e127",
+    "bytes": 3110,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/experiments/smoke.yaml",
+    "sha256": "99b1fcdb7a61897760455d62192c51dc7aacb24200e1c723a2c3b99717ce557a",
+    "bytes": 395,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/knowledge/phase8_sources.yaml",
+    "sha256": "81d07e09a5af2ee8d12cf438e862206f3f5a2b5d8bc4e5cc8e45ce150370895f",
+    "bytes": 2617,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/models/gpt_oss_20b_openrouter.yaml",
+    "sha256": "766ccb7555b3dddcc04c209047adf2bde29abcfbe02e6323a99feab997b06981",
+    "bytes": 733,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/models/gpt_oss_20b_openrouter_groq.yaml",
+    "sha256": "21bd077937fe551b6c854bcb42bb016c93da12e66178047c9073ecd3650db2bb",
+    "bytes": 660,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/models/hardware_i7_8750h_p2000.yaml",
+    "sha256": "417537aad91ea111424ffdbcd27a7ce6078209891d6cd51a9babaeff6330bc9c",
+    "bytes": 400,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/models/qwen25_coder_3b_q4km.yaml",
+    "sha256": "20b96553bb156e4352e7a43fb7d73d3e54d6a3cb829ff0f21c4a5b0f097105a5",
+    "bytes": 750,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/toolchains/cwe_bench_java.yaml",
+    "sha256": "5f5c09b54d5ef39ea43a4b5a256b00a0fba74c17993f3c2dd759dca0485bbbd3",
+    "bytes": 3282,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "configs/upstreams.yaml",
+    "sha256": "57d3d680f119e650b220738f6c040a972dee50274fef2546fa94935e9165883b",
+    "bytes": 3359,
+    "destination": "retained legacy config; add configs/pipelines/ and runtime.yaml"
+  },
+  {
+    "path": "scripts/01_run_b0_codeql_zero_hint.sh",
+    "sha256": "4f67f8937e5262c6ab9053564497d5eade3fb082a152106090a4a7acd510a212",
+    "bytes": 222,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/02_run_b1_codeql_oracle_cwe.sh",
+    "sha256": "6365195378a8860af83faaf74318f990f61ef522e2d06796195b5d7d494cfcc0",
+    "bytes": 223,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/03_run_b2_iris_gptoss20b.sh",
+    "sha256": "b1eae554bb49f3aaeda64c474c75b092bc7ac73bf62be8d69cc3f9abc9f450fe",
+    "bytes": 224,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/04_run_b3_raw_context_gptoss20b.sh",
+    "sha256": "e58ebcefc5dd88da0080f311312568145b7e093963f859197a91ae763db3495f",
+    "bytes": 221,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/05_run_b4_text_rag_gptoss20b.sh",
+    "sha256": "2f1dbb30e74f21a4b08d8c53e61e9228448e6267591de2be193b3191a8064774",
+    "bytes": 218,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/06_run_b5_static_hypothesis.sh",
+    "sha256": "46c2e296b578c743bb5fc9dac66ef5102db2f3a99c826512bdbb657aa54f738f",
+    "bytes": 223,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/07_run_b6_program_graph_only.sh",
+    "sha256": "a75898c3afa13f5227e755bc420e639344b8d00c49b3d41ba9eb8f8b2000e897",
+    "bytes": 224,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/08_run_b7_security_kg_only.sh",
+    "sha256": "3d6bece280d60afe3650a4ea64e7f26c71500b0888f9dc1ce96f8a8eaa4d5562",
+    "bytes": 222,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/09_run_b8_useg_no_pruning.sh",
+    "sha256": "33ede9e63d67ea6a96f4d73753b70da1f6c9df7fedc9f5e26cb31ab9fa0be1c7",
+    "bytes": 221,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/10_run_b9_full_useg.sh",
+    "sha256": "7e641813165c3db6fb819eb243281490f4e97602d3bac054e8c3ec6b7a38f696",
+    "bytes": 215,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/assert_no_smoke_artifacts.sh",
+    "sha256": "010f000d9b3e7adf661c4e74547266174e10a8f03dd1b2c1e44984ef34fa5ea2",
+    "bytes": 1729,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/audit_b9_input_gaps.py",
+    "sha256": "3df688f11af46236cf21bc45507b9667fa7c980b579a570c3aaecc4a4e3ca82c",
+    "bytes": 6669,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/build_codeql_databases.sh",
+    "sha256": "8ec884605647139a42e051394554abb19ba2658471b92656440dad0c82db3362",
+    "bytes": 345,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/build_phase7_databases.sh",
+    "sha256": "c6ae4c877dea25fd9c290f819556b1744df2e1a94e1a73b8f10fc7c8a641cff8",
+    "bytes": 212,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/build_phase9_useg.sh",
+    "sha256": "17949ecf14a49a3cfd4c56d4dbd25a451badd8e3a3e4d28503e3dfe09804aa1b",
+    "bytes": 178,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/build_security_kg.sh",
+    "sha256": "f8003492562c1abb7b9afda6b59a9894625149589ad6526424770b4ad7f399a6",
+    "bytes": 217,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/cleanup_smoke.sh",
+    "sha256": "05eac4bc13f90d4c80aaf899a0f7abc339ebb1e434d956959e8da8b79892d51f",
+    "bytes": 2098,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/create_data_manifests.sh",
+    "sha256": "d4bba50b0a899bf8deb5558b900b7fc065be3811d8be1364d5e2ff57033d1eac",
+    "bytes": 413,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/estimate_phase10_budget.sh",
+    "sha256": "f82c4f2f3b370f32ed534dfba426ddeade2101e3801045529d927a9a38ec176d",
+    "bytes": 180,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/estimate_phase5_budget.sh",
+    "sha256": "929e0cd562ccec6b63abab96af0a5ac92475f0881ee1207b863e4a3dc115880c",
+    "bytes": 209,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/estimate_phase6_budget.sh",
+    "sha256": "e4280986c1c7c00d12a0d47ef0947f8623b684024c1aeffae031b15a1b229952",
+    "bytes": 210,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/evaluate_phase10_specs.sh",
+    "sha256": "9fbe866f9fe941fde69307d131dbf629fd4b8b0d6441843b3d3bbfb936d9ec59",
+    "bytes": 375,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/evaluate_phase6.sh",
+    "sha256": "8c0740993416bf06ed1f9ebf9d0f12a8eb011d22f14e4a2c9f4e48b8be79d9c3",
+    "bytes": 365,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/evaluate_runs.sh",
+    "sha256": "f551ca587f99450cb458a32e5ae4976eb27c56be26738035f27e9457c417da3c",
+    "bytes": 356,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/fetch_cwe_bench_v1.sh",
+    "sha256": "4f1f96b96db0a3c9c84f62ed5552dda2893f87b5dbc8ab8d502859886d049477",
+    "bytes": 387,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/fetch_phase8_knowledge.sh",
+    "sha256": "28a5abb3c2a8c4782b1778043c7231c674d7da0873bee3ac2453a71c708a3571",
+    "bytes": 218,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/generate_baseline_leaderboard.sh",
+    "sha256": "3dfb3898b0b0be4d63c6b7ee6916cb8ec1c97b6516eee122b102feec18d48fdc",
+    "bytes": 190,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/preflight.sh",
+    "sha256": "59265862ea6e13bec28e3ca1f5c4d45fabe6c948cfb743627b0329a9e1ba085b",
+    "bytes": 623,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/preflight_phase13.sh",
+    "sha256": "cf623175fd634d5b64bb2e151489a4fd36d5bfa6ea92bfaae7f9d46297e047f9",
+    "bytes": 236,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/prepare_phase11_fixed_databases.sh",
+    "sha256": "dc99961b76d391d776ae1bef8f2b0e26e94c5a62c06f6f1a77e37148bad9a590",
+    "bytes": 186,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/prepare_phase6_sources.sh",
+    "sha256": "f6aaa133a75aad668ac9198aa2eacd4b607623f2e47f65fba9604cfc27e95ce8",
+    "bytes": 211,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/prepare_phase7_databases.sh",
+    "sha256": "0c4742f86e4efb78cf0ea58f4582dfcdddd79f0f9149f84f2a2f83c8535f2148",
+    "bytes": 204,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/prepare_projects.sh",
+    "sha256": "a8e29db5936bf2674965408dcc37fc950ca3f7011bd1d095ebe10a0828f2df79",
+    "bytes": 376,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/promote_b9_readiness_inputs.py",
+    "sha256": "0c9399475d7385e69012ed25690338dfa99f974981e15e147df4ec0b7848e3fe",
+    "bytes": 5872,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/query_phase7_graph.sh",
+    "sha256": "acee37c5effb53cb2d4fe4a14fef776a297a97d64ae9ef8ed13acc0a49ddd759",
+    "bytes": 178,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_analysis_isolated.sh",
+    "sha256": "91546c63f1d727746525d22ab3cd0c250dcbc57293ee99948aab69db4c469b2d",
+    "bytes": 1717,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_b9_benchmark_120_tmux.sh",
+    "sha256": "9862fdd961eee5584408f81d4e5a58a44b64095023d72f1a4a1b83026ade27cb",
+    "bytes": 1126,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_b9_readiness_120_tmux.sh",
+    "sha256": "936f8e9d20fce4924dba1906d7278636b6c5bac698ba75bd8d2ac371f08bc4bf",
+    "bytes": 4292,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_b9_v2_tmux.sh",
+    "sha256": "7d77f8357b33f3cb79d3976ff2b9694ff8a12328c9d5efab6a28d5737267a8e4",
+    "bytes": 1080,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_baseline_entrypoint.sh",
+    "sha256": "49db30eaaa03259638d9be1a300b9a8a20141c8be03e4c9cb5d816111aef9d5b",
+    "bytes": 469,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase10_suite.sh",
+    "sha256": "738c79e1e7692cf507f6d0ed7c80cf7eb0d2c05a1584995604424b93baf6e2e3",
+    "bytes": 327,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase11_full.sh",
+    "sha256": "fd0a1bd7542e267cfc9814ff8d2b1d413dbe5454f044b55d38b260e39cbc7b3d",
+    "bytes": 1305,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase11_verification.sh",
+    "sha256": "e336136ad0c5eab9523ed998c0fad99561d9d8cd0a36a620b9b1fa66d892b573",
+    "bytes": 179,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase12_calibration.sh",
+    "sha256": "473bc9892dadde8c6c375e1bce6d3edf204d41e5908091196c27e210e619141b",
+    "bytes": 367,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase12_full.sh",
+    "sha256": "e3932b214e3ee7e5794ce5729e74bf629479bbda0034c7b0a5bff1bf55c67931",
+    "bytes": 493,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase13_analyzer.sh",
+    "sha256": "f0c8778e788805d0a95b41465f599cc0a413176e423fb23f02eb61443f8d0092",
+    "bytes": 403,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase13_evaluator.sh",
+    "sha256": "9a6fab71bab9b74cd4545e0f6651adde498051ad8cbb5e4bb58f8527f0cc02c6",
+    "bytes": 351,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase13_followup.sh",
+    "sha256": "a593abf2ffde484b83719c19f029688fed47e89cb82b7561b1085873d44fe8dd",
+    "bytes": 691,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase13_verifier_v2_corrective.sh",
+    "sha256": "00db806b84a01d7ba521bb1ce91edd9c494eb7f5755ec1991dd6e66d870f2105",
+    "bytes": 1932,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase4_reproduction.sh",
+    "sha256": "7939b095a5f8eda9f000aecc9f82f7c41cc954b320194d62c8fb444ab9d58532",
+    "bytes": 1877,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase5_suite.sh",
+    "sha256": "c4bf0e568b24e698aded20b34cd25da241f0567e5c0d2056ea2a2308204b6d15",
+    "bytes": 2667,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase6_hypotheses.sh",
+    "sha256": "522d7412b866eaf28f2a0dd50831bce2e8ff8aa2b604bda9c03df50c6a2912a0",
+    "bytes": 186,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_phase7_program_graph.sh",
+    "sha256": "02f6fd8688d9b18fb12fafb8b4396dddd6f986ab8464c314ffe31cb2d0b57c85",
+    "bytes": 203,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_pipeline_v2_recovery_003_tmux.sh",
+    "sha256": "2285aabf2b942b26410681acc0cadc6e2d109d8b435ad2a8928088c4ea1d87d5",
+    "bytes": 1444,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_pipeline_v2_recovery_tmux.sh",
+    "sha256": "a73f6a9e8beb9a44fd6086301d90f1e20a57298276aaf2f8e02df96b21b18930",
+    "bytes": 1436,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_pipeline_v2_tmux.sh",
+    "sha256": "ed1ea47f34965e3f4e625e2106059e1911a07e9e3746236101a62f2c3bca1c1c",
+    "bytes": 1360,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/run_smoke_suite.sh",
+    "sha256": "165f8a102acb9585d2a2b68d7d1ec35fdd0adde7e7c9364bf4b3b3a97f527667",
+    "bytes": 3837,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/setup_codeql.sh",
+    "sha256": "90edbc2872d02fee98e87de27b6e92a6a0d9b0c0e837551ea564e814b2ac1ec6",
+    "bytes": 216,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/setup_environment.sh",
+    "sha256": "cad60362250226517960a76f75bb2ece9fe5fa8c4e4f78c9f981cb041c56caec",
+    "bytes": 1757,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/setup_phase3_dependencies.sh",
+    "sha256": "62a58d3a4faecf29634ba6a238eb65aa59258c74e6eb429ffa9ec2453cd7b1e4",
+    "bytes": 1076,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/setup_phase4.sh",
+    "sha256": "ee7acad5f728df494aeb1ea794dc8ce061c28da12178aae3a26e98565fa18fd3",
+    "bytes": 1219,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/trace_phase9_useg.sh",
+    "sha256": "ecc46d9fa68a2de48726f27640e687e646d5f89659727eace15e2194103de669",
+    "bytes": 177,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_b9_v2.sh",
+    "sha256": "e3b6854b28b0f3531ddc87cc0eba540ef054123bd9e203c178df1c11e1ada96e",
+    "bytes": 197,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_openrouter.sh",
+    "sha256": "213e7a278a8541a56ceb3f01e7f0e21b26b729f5796cdc12124800c37a65879f",
+    "bytes": 231,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase10.sh",
+    "sha256": "138dc39b1b6ab0bbb962864bfc78fa43493163fc1e5dedfd37d980b40a33feda",
+    "bytes": 182,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase10_evaluation.sh",
+    "sha256": "b71de4645aa52645665ab40186350a7a95ef50b5835a4af677afd573b605c44a",
+    "bytes": 194,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase11.sh",
+    "sha256": "99694b93636654e3109afbc45b328c0c52935657ce65fb722147fb6a91724c57",
+    "bytes": 181,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase12.sh",
+    "sha256": "8b15f766534982c03ab39e831fc7420778e9a9248699e3c781640bc6f0e3197d",
+    "bytes": 205,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase2.sh",
+    "sha256": "27a69829c04e42baa92cc520fd4fe95ef8385bcad34416435921f89d5987a4a6",
+    "bytes": 208,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase4.sh",
+    "sha256": "779051e40f3b538fc0bf769b1d1f95ac1b70791afc9278cdeb8c976d1cd9ea18",
+    "bytes": 188,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase6.sh",
+    "sha256": "18ab9aa3c8cd2725bcfa3917b68f8f71d5d21e5f6062234d55550cd091c8426f",
+    "bytes": 212,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase7.sh",
+    "sha256": "5e9289461098afbf4334bfa333c1a005fa3cb284f5b87031ae0fe9192e98e8dc",
+    "bytes": 205,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase8.sh",
+    "sha256": "6c86a5dbc5199f723aee97120d6e5a446aa736e37c2eb7bcb71764036505e2e2",
+    "bytes": 218,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_phase9.sh",
+    "sha256": "61eb824077ff2b4908768dfa4a1aa9b933dd421b16c3da2f643c5b818799cc9c",
+    "bytes": 180,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "scripts/tools/validate_results.sh",
+    "sha256": "d09c254753c16e24a648e520180255a3f6125f95e070dcf9133a1f97bac956e8",
+    "bytes": 187,
+    "destination": "deprecated compatibility scripts; public maxvera CLI"
+  },
+  {
+    "path": "src/__init__.py",
+    "sha256": "ec38ab40d17fe09b0f399ae30ff8a9170d59c3c5e880a7abe1269cfb9b30b651",
+    "bytes": 56,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/baselines/__init__.py",
+    "sha256": "bc6604052be5de8ad528bafeed0a5b9efd96afee764d6825120b68725ebd333c",
+    "bytes": 69,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/baselines/budget.py",
+    "sha256": "e732436946558ba685a038ac2e271c7712fa9eec4894527d21c9ff89955946a5",
+    "bytes": 5243,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/baselines/context.py",
+    "sha256": "0d2eea97892c6d4711ddecb05aa9927931f6d3f9896cf227dbcbfca454542cc4",
+    "bytes": 8269,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/baselines/evaluation.py",
+    "sha256": "7779cf1bad0efced494ddaa96e025b0bee783e1aceb4bdf901173b1094c59738",
+    "bytes": 6559,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/baselines/leaderboard.py",
+    "sha256": "43a663cc97e2c926e722b07c8a9305a95c65099dcf56621ac952545d3514c261",
+    "bytes": 4328,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/baselines/runner.py",
+    "sha256": "93eea6ebaeb941ad7d03d015ac617683abf9108a1f6ba87715692a4ddd8ecfec",
+    "bytes": 30179,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/baselines/schema.py",
+    "sha256": "2f016e1874a301124d299b1ed4895e0aad9ad1becff35bda58585d90f37ac15d",
+    "bytes": 7782,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/baselines/validate.py",
+    "sha256": "74af9f5a3553862242e9a48fccd8a97b6d8f9835d569eae1a577ebb058d90236",
+    "bytes": 9346,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/calibration/__init__.py",
+    "sha256": "55ec97853dbfaf05653490c396e602252cd4edb96b69830aa68cb72cbd3b3e07",
+    "bytes": 52,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/calibration/model.py",
+    "sha256": "fea45300a1e51b4544e31597c2a5871f62986567a48b83be1aa1234765181f93",
+    "bytes": 11777,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/calibration/runner.py",
+    "sha256": "492955cccca7dc8115b38503dd09ec50d93402635a6162faf0fff3dea7f4d9d9",
+    "bytes": 23436,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/calibration/validate.py",
+    "sha256": "8439559c71dec553236f9f2ee175c5a6cd2faf8d14e086b61053d5c737019804",
+    "bytes": 8518,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/cli/__init__.py",
+    "sha256": "77e49dc6ed0cb4f06ff02431e750cee6b4281d2f61f0e9274950c914a4ae338a",
+    "bytes": 70,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/cli/run_baseline.py",
+    "sha256": "493c6e612aaaef51bd98de3544ee5d857c9b373fb96753284149c5e765425110",
+    "bytes": 2730,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/common/__init__.py",
+    "sha256": "3e3986ca24738f6253523d9a19e3913ffb9be5e251b6dab5a47e67458c2947c1",
+    "bytes": 69,
+    "destination": "maxvera/contracts.py + maxvera/orchestration.py (reuse atomic IO/provenance)"
+  },
+  {
+    "path": "src/common/analysis_scope.py",
+    "sha256": "10e689956e31615e7cb620883ec6c2798f88ad39bdc7b2dd49a68c6c653b4ea2",
+    "bytes": 4018,
+    "destination": "maxvera/contracts.py + maxvera/orchestration.py (reuse atomic IO/provenance)"
+  },
+  {
+    "path": "src/common/envfile.py",
+    "sha256": "8e035644ddd7f6a4d908bdfebd7054185cc59677ba5ac9a002b0886e23b97b73",
+    "bytes": 4042,
+    "destination": "maxvera/contracts.py + maxvera/orchestration.py (reuse atomic IO/provenance)"
+  },
+  {
+    "path": "src/common/preflight.py",
+    "sha256": "33b6b24bf82f3dcb1c292f8c1993f65f96725ed2982a3400097dd135dbb723c2",
+    "bytes": 14299,
+    "destination": "maxvera/contracts.py + maxvera/orchestration.py (reuse atomic IO/provenance)"
+  },
+  {
+    "path": "src/common/provenance.py",
+    "sha256": "2a5ebbe04de647c722d361b43557fe68440eea4256a0c91beab558cc06e6d026",
+    "bytes": 12531,
+    "destination": "maxvera/contracts.py + maxvera/orchestration.py (reuse atomic IO/provenance)"
+  },
+  {
+    "path": "src/common/setup_phase3.py",
+    "sha256": "2ac4d6d2f0864b12c3f3898ddc737e4e2c55ffdafc9bc9c201aa1b813a9ccaf8",
+    "bytes": 11778,
+    "destination": "maxvera/contracts.py + maxvera/orchestration.py (reuse atomic IO/provenance)"
+  },
+  {
+    "path": "src/data/__init__.py",
+    "sha256": "e14f1229577552172de0f8ea3645b7114d9eb03a5df202a29e82a39c07d4a3b1",
+    "bytes": 72,
+    "destination": "maxvera/dataset.py (reuse acquisition/build helpers)"
+  },
+  {
+    "path": "src/data/build_projects.py",
+    "sha256": "d1c490800d7e1234574942b1b90a93194fad68b565c557cd3e425270a076690a",
+    "bytes": 14276,
+    "destination": "maxvera/dataset.py (reuse acquisition/build helpers)"
+  },
+  {
+    "path": "src/data/phase2.py",
+    "sha256": "2aef4ffd35d4b9488ca58a8bf3cefe8d47664321117c2d9af7ba569611f28b57",
+    "bytes": 25479,
+    "destination": "maxvera/dataset.py (reuse acquisition/build helpers)"
+  },
+  {
+    "path": "src/data/toolchains.py",
+    "sha256": "dae96658fbda38be9b8800dc3ffb470b8386b04396c406403eaeac4f4d5c5f09",
+    "bytes": 12740,
+    "destination": "maxvera/dataset.py (reuse acquisition/build helpers)"
+  },
+  {
+    "path": "src/evaluation/__init__.py",
+    "sha256": "57ecb5c65e9fcc16d3ec4202fdb0c41fb6526266af1d821a15f13bac328209ed",
+    "bytes": 47,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/experiments/__init__.py",
+    "sha256": "dd5c262bd6b203eb9cdfa02229636f09cc98f3de528754ba24595beaa7ce7b0a",
+    "bytes": 38,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/b9_failure_audit.py",
+    "sha256": "213626a9a78b9d14e2f8ea2dbe5ab0cd58893fb8baa61f8ae23197e8ada9c493",
+    "bytes": 19448,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/development_audit.py",
+    "sha256": "c741d96a550333eae73eaea9059230f01d95aa9ee60241aa2d8b6b91e32d70c0",
+    "bytes": 16729,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13.py",
+    "sha256": "605debf802e9be4b9036ca68705726270199deb75c47b77aa7343bc0fc5e0742",
+    "bytes": 24830,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_audit.py",
+    "sha256": "0487c9f20be8fbf4f1c2116c010349e75e3c5011156f9e5437c3add8bd51c919",
+    "bytes": 15284,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_b0.py",
+    "sha256": "8a7b73f50e4245a51417a022db4f4064046d30fc725575949b153769ec13f211",
+    "bytes": 8508,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_evaluator.py",
+    "sha256": "ce99d287bb41c625dee108ecaada1cfeb91f7c9f6bcbf59434506dfb4597f110",
+    "bytes": 20687,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_followup.py",
+    "sha256": "b8ece8d0ddecaf6a415aa7ed5ca53a4937c4f70389155696959807c6e869f40d",
+    "bytes": 3204,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_iris.py",
+    "sha256": "5c966328127e1809770fe2b50653b09e4eb51cc0a992859e39ba1db12267ec0f",
+    "bytes": 6029,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_oracles.py",
+    "sha256": "069b68c0368ba46bbcc18b076a0ca08e5d209c1dbb1c8267327b89da15daac57",
+    "bytes": 17798,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_report.py",
+    "sha256": "500a0d153302d4c48c8861e5c805767d40d0d2acd6426b2eb09c27811c3c7ab5",
+    "bytes": 12117,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_robustness.py",
+    "sha256": "a2cf39fe64c93f9a60cd421b20fc1536bd045b6d1f1322c00b090670a7c00f55",
+    "bytes": 7535,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_snapshot.py",
+    "sha256": "ca6f35bcb55bc1fba1037a2fe752d598a143c8886eb366eb4c7e14c00eb2a294",
+    "bytes": 8890,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/experiments/phase13_statistics.py",
+    "sha256": "72829d7f9b12a658e02e41a5d2afab6ead8a9d6725a517f2556077980943704a",
+    "bytes": 4160,
+    "destination": "legacy evaluator/reports: retain as internal"
+  },
+  {
+    "path": "src/graphs/__init__.py",
+    "sha256": "358024b3b80e93a37a92f4d2cb662bd2544090815ec80e640ebfdfa91cfae941",
+    "bytes": 62,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/evidence/__init__.py",
+    "sha256": "b96f6e44a521f9c5b97d3be9f53ba07d0cda110551305121df474fea5ae2b4bb",
+    "bytes": 51,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/evidence/model.py",
+    "sha256": "033fd28c8d911bca16675432fa651c505376de40c7e233a502cdf2179fbbebde",
+    "bytes": 7054,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/knowledge/__init__.py",
+    "sha256": "5078ad920982054d08bf4212a80d93c6ff25f5b14052553af756ebbe7b96d856",
+    "bytes": 71,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/knowledge/builder.py",
+    "sha256": "91e348d8be5d2646f3d681c119a7e3102e0fc7107be8ee4c754f395c5bdac73a",
+    "bytes": 27780,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/knowledge/model.py",
+    "sha256": "080f47badec3e39ae46ea1f1c1b7eeb127cc09132b623e19424e056edddb15ab",
+    "bytes": 3783,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/knowledge/prepare.py",
+    "sha256": "e01c8e7f5c1855ba07197030d03384beb98f8a2034fd596a9054d09bdacdefe0",
+    "bytes": 11225,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/knowledge/runner.py",
+    "sha256": "aa660f689e62364f9377df0deba23cdd7ec90b78c1d309c4197986d4b7c7b1e1",
+    "bytes": 12007,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/knowledge/validate.py",
+    "sha256": "2a43c9effe697106c56f3f27534123bfde8d20c3af72f585e457a7d55aa9b69b",
+    "bytes": 11541,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/program/__init__.py",
+    "sha256": "8bc1fc128072c37434da6ad8f439c5dddc7a32c72104b40bf898bbae2ac1d2b6",
+    "bytes": 46,
+    "destination": "retained legacy normalizer; maxvera/graph.py typed adapter reuses v2 Grounding queries"
+  },
+  {
+    "path": "src/graphs/program/build_databases.py",
+    "sha256": "2b4d86b3b7f6361a8d367309faddc67c26751aa2ad601103ba5c37f7649916b3",
+    "bytes": 19447,
+    "destination": "retained legacy normalizer; maxvera/graph.py typed adapter reuses v2 Grounding queries"
+  },
+  {
+    "path": "src/graphs/program/model.py",
+    "sha256": "c98ca2a7d20628c341a332827c69d26b52fac243758ff47ba93576204b38c94e",
+    "bytes": 5003,
+    "destination": "retained legacy normalizer; maxvera/graph.py typed adapter reuses v2 Grounding queries"
+  },
+  {
+    "path": "src/graphs/program/prepare.py",
+    "sha256": "aa700d6470c278213919bcbc1dfa346dc309e344a789b5411fd01391533b6d35",
+    "bytes": 6591,
+    "destination": "retained legacy normalizer; maxvera/graph.py typed adapter reuses v2 Grounding queries"
+  },
+  {
+    "path": "src/graphs/program/query.py",
+    "sha256": "3d8890c86bbdb1b14892f5c91da31c4a9d24a5cc23856c7ca4f2022016f5093e",
+    "bytes": 5806,
+    "destination": "retained legacy normalizer; maxvera/graph.py typed adapter reuses v2 Grounding queries"
+  },
+  {
+    "path": "src/graphs/program/runner.py",
+    "sha256": "6cb5cdaf64b3a78bde739473d441fbf751eb680800c56fd3085a8d0f30c66ef2",
+    "bytes": 29645,
+    "destination": "retained legacy normalizer; maxvera/graph.py typed adapter reuses v2 Grounding queries"
+  },
+  {
+    "path": "src/graphs/program/validate.py",
+    "sha256": "711d94583f2d4667c15a988acbebfa94c3b122eddcbbd0170a6f396338d29530",
+    "bytes": 10909,
+    "destination": "retained legacy normalizer; maxvera/graph.py typed adapter reuses v2 Grounding queries"
+  },
+  {
+    "path": "src/graphs/useg/__init__.py",
+    "sha256": "98ec1e71a31b5582bab531fe0d3c93e449f17ed005271b361f1b058fa99ad912",
+    "bytes": 79,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/useg/builder.py",
+    "sha256": "43aa0797e81b561cf0de1d8c9f2541e5ec0a7ecf818cbd42caee76647b094502",
+    "bytes": 34204,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/useg/query.py",
+    "sha256": "849bbdd6cc1070e015bee10c11c638b32b8e26132a561964b08797d8340b8767",
+    "bytes": 2621,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/useg/runner.py",
+    "sha256": "8e4d65d57bbe7a8195eeb7f5f06b9bad6230025edf291f73f6d9b55200f36cea",
+    "bytes": 15237,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/graphs/useg/validate.py",
+    "sha256": "f296465efb845e1d782d3ef3cd49f28d8c47f342d7dc5ba0642a2e96e293371c",
+    "bytes": 15419,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/hypotheses/__init__.py",
+    "sha256": "b2a778aa852b01684b91a8c2babc536a44e843fe7d225ed36e2814f76448f0d1",
+    "bytes": 53,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/hypotheses/budget.py",
+    "sha256": "a54e94178885ed8aa71b9d6735203ccef7c3b59af67ed28b23aaa9f9e97bee8d",
+    "bytes": 3171,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/hypotheses/evaluation.py",
+    "sha256": "9fb033a0bd7393cef64c646ddf412bdf9b3cbb4bf3617bd91672206d02cdf816",
+    "bytes": 5708,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/hypotheses/prepare.py",
+    "sha256": "57b8c2f9b8d79b0452824516ce94500d236a46ba6da247e9413e3f02207c3f41",
+    "bytes": 5136,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/hypotheses/runner.py",
+    "sha256": "77d58609b7631fdb454e5186445a8b4dae1b42edc3febb10ee217ace9ce15ba3",
+    "bytes": 24060,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/hypotheses/signals.py",
+    "sha256": "f2b3ee51de68bee24c502663a34eb08fd2306bc5a471df4cb8bcefb35b283077",
+    "bytes": 11871,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/hypotheses/validate.py",
+    "sha256": "2d0c5c2b1d46dbba9f9903a24fd7544680223d6516d395916a23d4a41fc58daf",
+    "bytes": 14181,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/llm/__init__.py",
+    "sha256": "bc28933749995c620ce65cc7bd261841dbc61f6c812bb9f4f992e9fd8ce7f27b",
+    "bytes": 42,
+    "destination": "maxvera/llm.py (bounded adapter over existing OpenRouter)"
+  },
+  {
+    "path": "src/llm/prompts/__init__.py",
+    "sha256": "3c0135e95c306ff0462f30a59574624501a44bc0239d58042d8d7e60564aeb39",
+    "bytes": 25,
+    "destination": "maxvera/llm.py (bounded adapter over existing OpenRouter)"
+  },
+  {
+    "path": "src/llm/prompts/phase10.py",
+    "sha256": "13386d134793cb11d59686599492b5a465219e54295e1252492976e8f219dbba",
+    "bytes": 1766,
+    "destination": "maxvera/llm.py (bounded adapter over existing OpenRouter)"
+  },
+  {
+    "path": "src/llm/prompts/phase5.py",
+    "sha256": "68ff92f0e0c7eceb428d27145ee4f4fa37548e237bfe25cb0df80f643c75eb3a",
+    "bytes": 2039,
+    "destination": "maxvera/llm.py (bounded adapter over existing OpenRouter)"
+  },
+  {
+    "path": "src/llm/prompts/phase6.py",
+    "sha256": "d4bf8cdc23caa76d64d83ad1891bf923f558447ec015f735edbbbf61ba22a250",
+    "bytes": 3090,
+    "destination": "maxvera/llm.py (bounded adapter over existing OpenRouter)"
+  },
+  {
+    "path": "src/llm/providers/__init__.py",
+    "sha256": "bd8f561e68619823fecdcb6938801588325b8e736a7c835d4aa3d0b6d05f3a10",
+    "bytes": 36,
+    "destination": "maxvera/llm.py (bounded adapter over existing OpenRouter)"
+  },
+  {
+    "path": "src/llm/providers/openrouter.py",
+    "sha256": "1100ef3fe4f779b56de710d2afb52f390d9c6f40e77670d036461bbabdfd32b2",
+    "bytes": 16457,
+    "destination": "maxvera/llm.py (bounded adapter over existing OpenRouter)"
+  },
+  {
+    "path": "src/llm/schemas/__init__.py",
+    "sha256": "b776ca1c6c7946ac4f391328c76e46290a16f7eb9112205378929bf732fc442e",
+    "bytes": 40,
+    "destination": "maxvera/llm.py (bounded adapter over existing OpenRouter)"
+  },
+  {
+    "path": "src/pipeline_v2/__init__.py",
+    "sha256": "dfd009516442bc2432a3e704ec36e08f364a6d695388572640a92e8df830bfd8",
+    "bytes": 67,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/__main__.py",
+    "sha256": "45192b525d66c086d46682b24c4436886ea11d0bd933f8e620f3337541e14dcf",
+    "bytes": 5049,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/b9.py",
+    "sha256": "01b91c59413d9966b2d7fe881e64f586fee97424a373f4fb17ace1a5281541e8",
+    "bytes": 25946,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/benchmark.py",
+    "sha256": "8f93c42ef455d91ac67c2d1f53e0d15857a8f7d52e1c4cab4ed2411953d74bba",
+    "bytes": 15853,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/benchmark_evaluate.py",
+    "sha256": "f555ea3778b0b5f04f9bf07e270a5572d2f562b5c81f70f916b3ab21394f4e57",
+    "bytes": 12756,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/benchmark_inputs.py",
+    "sha256": "73d487e4c6052561c54e432f5c3fdbb931df6b532762b88ee3886c88bfd5bbcb",
+    "bytes": 12957,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/benchmark_recovery.py",
+    "sha256": "05b8f1d0e719eca33bc7b8efa026f415ba49d4e76396f63097d9d5fa3d30aba5",
+    "bytes": 6680,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/calibration.py",
+    "sha256": "1c076df2df155858dc994f39ec9f4902d8092d1fc51ea79a9d938ec57dd644ba",
+    "bytes": 12791,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/coverage.py",
+    "sha256": "f9d1863784b2d95f0dd4ee1dc8b8c9d68d137c299dd6d071a3ec4edc2fae5781",
+    "bytes": 7431,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/extraction.py",
+    "sha256": "d120d06c5e25af98c7f9d79321412fa97cd91e678e0a9697be4a635a09f836e3",
+    "bytes": 7834,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/fixed.py",
+    "sha256": "32d450273ec0f7e0c11f44eb2dfd904079e3442b4cc96cde40a13ea5914b68c3",
+    "bytes": 20449,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/graphs.py",
+    "sha256": "6c75e238962643a4a28dd59b82a6f7bbc87d8f23791aa3592890da4cef060b23",
+    "bytes": 16964,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/model.py",
+    "sha256": "71a8ce507dffa401635189021bdb2d5bd1925f50262337338708df568cc44d31",
+    "bytes": 11583,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/orchestrator.py",
+    "sha256": "f672f82ca6cb0ce2fd74df0a0bd76b7ab4c08dadd591ee181794fa36e352fa3c",
+    "bytes": 13244,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/queries.py",
+    "sha256": "99112a71b93280a24f60d889ffab71c9da408244bd2b9ccc53398ec925b7b37f",
+    "bytes": 6267,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/readiness.py",
+    "sha256": "af77449a79b213ea0e39b0fbf5562d08685f1703a52a613f9bcd3a6424ef9c94",
+    "bytes": 20875,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/recovery.py",
+    "sha256": "de7014015575c0f841a14b7e265191e87b8c200dc3404fad21b34b9731be5cff",
+    "bytes": 17991,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/runtime.py",
+    "sha256": "5a3ce79954ecaf56da3fbf72509bbed3aa72a6972b0fa763cf80f8df810dc56b",
+    "bytes": 30180,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/specifications.py",
+    "sha256": "9e3e0de601de8d1df6ad75ba373605a696db77c83d5b032851babe1490703eae",
+    "bytes": 29138,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/validate.py",
+    "sha256": "d6b02726a578075db58bfd6997c07ec50f6442b7a1e4ef41eee06ebeb1aa3207",
+    "bytes": 13988,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/pipeline_v2/verification.py",
+    "sha256": "4e9b093c3c5979f99fb292afde5c728c82633421ef3c8b18fd774e1f1fe340b9",
+    "bytes": 29403,
+    "destination": "legacy internal: retain until parity; no new public dependency"
+  },
+  {
+    "path": "src/reporting/__init__.py",
+    "sha256": "2c782c67d571f7a0023a579a54d2794d5552f922cedfb79c346ef0153a57c49c",
+    "bytes": 58,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/reproduction/__init__.py",
+    "sha256": "435adafe8760fd6b6c9cbcababac82c7e6d77fe0700d30f991eeecca0df44094",
+    "bytes": 53,
+    "destination": "maxvera/reproduction.py + maxvera/iris_worker.py"
+  },
+  {
+    "path": "src/reproduction/common.py",
+    "sha256": "b1bbf373ca98ae2d21372f001e825b8cc24eaf7c10f7567365eb215c4a8e03dd",
+    "bytes": 12813,
+    "destination": "maxvera/reproduction.py + maxvera/iris_worker.py"
+  },
+  {
+    "path": "src/reproduction/evaluation.py",
+    "sha256": "2c9395eeb381eab94a5681d80476226a875201bd489a6185760825ee2fd88c63",
+    "bytes": 3436,
+    "destination": "maxvera/reproduction.py + maxvera/iris_worker.py"
+  },
+  {
+    "path": "src/reproduction/iris_subprocess.py",
+    "sha256": "863baaf098289ab4cff95e7d948e1084076746498dc46017ef8a0dbc9d2d90f9",
+    "bytes": 9192,
+    "destination": "maxvera/reproduction.py + maxvera/iris_worker.py"
+  },
+  {
+    "path": "src/reproduction/report.py",
+    "sha256": "3d476948aa2279d73016b77c50551f901f36d5ec4d308fa389063bbd94a02398",
+    "bytes": 5333,
+    "destination": "maxvera/reproduction.py + maxvera/iris_worker.py"
+  },
+  {
+    "path": "src/reproduction/runner.py",
+    "sha256": "8a569dbca9b827e8622467fe99a3adc3dfa810cbfb8b94547797a92e25c411e5",
+    "bytes": 25271,
+    "destination": "maxvera/reproduction.py + maxvera/iris_worker.py"
+  },
+  {
+    "path": "src/reproduction/validate.py",
+    "sha256": "0a030a4d5134cef379ecfb3f395ae6ae5661278e62153e5acd97974013f29b61",
+    "bytes": 5001,
+    "destination": "maxvera/reproduction.py + maxvera/iris_worker.py"
+  },
+  {
+    "path": "src/retrieval/__init__.py",
+    "sha256": "a67b5bb8508d74a1346e9b76fa16722d91fc4598b0295c7400b3eed643615e49",
+    "bytes": 201,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/retrieval/graph.py",
+    "sha256": "629ac61610a97ee60269d1f03a638bad574da7f3ea9d298655674cebf60da2f0",
+    "bytes": 9589,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/smoke/__init__.py",
+    "sha256": "6f061715510e155c6b12592f3f8aa5a97f739c580a530f06243291fe6100f015",
+    "bytes": 40,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/smoke/harness.py",
+    "sha256": "573ece972e03e75af30eb9483898eafec11a8c6543afc508975663e71fc20e1c",
+    "bytes": 16072,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/specification/__init__.py",
+    "sha256": "b762e02c5209cf4d56c1ed2601c94725da38d218d992cf3fc6c20d6d51caaf0c",
+    "bytes": 333,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/specification/budget.py",
+    "sha256": "65450827bad7bc9b1e409694f2bf09ae8e6e8a1fe0224a6136ed768ec8264b84",
+    "bytes": 3859,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/specification/compiler.py",
+    "sha256": "f9ddc936a223ab37d96d6f8f424febf7c77b803a5834e51b05e2ef07295475cb",
+    "bytes": 6368,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/specification/evaluation.py",
+    "sha256": "eec7420da1f250087bfee4275c9890c06d058afa93ff2590f8b0c4cbc440d251",
+    "bytes": 13930,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/specification/evaluation_validate.py",
+    "sha256": "92bd23e72bdb13bef3ebabdcd02b4ad829a537bfb63c37304e78f6015fc80fd4",
+    "bytes": 3803,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/specification/runner.py",
+    "sha256": "bf5d609ffa191442f26d5d429d00e511a14c41b9625c9381fd96e2bee1531115",
+    "bytes": 46655,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/specification/schema.py",
+    "sha256": "2a4ec88a7db12d03d714c4045e41d63c7196ebc68d7a97c3536e86b84532fecd",
+    "bytes": 10870,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/specification/validate.py",
+    "sha256": "800c2b05846b2c54888d909fb0faa76492bfe5c3570d463fc536a15e6f14d452",
+    "bytes": 26122,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/static_analysis/__init__.py",
+    "sha256": "aa9bc10361d3c2bf9ab6524010ba3795e6166078e20c157643cf3ee176217e8a",
+    "bytes": 47,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/static_analysis/queries/Phase7Graph.qll",
+    "sha256": "78a938969eb450cd151301c8e71795e3d9d6a47b2f8294fac4a67faaf63a926f",
+    "bytes": 2988,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/codeql-pack.lock.yml",
+    "sha256": "5af1ed48732ec612914ce6a4911bf801419883ce72b9e6133a6871131aee696b",
+    "bytes": 56,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/phase7_edges.ql",
+    "sha256": "ccdb9b2a0754e1a8ac37b8c549ef96127f889b81f8a38f328a10c4600f6c5715",
+    "bytes": 2530,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/phase7_nodes.ql",
+    "sha256": "90357fdaba66f86b946af9c634fa351114a5eb63d06a88dba5c25e765e912eaa",
+    "bytes": 740,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/qlpack.yml",
+    "sha256": "0c718acf9ad3f4893e8b910f9b620455fc7d67f379f26412b0ae8e1d7adebddf",
+    "bytes": 107,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/smoke_method_inventory.ql",
+    "sha256": "e29ce3b682843342c5abec504da4dc0c06f7fecaca916c0c29c1ee15e0069267",
+    "bytes": 409,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/v2/Grounding.qll",
+    "sha256": "5c0fc536dc678fbc3eadff9a132bb8c103f62119f9edb926022ab7b763dd3b75",
+    "bytes": 6078,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/v2/codeql-pack.lock.yml",
+    "sha256": "5af1ed48732ec612914ce6a4911bf801419883ce72b9e6133a6871131aee696b",
+    "bytes": 56,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/v2/endpoints.ql",
+    "sha256": "aea02a4d17f14552000380b7100e93a253966dafafb142f8291cbdb44a5c31be",
+    "bytes": 868,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/v2/flows.ql",
+    "sha256": "c5c5a617716a452d94188320bf679a692b32724f9a373c631021ede69d1ef04c",
+    "bytes": 1060,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/queries/v2/qlpack.yml",
+    "sha256": "1f813bef5308f3f219bc7391b7ee19d70e7eaa3769b230edcf95d8f439285882",
+    "bytes": 89,
+    "destination": "maxvera/graph.py + versioned queries (retain queries)"
+  },
+  {
+    "path": "src/static_analysis/setup_codeql.py",
+    "sha256": "fd4176323067d63b4b202ce6bb383070581ef39eddec9578f1549f6b14ea056c",
+    "bytes": 5119,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/verification/__init__.py",
+    "sha256": "e064c084d757c71c18f1912de5ba26905fcd45d2bd916eae0d0540298072431a",
+    "bytes": 61,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/verification/prepare_fixed.py",
+    "sha256": "4cb8b6fbe28ecfbb9c5f4fceff76a3d3815652fb9f52c9567ff5ba74d50a6001",
+    "bytes": 26333,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/verification/query.py",
+    "sha256": "f3dde3006a7f4c6e0504444939acf9904bfbe9b878889cf6579ae9c56a38240f",
+    "bytes": 6188,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/verification/remap.py",
+    "sha256": "7644e3720fa01535187ba79ac8025df5f0b24c03e2ab1941800cd93c32a64ac4",
+    "bytes": 7619,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/verification/runner.py",
+    "sha256": "81f8dcd87dc155499b45d1d5f01fbd7c4b034cd4976ed707bf9f82a5e53d3eea",
+    "bytes": 51968,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "src/verification/validate.py",
+    "sha256": "38ad10752b1cee8c2d264da4884e927318e3dc954a9aa1775f8e28c8e48b287b",
+    "bytes": 19873,
+    "destination": "legacy internal/optional extension: retained, not moved before parity"
+  },
+  {
+    "path": "tests/fixtures/.gitkeep",
+    "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "bytes": 1,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/integration/.gitkeep",
+    "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "bytes": 1,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/integration/test_smoke_cleanup.py",
+    "sha256": "95d79bbbfa7c5a0fbbea34391ee84f5924625f0187b822bcd14e489cf625c613",
+    "bytes": 1525,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/regression/.gitkeep",
+    "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "bytes": 1,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/regression/test_phase10_ids.py",
+    "sha256": "475f4bcfa70dcef515dada06597db0978ba2f77c261f6e2ff893157120dd7eb5",
+    "bytes": 2956,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/regression/test_phase7_graph_ids.py",
+    "sha256": "f92d99171db3da454b57f33e805fea8a284d3c7a1043fbc30c088e50f3416fe3",
+    "bytes": 615,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/regression/test_phase8_kg_ids.py",
+    "sha256": "b5946964317249de96b844af22f83610bea01f2258d22c158c765ced3b90150f",
+    "bytes": 453,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/regression/test_phase9_useg_ids.py",
+    "sha256": "b4043c246a6bd7dd211871bf7bbccfe03775b2366ad8de38b0a01349ca628330",
+    "bytes": 710,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_b9_benchmark.py",
+    "sha256": "6fbff83ded93b59301673a1a15ecf7901b5a697f726d4579b4a4336a8b10d970",
+    "bytes": 44313,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_b9_end_to_end.py",
+    "sha256": "7636859c500a95cd55255c45488c1d48b6d5157d62ecfb89a0ccce7d988fbe14",
+    "bytes": 20750,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_development_audit.py",
+    "sha256": "54a96a46509fe795e5b1e08b82a1a3abf710510975981136910a920652d79004",
+    "bytes": 8233,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_envfile.py",
+    "sha256": "dd6eab29351f878f5584f120d699796ae1eaa4befd83ac9088045463df1bf14f",
+    "bytes": 1483,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_manifest.py",
+    "sha256": "9528e51a7e41a53540313e954da658a348734b3c04cefab24842ab6e459516cc",
+    "bytes": 3514,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_openrouter.py",
+    "sha256": "da77a43eae501582ac5de5c4d0bb9bf052c521f3015a7bb5c4338b49aab690ca",
+    "bytes": 10342,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase10_retrieval_specification.py",
+    "sha256": "4bc8b6a9fc42a58c4554365ed6892e86f7f573bad03ee289b45a519d1f3cc4c3",
+    "bytes": 10590,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase10_spec_evaluation.py",
+    "sha256": "33785597595a7a17510532c7d579816927a7347ece5ff27d5c1e1bd103fb2722",
+    "bytes": 1037,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase11_verification.py",
+    "sha256": "b1898fe52d95e4b737696c239bce7f15aee3d95a26b58f0112a89d501a0632d7",
+    "bytes": 14213,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase12_calibration.py",
+    "sha256": "6935d1db321f1a7a9bffd68913a2de4b1d281afb544a69350b7009de969f881c",
+    "bytes": 3969,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase13.py",
+    "sha256": "213c555b94c9b7fa10d256852a2c4731681f6b78925de6ae2eb420d55f969cf4",
+    "bytes": 3076,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase13_evaluator.py",
+    "sha256": "a26ad874d1ea77cb3cf178967d385273192b878498c3bf97ace9ee9c271a02b6",
+    "bytes": 5605,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase13_followup.py",
+    "sha256": "f9e250424e8c9b5f20bc5f22e41311174d17d0b3cbdc324a3638d67bd7d35187",
+    "bytes": 8828,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase2_data.py",
+    "sha256": "456e1399c09f4908c6888a70ec5484c134b744e7d9c53be2338d383afc2d3597",
+    "bytes": 9023,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase4_reproduction.py",
+    "sha256": "6ed1d674768bf648fcd5d50bf4bc0cb253d66c9441ff3cace3f9bff27ef35dd7",
+    "bytes": 6674,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase5_baselines.py",
+    "sha256": "5fbb9359157b632550fea0f0c93d5a611f09321becca22549b5567dd513547b7",
+    "bytes": 9766,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase6_hypotheses.py",
+    "sha256": "3f2ffb566ea46c941cfc9478741ffa80fa30adcb7e44e8a62f2b703a1dc3c13c",
+    "bytes": 7187,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase7_program_graph.py",
+    "sha256": "590daab8faf2fd39af63ee6bbea031a4d40560dcf16f5749657ea2736f157a29",
+    "bytes": 15199,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase8_security_kg.py",
+    "sha256": "e4c28f9495ed98255bb62fb4476da1a10ea5ee6c3aaf78187f3e46154606dd20",
+    "bytes": 5988,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_phase9_useg.py",
+    "sha256": "3a1fad00f6cda64cf2b393981b47e4debee8f0c88ec7600a572797ca33ca10f4",
+    "bytes": 6916,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_pipeline_coverage.py",
+    "sha256": "8af36aba275460d2324b07c0dc320cbeee0ee72787f40f7630e3db82e39684d2",
+    "bytes": 6659,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_pipeline_v2.py",
+    "sha256": "7221b542d46cd65531bf570fd8c41330d59ac6080e0d3683a00068d21832dd7e",
+    "bytes": 24704,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_preflight.py",
+    "sha256": "56eb2e8b0277eee0743ff5a51f7ab67527dab180b5b1b4797879dd3263b6d6f5",
+    "bytes": 996,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_protocol_scaffold.py",
+    "sha256": "cac58017f2324d71603ec59cde236a2304516eb1264446d8bfd56d7c96c67b69",
+    "bytes": 2315,
+    "destination": "retained regression; add tests/pipeline/"
+  },
+  {
+    "path": "tests/unit/test_smoke_harness.py",
+    "sha256": "ba5c22f8e8eab7a91187b33f692f3992bb07c5621da77eab0751755661784153",
+    "bytes": 2801,
+    "destination": "retained regression; add tests/pipeline/"
+  }
+]
