@@ -387,7 +387,10 @@ class OpenRouterClient:
                         continue
                     raise received_error from failure
                 self._append_log({**record, "status": "SUCCESS"})
-                return content
+                # Successful text also enters response caches and research findings.
+                # Apply the same exact-key policy as private wire evidence before
+                # any caller can persist or publish an echoed authorization key.
+                return content.replace(self.settings.api_key, "[REDACTED]")
             except OpenRouterResponseError:
                 raise
             except urllib.error.HTTPError as error:

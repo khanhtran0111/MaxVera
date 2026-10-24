@@ -80,7 +80,7 @@ def generate(
                 check_budget()
             current, path, visited = queue.popleft()
             expansions += 1
-            if current != start and wanted in nodes[current]["roles"]:
+            if wanted in nodes[current]["roles"]:
                 source, sink = (current, start) if reverse else (start, current)
                 retain(
                     source,
@@ -90,8 +90,10 @@ def generate(
                     "COMPLETE_CANDIDATE_PATH",
                 )
                 found = True
-                # Do not continue beyond an already matched sensitive endpoint.
-                continue
+                # A directly consumed source is also a sink: retain its zero-edge
+                # identity flow, then keep searching for other reachable endpoints.
+                if current != start:
+                    continue
             if len(path) >= max_hops:
                 continue
             for target, edge_id in sorted(adj[current]):

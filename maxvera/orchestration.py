@@ -29,6 +29,7 @@ class Stage:
     action: Callable
     dependencies: tuple[str, ...] = ()
     paid: bool = False
+    checkpoint_validator: Callable | None = None
 
 
 @dataclass
@@ -52,21 +53,84 @@ class Context:
 
 
 def verify_checksums(path: Path) -> None:
+    """Verify immutable file inventory with bounded RAM, including large DB trees.
+
+    A disk-backed inventory avoids two Python sets proportional to every file in
+    the run.  The temporary database lives outside the frozen output directory.
+    Symlinks are never followed, including unindexed links to directories.
+    """
+    import re
+    import sqlite3
+    import tempfile
+
     index = path / "checksums.sha256"
+    if path.is_symlink() or index.is_symlink():
+        raise ValueError("unsafe checksum path: symlink")
     if not index.is_file():
         raise ValueError("missing frozen run checksum index")
-    indexed = set()
-    for line in index.read_text().splitlines():
-        expected, rel = line.split("  ", 1)
-        target = path / rel
-        if not target.resolve().is_relative_to(path.resolve()) or target.is_symlink():
-            raise ValueError("unsafe checksum path")
-        if not target.is_file() or sha256_file(target) != expected:
-            raise ValueError(f"checksum integrity mismatch: {rel}")
-        indexed.add(rel)
-    actual = {p.relative_to(path).as_posix() for p in path.rglob("*") if p.is_file() and p != index}
-    if actual != indexed:
-        raise ValueError("checksum file inventory mismatch")
+    path = path.resolve()
+    index = path / "checksums.sha256"
+    with tempfile.TemporaryDirectory(prefix="maxvera-integrity-", dir="/tmp") as temp:
+        connection = sqlite3.connect(str(Path(temp) / "inventory.sqlite"))
+        try:
+            connection.execute("PRAGMA journal_mode=OFF")
+            connection.execute("PRAGMA cache_size=-2048")
+            connection.execute("CREATE TABLE inventory (path TEXT PRIMARY KEY, seen INTEGER)")
+            with index.open(encoding="utf-8") as handle:
+                for number, line in enumerate(handle, 1):
+                    # write_checksums represents an empty inventory as one blank line.
+                    if line == "\n":
+                        continue
+                    fields = line.rstrip("\n").split("  ", 1)
+                    if len(fields) != 2 or re.fullmatch(r"[0-9a-f]{64}", fields[0]) is None:
+                        raise ValueError(f"malformed checksum index line {number}")
+                    expected, rel = fields
+                    relative = Path(rel)
+                    if (
+                        not rel
+                        or relative.is_absolute()
+                        or relative.as_posix() != rel
+                        or ".." in relative.parts
+                        or rel == "checksums.sha256"
+                    ):
+                        raise ValueError("unsafe checksum path")
+                    target = path
+                    for part in relative.parts:
+                        target = target / part
+                        if target.is_symlink():
+                            raise ValueError("unsafe checksum path: symlink")
+                    if not target.is_file() or sha256_file(target) != expected:
+                        raise ValueError(f"checksum integrity mismatch: {rel}")
+                    try:
+                        connection.execute("INSERT INTO inventory VALUES (?, 0)", (rel,))
+                    except sqlite3.IntegrityError as error:
+                        raise ValueError(f"duplicate checksum path: {rel}") from error
+
+            def scan(directory):
+                with os.scandir(directory) as entries:
+                    for entry in entries:
+                        if entry.is_symlink():
+                            raise ValueError("unsafe checksum inventory symlink")
+                        if entry.is_dir(follow_symlinks=False):
+                            scan(Path(entry.path))
+                        elif entry.is_file(follow_symlinks=False):
+                            target = Path(entry.path)
+                            if target == index:
+                                continue
+                            rel = target.relative_to(path).as_posix()
+                            cursor = connection.execute(
+                                "UPDATE inventory SET seen=1 WHERE path=?", (rel,)
+                            )
+                            if cursor.rowcount != 1:
+                                raise ValueError(f"checksum file inventory mismatch: {rel}")
+                        else:
+                            raise ValueError("unsafe checksum inventory non-regular entry")
+
+            scan(path)
+            if connection.execute("SELECT 1 FROM inventory WHERE seen=0 LIMIT 1").fetchone():
+                raise ValueError("checksum file inventory mismatch")
+        finally:
+            connection.close()
 
 
 class Orchestrator:
@@ -150,10 +214,9 @@ class Orchestrator:
             if manifest["identity_hash"] != self.identity_hash:
                 raise ValueError("resume config/code/schema/input mismatch; choose new run ID")
             state = (self.path / "STATUS").read_text().strip()
-            if (self.path / "checksums.sha256").exists():
+            if (self.path / "checksums.sha256").exists() or state == "COMPLETED":
                 verify_checksums(self.path)
             if state == "COMPLETED":
-                verify_checksums(self.path)
                 return state
             (self.path / "checksums.sha256").unlink(missing_ok=True)
         else:
@@ -201,6 +264,19 @@ class Orchestrator:
                     if previous.get("status") in {"SUCCESS", "SKIPPED_BY_VARIANT"}:
                         if not self._checkpoint_valid(folder, previous):
                             raise ValueError(f"stage checksum integrity mismatch: {stage.name}")
+                        if stage.checkpoint_validator:
+                            stage.checkpoint_validator(
+                                Context(
+                                    self.root,
+                                    self.path,
+                                    folder,
+                                    case,
+                                    self.config,
+                                    records,
+                                    deadline=case_deadline,
+                                ),
+                                previous,
+                            )
                         records[stage.name] = previous
                         continue
                     base = {

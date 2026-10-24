@@ -143,7 +143,11 @@ def test_research_builds_use_private_copy_and_record_actual_source_bytes(tmp_pat
         if args[0] == "fixture-build":
             (cwd / "X.java").write_text("class X { int generated; }")
         elif args[1:3] == ["database", "create"]:
-            Path(args[3]).mkdir(parents=True, exist_ok=True)
+            database = Path(args[3])
+            (database / "db-java/default").mkdir(parents=True)
+            (database / "codeql-database.yml").write_text("primaryLanguage: java\n")
+            (database / "src.zip").write_bytes(b"source archive fixture")
+            (database / "db-java/default/data.rel").write_bytes(b"relation fixture")
         elif args[1:3] == ["database", "analyze"]:
             Path(next(a.split("=", 1)[1] for a in args if a.startswith("--output="))).write_text(
                 '{"runs":[{"results":[]}]}'
@@ -155,6 +159,7 @@ def test_research_builds_use_private_copy_and_record_actual_source_bytes(tmp_pat
     assert result["analyzed_files"]["X.java"] != snapshot["files"]["X.java"]
     assert result["modified_input_files"] == ["X.java"]
     assert result["analyzed_snapshot_id"] != snapshot["snapshot_id"]
+    assert "db_identity.json" in result["artifacts"]
 
 
 def test_resume_restores_only_validated_upstream_snapshot(tmp_path):

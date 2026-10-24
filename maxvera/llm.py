@@ -26,12 +26,39 @@ def _validate_output(raw, expected_kind):
     if len(lines) >= 3 and lines[0].casefold() in {"```json", "```"} and lines[-1] == "```":
         text = "\n".join(lines[1:-1])
     parsed = strict_json(text)
-    if expected_kind == "array" and (
+    label_kind = expected_kind in {"iris_api_labels", "iris_param_labels"}
+    if (expected_kind == "array" or label_kind) and (
         not isinstance(parsed, list) or any(not isinstance(entry, dict) for entry in parsed)
     ):
         raise ValueError("IRIS labels require a top-level array of objects")
-    if expected_kind == "object" and not isinstance(parsed, dict):
+    if expected_kind in {"object", "iris_context"} and not isinstance(parsed, dict):
         raise ValueError("IRIS context assessment requires a top-level object")
+    if expected_kind == "iris_context":
+        fields = ("is_vulnerable", "source_is_false_positive", "sink_is_false_positive")
+        if any(type(parsed.get(name)) is not bool for name in fields):
+            raise ValueError("IRIS context verdicts require all three boolean fields")
+        if not isinstance(parsed.get("explanation"), str):
+            raise ValueError("IRIS context explanation must be a string")
+    if label_kind:
+        for entry in parsed:
+            if any(
+                not isinstance(entry.get(name), str) or not entry[name].strip()
+                for name in ("package", "class", "method", "signature")
+            ):
+                raise ValueError("IRIS labels require nonempty API identity strings")
+            argument_field = "sink_args" if expected_kind == "iris_api_labels" else "tainted_input"
+            arguments = entry.get(argument_field)
+            if not isinstance(arguments, list) or any(
+                not isinstance(argument, str) or not argument.strip() for argument in arguments
+            ):
+                raise ValueError(f"IRIS {argument_field} must be an array of argument names")
+            if expected_kind == "iris_api_labels" and entry.get("type") not in (
+                "source",
+                "sink",
+                "taint-propagator",
+            ):
+                raise ValueError("IRIS API type must be source, sink, or taint-propagator")
+    return parsed
 
 
 def _validate_cache(raw, expect_json, validate_json, expected_kind):
@@ -79,7 +106,13 @@ class JournaledClient:
                 "expect_json": expect_json,
                 "validation_policy": {
                     "json": validate_json or expect_json,
-                    "kind": expected_kind,
+                    "kind": (
+                        "array"
+                        if expected_kind in {"iris_api_labels", "iris_param_labels"}
+                        else "object"
+                        if expected_kind == "iris_context"
+                        else expected_kind
+                    ),
                     # Keep billing identity stable so previous PENDING/UNCERTAIN
                     # entries cannot be bypassed when output validation improves.
                     "version": "2.1",
@@ -385,12 +418,14 @@ class IrisProvider:
     settings = None
     _failure = None
     _failure_request = None
+    expected_kind = None
 
     @classmethod
     def configure(cls, request):
         cls.request = request
         cls._failure = None
         cls._failure_request = None
+        cls.expected_kind = None
         cls.settings = OpenRouterSettings.load(Path(request["root"]), Path(request["model_config"]))
 
     @classmethod
@@ -425,7 +460,9 @@ class IrisProvider:
             raise
 
     def _predict(self, prompt, expect_json=False, batch_size=0, no_progress_bar=False):
-        expected_kind = "array" if self.request["stage"] == "llm_specs" else "object"
+        expected_kind = self.expected_kind or (
+            "array" if self.request["stage"] == "llm_specs" else "iris_context"
+        )
 
         def one(messages):
             return self.client.complete(

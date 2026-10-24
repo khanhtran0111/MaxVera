@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from maxvera.orchestration import Orchestrator
-from maxvera.sandbox import restrict_reads
+from maxvera.sandbox import resolver_runtime_paths, restrict_reads
 
 
 def main():
@@ -32,6 +32,7 @@ def main():
         Path("/lib64"),
         Path("/bin"),
         Path("/etc"),
+        *resolver_runtime_paths(),
         Path("/dev/null"),
         Path("/dev/urandom"),
         Path("/proc/self"),
@@ -57,6 +58,12 @@ def main():
     )
     os.environ["GRADLE_USER_HOME"] = str(Path(os.environ["HOME"]) / ".gradle")
     from maxvera.research import finalize, stages
+
+    if request["config"].get("selected_variant", {}).get("llm_enabled"):
+        from maxvera.research_reasoning import configure_model
+        from src.llm.providers.openrouter import OpenRouterSettings
+
+        configure_model(OpenRouterSettings(**request.pop("llm_settings")))
 
     runner = Orchestrator(
         root,

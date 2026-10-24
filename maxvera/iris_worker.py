@@ -23,7 +23,15 @@ def run_stage(pipeline, stage: str) -> None:
     from maxvera.llm import IrisProvider
 
     for method in STAGE_METHODS[stage]:
-        getattr(pipeline, method)()
+        IrisProvider.expected_kind = {
+            "query_gpt_for_api_src_tp_sink_batched": "iris_api_labels",
+            "query_gpt_for_func_param_src": "iris_param_labels",
+            "query_gpt_for_posthoc_filtering": "iris_context",
+        }.get(method)
+        try:
+            getattr(pipeline, method)()
+        finally:
+            IrisProvider.expected_kind = None
     # Upstream filtering catches transport exceptions and writes partial output.
     # A rejected/uncertain/budget-stopped request must fail the enclosing stage.
     IrisProvider.raise_if_failed()
@@ -36,6 +44,7 @@ def main() -> int:
     request = json.loads(args.request.read_text())
     # Keep MaxVera imports alive locally before giving upstream its own `src` namespace.
     import src.reproduction.iris_subprocess as old_adapter
+    from maxvera.iris_compat import install_compatibility
     from maxvera.llm import IrisProvider
     from src.reproduction.iris_subprocess import (
         _CodeQLRamSubprocessProxy,
@@ -54,6 +63,9 @@ def main() -> int:
     import src.modules.codeql_query_runner as runner
     import src.neusym_vul as upstream
 
+    adapter_compatibility = install_compatibility(
+        upstream.SAPipeline, upstream.ContextualAnalysisPipeline
+    )
     binary = Path(request["codeql"])
     values = {
         "CODEQL_DIR": str(binary.parent),
@@ -121,6 +133,9 @@ def main() -> int:
     missing = [name for name, path in outputs.items() if not Path(path).is_file()]
     if missing:
         raise RuntimeError(f"IRIS stage missing required artifacts: {missing}")
+    compatibility_path = Path(request["response"]).parent / "iris_compatibility.json"
+    compatibility_path.write_text(json.dumps(adapter_compatibility, indent=2))
+    outputs["adapter_compatibility"] = str(compatibility_path)
     Path(request["response"]).write_text(json.dumps(outputs))
     return 0
 

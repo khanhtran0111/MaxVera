@@ -6,7 +6,7 @@ Pipeline-first Java vulnerability research with two separate tracks:
 2. **research**: zero-hint static/graph candidate discovery with opaque inputs and an OS filesystem firewall.
 3. **evaluate / compare**: independent evaluation of immutable raw output; labels stay outside research.
 
-**Current acceptance status:** reproduction adapter and graph-only core are implemented with explicit validation gaps. Research LLM/verification variants are gated on a measured graph-only dev signal. Full reproduction `repro_fast_20261021T142440Z` is running with the measured fast profile (fixed Groq route, no artificial completion delay) after 393 tests and live API checks; no successful full result is claimed. Read [implementation status](docs/IMPLEMENTATION_STATUS.md) and the [execution record](docs/reproduction_full_2026-10-21.md).
+**Current acceptance status:** bounded research evidence, cited LLM reranking and targeted CodeQL verification are implemented for smoke validation. The [23 October check](docs/research_smoke_2026-10-23.md) completed both random cases through all stages, with 9/10 schema/citation-valid assessments and Recall@5 of 0/2. Cross-run Top-K repeatability remains affected by generated build metadata in snapshot identities. Full LLM research remains gated on a reviewed, frozen graph-only development signal. Read [implementation status](docs/IMPLEMENTATION_STATUS.md) for repaired defects and remaining scope.
 
 ## Safe checks — actually executed during this refactor
 
@@ -47,11 +47,12 @@ A new run ID cannot overwrite an existing run. Full mode rejects `--limit` and a
 # These CLI handlers are tested on temporary frozen fixture runs; real run IDs must exist.
 python -m maxvera status --run-id repro_gptoss20b_001
 python -m maxvera evaluate --run-id repro_gptoss20b_001 --protocol iris_paper
+python -m maxvera evaluate --run-id repro_gptoss20b_001 --protocol paper_formula_path
 python -m maxvera evaluate --run-id zh_graph_001 --protocol zero_hint
 python -m maxvera compare --runs zh_static_001,zh_graph_001 --output results/aggregate/graph_discovery_comparison
 ```
 
-`text_only`, `graph_llm` and `graph_llm_verify` are reserved variants in the shared catalogue. They currently return an explicit `NOT_IMPLEMENTED` error. Follow the plan's graph-only dev gate before implementing them at scale.
+`graph_llm` and `graph_llm_verify` support smoke runs of at most two cases with the existing model/profile. Full LLM runs require `research.graph_signal_approved: true` after review of the frozen development signal. `text_only` remains explicitly `NOT_IMPLEMENTED`. The current random two-case smoke configuration is `configs/pipelines/research_smoke_random.yaml`; its prepared sources and manifest are workspace artifacts, not bundled benchmark data. This profile requires `MAXVERA_OPENROUTER_PROVIDER=groq` to match its pinned model route; use a new run ID for a new execution.
 
 ## Data and output
 
@@ -70,8 +71,8 @@ MAXVERA_RUN_CODEQL_FIXTURE=1 .venv/bin/python -m pytest -q tests/integration/tes
 
 The default test suite requires no external model calls. The opt-in fixture additionally requires the retained local CodeQL 2.26.2 and Java 17 toolchains. See [validation report](docs/validation_report.md).
 
-[Migration inventory](docs/migration_inventory.md) records the pre-edit SHA and destination of every old source/config/script/test. Existing `src` implementations are reused internally; phase/baseline shell entrypoints are deprecated compatibility commands. Historical phase runbooks have been removed from the current docs; their backups remain in the local documentation-cleanup log.
+[Migration inventory](docs/migration_inventory.md) records the pre-edit SHA and destination of every old source/config/script/test. Existing `src` implementations are reused internally; phase/baseline shell entrypoints are deprecated compatibility commands. Historical phase runbooks and their old log backups have been removed.
 
-The user's cleanup request reclaimed **81.39 GiB** of old generated data. Compact tracked Phase 4 exports remain unchanged; historical raw outputs were removed and cannot be reconstructed from aggregate CSVs. See [cleanup record](docs/storage_cleanup.json) and [legacy evidence index](docs/legacy_reproduction_index.json).
+Earlier cleanup records describe historical storage recovery. The 23 October request also removed all previous run outputs/logs, tracked Phase 4 exports and superseded smoke attempts. Only the current r3 smoke and its audit remain; this task removed another **3.51 GiB**, with approximately **300.30 GiB free**. See the [current report](docs/research_smoke_2026-10-23.md). Deleted raw evidence cannot support new reproduction claims.
 
 Start with the [documentation index](docs/README.md). Protocol details: [reproduction](docs/reproduction_protocol.md), [research](docs/research_protocol.md), [evaluation](docs/evaluation_protocol.md). The [authoritative implementation plan](ke_hoach_trien_khai_zero_hint_repository_vulnerability_research.md) governs remaining acceptance gates.

@@ -4,7 +4,25 @@ from __future__ import annotations
 
 from collections import Counter
 
-MATCH_POLICY_VERSION = "program-point-strong-span-v2.1"
+MATCH_POLICY_VERSION = "program-point-strong-span-v2.2"
+ORACLE_PROTOCOLS = frozenset({"iris_paper", "legacy_artifact", "paper_formula_path"})
+
+
+def metric_semantics(protocol: str) -> dict:
+    """Both protocols use pinned IRIS matching; only the counted unit differs."""
+    if protocol not in ORACLE_PROTOCOLS:
+        raise ValueError("unsupported oracle evaluation protocol")
+    path_based = protocol == "paper_formula_path"
+    return {
+        "canonical_protocol": "paper_formula_path" if path_based else "legacy_artifact",
+        "metric_unit": "path" if path_based else "alert_container",
+        "precision_denominator": "num_paths" if path_based else "num_results",
+        "precision_numerator": "num_tp_paths_method" if path_based else "num_tp_results_method",
+        "path_matching": "PINNED_IRIS_INCLUDING_UPSTREAM_IGNORE_CODE_FLOW",
+        "fdr_eligibility": "SUCCESS_WITH_POSITIVE_DENOMINATOR",
+        "recall_denominator": "ALL_SELECTED_CASES_INCLUDING_ANALYSIS_FAILURES",
+        "missing_ground_truth_policy": "ERROR_WITH_CASE_IDS",
+    }
 
 
 def candidate_pool_hash(records: list[dict]) -> str:
@@ -68,11 +86,20 @@ def paper_aggregate(rows: list[dict], *, expected: int) -> dict:
     if len(rows) != expected or len({r["case_id"] for r in rows}) != expected:
         raise ValueError("missing/duplicate case coverage in evaluator")
     completed = [r for r in rows if r["status"] == "SUCCESS"]
-    with_alerts = [r for r in completed if r["alerts"] > 0]
+
+    # Old callers supply only alert counts; named protocols also carry their
+    # explicit metric units so the raw alert/path inventories retain their names.
+    def denominator(row):
+        return row.get("metric_denominator", row["alerts"])
+
+    def numerator(row):
+        return row.get("metric_numerator", row["tp_alerts"])
+
+    with_alerts = [r for r in completed if denominator(r) > 0]
     detected = sum(bool(r["detected"]) for r in rows)
     f1 = []
     for row in rows:
-        p = row["tp_alerts"] / row["alerts"] if row["alerts"] else 0
+        p = numerator(row) / denominator(row) if denominator(row) else 0
         recall = int(row["detected"])
         f1.append(2 * p * recall / (p + recall) if p + recall else 0)
     return {
@@ -81,7 +108,7 @@ def paper_aggregate(rows: list[dict], *, expected: int) -> dict:
         "detection_rate": detected / expected if expected else 0,
         "successfully_analyzed": len(completed),
         "detected_per_successful_analysis": detected / len(completed) if completed else 0,
-        "avg_fdr": sum(1 - r["tp_alerts"] / r["alerts"] for r in with_alerts) / len(with_alerts)
+        "avg_fdr": sum(1 - numerator(r) / denominator(r) for r in with_alerts) / len(with_alerts)
         if with_alerts
         else None,
         "avg_fdr_denominator": len(with_alerts),
@@ -120,13 +147,14 @@ def _location_match(locations, truth, *, require_span=False):
     return False
 
 
-def _paper_case(root, run, case_id, stage, truth):
+def _paper_case(root, run, case_id, stage, truth, *, protocol="legacy_artifact"):
     import json
     import subprocess
     import sys
 
     from maxvera.evaluator_identity import verified_upstream
 
+    semantics = metric_semantics(protocol)
     folder = run / "stages" / case_id / stage
     record = folder / "stage.json"
     base = {
@@ -135,6 +163,10 @@ def _paper_case(root, run, case_id, stage, truth):
         "detected": False,
         "alerts": 0,
         "tp_alerts": 0,
+        "paths": 0,
+        "tp_paths": 0,
+        "metric_denominator": 0,
+        "metric_numerator": 0,
     }
     if not record.exists() or json.loads(record.read_text())["status"] != "SUCCESS":
         return base
@@ -174,6 +206,10 @@ def _paper_case(root, run, case_id, stage, truth):
         "detected": bool(metric["recall_method"]),
         "alerts": metric["num_results"],
         "tp_alerts": metric["num_tp_results_method"],
+        "paths": metric["num_paths"],
+        "tp_paths": metric["num_tp_paths_method"],
+        "metric_denominator": metric[semantics["precision_denominator"]],
+        "metric_numerator": metric[semantics["precision_numerator"]],
         "upstream_metric": metric,
     }
 
@@ -213,8 +249,29 @@ def evaluate(root, run, protocol, *, labels, truth):
     truths = defaultdict(list)
     for row in read_jsonl(Path(truth)):
         truths[row["project_id"]].append(row)
-    if set(ids) - label_index.keys() or set(ids) - truths.keys():
-        raise ValueError("evaluator ground truth coverage incomplete")
+    missing_labels = sorted(set(ids) - label_index.keys())
+    missing_truth = sorted(set(ids) - truths.keys())
+    if missing_labels or missing_truth:
+        raise ValueError(
+            "evaluator ground truth coverage incomplete: "
+            f"missing_label_case_ids={missing_labels}; missing_truth_case_ids={missing_truth}"
+        )
+    incomplete_labels = sorted(c for c in ids if not label_index[c].get("ground_truth_cwe"))
+    incomplete_methods = (
+        sorted(
+            c
+            for c in ids
+            if any(not all(r.get(k) for k in ("file", "class", "method")) for r in truths[c])
+        )
+        if protocol in ORACLE_PROTOCOLS
+        else []
+    )
+    if incomplete_labels or incomplete_methods:
+        raise ValueError(
+            "evaluator ground truth fields incomplete: "
+            f"incomplete_label_case_ids={incomplete_labels}; "
+            f"incomplete_method_case_ids={incomplete_methods}"
+        )
     from maxvera.evaluator_identity import evaluator_identity
 
     identity = evaluator_identity(root, protocol, MATCH_POLICY_VERSION)
@@ -242,12 +299,14 @@ def evaluate(root, run, protocol, *, labels, truth):
     output = Path(tempfile.mkdtemp(prefix="." + protocol + ".", dir=final_output.parent))
     try:
         rows = []
-        if protocol == "iris_paper":
+        if protocol in ORACLE_PROTOCOLS:
             if manifest["pipeline"] != "reproduction":
                 raise ValueError("oracle paper protocol requires reproduction run")
             panels = {}
             for branch, stage in [("iris", "finalize"), ("codeql_reference", "codeql_reference")]:
-                branch_rows = [_paper_case(root, run, c, stage, truths[c]) for c in ids]
+                branch_rows = [
+                    _paper_case(root, run, c, stage, truths[c], protocol=protocol) for c in ids
+                ]
                 for row in branch_rows:
                     row.update(
                         {
@@ -275,12 +334,20 @@ def evaluate(root, run, protocol, *, labels, truth):
                 if manifest["mode"] == "smoke"
                 else "dataset_canonical",
                 "fidelity": "model-substituted; inspect reproduction_deviations.json",
+                "metric_semantics": metric_semantics(protocol),
             }
             atomic_json(output / "paper_compatible_metrics.json", aggregate)
         elif protocol == "zero_hint":
             if manifest["pipeline"] != "research":
                 raise ValueError("zero_hint protocol requires research run")
             candidate_rows = read_jsonl(run / "candidates_pre_llm.jsonl")
+            raw_path = run / "candidates_raw.jsonl"
+            raw_rows = read_jsonl(raw_path) if raw_path.is_file() else None
+            raw_counts = Counter(c["case_id"] for c in raw_rows) if raw_rows is not None else None
+            # Discovery freezes only the configured Top-K pool. Larger K values
+            # cannot be recovered from that truncated ranking after analysis.
+            cutoffs = sorted(set(config.get("evidence", {}).get("top_k", [5, 10, 20])))
+            retained_cutoff = max(cutoffs)
             findings = read_jsonl(run / "findings.jsonl")
             candidates, finals = defaultdict(list), defaultdict(list)
             for c in candidate_rows:
@@ -298,20 +365,55 @@ def evaluate(root, run, protocol, *, labels, truth):
                         c["discovery_status"] == "STATIC_CONFIRMED"
                         or (
                             c["discovery_status"] == "COMPLETE_CANDIDATE_PATH"
-                            and bool(c["graph_path_edge_ids"])
+                            and (
+                                bool(c["graph_path_edge_ids"])
+                                or (
+                                    isinstance(c.get("source_node_id"), str)
+                                    and bool(c["source_node_id"])
+                                    and c["source_node_id"] == c.get("sink_node_id")
+                                    and c.get("graph_path_node_ids") == [c["source_node_id"]]
+                                )
+                            )
                         )
                     ) and _location_match(c["locations"], truth_rows, require_span=True)
 
                 correct = [c for c in cs if strong(c)]
+                ranking_complete = False
+                if config.get("selected_variant", {}).get("llm_enabled"):
+                    stage = run / "stages" / cid / "llm_reason/stage.json"
+                    assessment = json.loads(stage.read_text()) if stage.is_file() else {}
+                    failed = assessment.get("result", {}).get("failed_assessments")
+                    final = finals[cid]
+                    ranking_complete = (
+                        case["status"]
+                        in {"SUCCESS", "COMPLETED_WITH_FINDINGS", "COMPLETED_NO_FINDINGS"}
+                        and assessment.get("status") == "SUCCESS"
+                        and type(failed) is int
+                        and failed == 0
+                        and len(final) == len(cs)
+                        and {c["candidate_id"] for c in final} == {c["candidate_id"] for c in cs}
+                        and all(type(c.get("rank_final")) is int for c in final)
+                        and sorted(c["rank_final"] for c in final) == list(range(1, len(final) + 1))
+                        and all(c.get("llm_assessment", {}).get("status") == "VALID" for c in final)
+                    )
+                ranked = (
+                    {
+                        str(k): any(c["rank_final"] <= k and strong(c) for c in finals[cid])
+                        for k in cutoffs
+                    }
+                    if ranking_complete
+                    else None
+                )
                 rows.append(
                     {
                         "case_id": cid,
                         "status": case["status"],
                         "discovery_recall_at_k": {
                             str(k): any(c["rank_pre_llm"] <= k for c in correct)
-                            for k in (5, 10, 20)
+                            for k in cutoffs
                         },
-                        "ranked_recall_at_k": None,
+                        "ranked_recall_at_k": ranked,
+                        "ranking_complete": ranking_complete,
                         "first_correct_rank": min(
                             (c["rank_pre_llm"] for c in correct), default=None
                         ),
@@ -325,6 +427,12 @@ def evaluate(root, run, protocol, *, labels, truth):
                             for c in finals[cid]
                         ),
                         "candidate_count": len(cs),
+                        "retained_candidate_count": len(cs),
+                        "raw_candidate_count": raw_counts[cid] if raw_counts is not None else None,
+                        "retained_candidate_cutoff": retained_cutoff,
+                        "candidate_pool_truncated": raw_counts[cid] > len(cs)
+                        if raw_counts is not None
+                        else None,
                         "generator_contribution": dict(
                             Counter(g for c in correct for g in c["origin_generators"])
                         ),
@@ -338,15 +446,19 @@ def evaluate(root, run, protocol, *, labels, truth):
                 "cases": len(ids),
                 "case_ids": ids,
                 "candidate_pool_hash": candidate_pool_hash(
-                    read_jsonl(run / "candidates_raw.jsonl")
-                    if (run / "candidates_raw.jsonl").is_file()
-                    else candidate_rows
+                    raw_rows if raw_rows is not None else candidate_rows
                 ),
                 "discovery_recall_at_k": {
                     str(k): sum(r["discovery_recall_at_k"][str(k)] for r in rows) / len(ids)
-                    for k in (5, 10, 20)
+                    for k in cutoffs
                 },
-                "ranked_recall_at_k": None,
+                "ranked_recall_at_k": {
+                    str(k): sum(r["ranked_recall_at_k"][str(k)] for r in rows) / len(ids)
+                    for k in cutoffs
+                }
+                if all(r["ranking_complete"] for r in rows)
+                else None,
+                "ranking_complete_cases": sum(r["ranking_complete"] for r in rows),
                 "verified_detection_rate": sum(r["verified_detected"] for r in rows) / len(ids),
                 "unmatched_label_status": "UNKNOWN_UNREVIEWED",
                 "precision_fdr": "NOT_ESTIMATED_WITHOUT_ADJUDICATED_NEGATIVES",
@@ -356,6 +468,12 @@ def evaluate(root, run, protocol, *, labels, truth):
                 if manifest["mode"] == "smoke"
                 else "development_exploratory",
                 "candidate_count": sum(r["candidate_count"] for r in rows),
+                "retained_candidate_count": sum(r["retained_candidate_count"] for r in rows),
+                "raw_candidate_count": len(raw_rows) if raw_rows is not None else None,
+                "retained_candidate_cutoff": retained_cutoff,
+                "candidate_pool_truncated": any(r["candidate_pool_truncated"] for r in rows)
+                if raw_rows is not None
+                else None,
                 "outside_default_alerts": sum(r["outside_default_alerts"] for r in rows),
             }
         else:
@@ -375,6 +493,7 @@ def evaluate(root, run, protocol, *, labels, truth):
                 "labels_hash": sha256_file(Path(labels)),
                 "truth_hash": sha256_file(Path(truth)),
                 "raw_outputs_modified": False,
+                "missing_ground_truth_policy": "ERROR_WITH_CASE_IDS",
             },
         )
         table = output / "tables"

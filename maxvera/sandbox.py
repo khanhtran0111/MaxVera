@@ -28,6 +28,11 @@ class PathRule(ctypes.Structure):
     _fields_ = [("allowed_access", ctypes.c_uint64), ("parent_fd", ctypes.c_int)]
 
 
+def resolver_runtime_paths(resolver: Path = Path("/etc/resolv.conf")) -> list[Path]:
+    """Allow the exact DNS config when /etc points into a system runtime directory."""
+    return [resolver.resolve(strict=True)] if resolver.is_file() else []
+
+
 def landlock_available() -> bool:
     if platform.system() != "Linux" or platform.machine() not in {"x86_64", "aarch64"}:
         return False

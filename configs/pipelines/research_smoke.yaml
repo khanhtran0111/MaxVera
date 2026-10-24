@@ -1,0 +1,25 @@
+extends: ../runtime_fast.yaml
+pipeline: research
+dataset:
+  config: configs/datasets/cwe_bench_extended.yaml
+  analysis_manifest: data/processed/analysis_input/smoke/research_smoke_20261022.csv
+  expected_cases: 2
+  track: development_smoke_manual_compile
+research:
+  default_variant: graph_llm_verify
+  graph_signal_approved: false
+  max_nodes: 200000
+  max_edges: 1000000
+budgets:
+  max_calls_per_case: 12
+  max_cost_usd_per_case: 0.1
+  timeout_case_s: 1800
+codeql:
+  per_query_timeout_s: 600
+  ram_mb: 4096
+evidence:
+  top_k: [5]
+  max_graph_hops: 5
+  max_context_tokens_per_call: 8192
+variants:
+  config: configs/experiments/variants.yaml

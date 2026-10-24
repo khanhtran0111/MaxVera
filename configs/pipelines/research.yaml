@@ -9,7 +9,7 @@ dataset:
 research:
   default_variant: graph_only
   graph_signal_approved: false
-  max_nodes: 200000
+  max_nodes: 500000
   max_edges: 1000000
 variants:
   config: configs/experiments/variants.yaml

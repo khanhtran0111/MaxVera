@@ -181,6 +181,11 @@ class PipelineConfig:
             "reproduction",
         )
         if raw["pipeline"] == "research":
+            if (
+                "graph_signal_approved" in raw.get("research", {})
+                and type(raw["research"]["graph_signal_approved"]) is not bool
+            ):
+                raise ValueError("graph_signal_approved must be boolean")
             ds = raw.get("dataset", {})
             if set(ds) & {"oracle_manifest", "labels", "fix_locations"}:
                 raise ValueError("protected oracle inputs in research config")

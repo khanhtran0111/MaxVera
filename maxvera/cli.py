@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import os
 import subprocess
@@ -11,7 +12,7 @@ from pathlib import Path
 
 import yaml
 
-from maxvera.contracts import PipelineConfig, digest, safe_id
+from maxvera.contracts import ORACLE_PATTERN, PipelineConfig, digest, require_keys, safe_id
 from maxvera.dataset import select_cases
 from maxvera.orchestration import Orchestrator
 from src.common.provenance import sha256_file
@@ -80,9 +81,28 @@ def _variant(root, config, name):
     if name not in definitions:
         raise ValueError("unknown research variant")
     result = {**definitions[name], "name": name}
-    if result.get("llm_enabled") or result.get("targeted_verification"):
+    require_keys(
+        result,
+        {
+            "name",
+            "candidate_sources",
+            "graph_enabled",
+            "retrieval",
+            "llm_enabled",
+            "targeted_verification",
+        },
+        "research variant",
+    )
+    if ORACLE_PATTERN.search(json.dumps(result)) or "evaluator_only" in json.dumps(result):
+        raise ValueError("protected oracle metadata in research variant")
+    if any(
+        type(result.get(key)) is not bool
+        for key in ("graph_enabled", "llm_enabled", "targeted_verification")
+    ):
+        raise ValueError("research variant flags must be boolean")
+    if name == "text_only":
         raise ValueError(
-            "W7/W8 NOT_IMPLEMENTED: gated until frozen graph-only dev signal is reviewed (plan §10)"
+            "text_only NOT_IMPLEMENTED: text retrieval requires its own validated candidate pool"
         )
     return result
 
@@ -138,6 +158,19 @@ def pipeline(root, args):
     resolved = config.resolved()
     if args.pipeline == "research":
         resolved["selected_variant"] = _variant(root, config, args.variant)
+        if (
+            resolved["selected_variant"].get("llm_enabled")
+            and args.mode == "smoke"
+            and args.limit
+            and args.limit > 2
+        ):
+            raise ValueError("LLM research smoke is limited to at most two cases")
+        if (
+            args.mode == "full"
+            and resolved["selected_variant"].get("llm_enabled")
+            and config.research.get("graph_signal_approved") is not True
+        ):
+            raise ValueError("full LLM research requires a reviewed frozen development signal")
         stages = [
             "ingest",
             "static_extract",
@@ -178,11 +211,14 @@ def pipeline(root, args):
                     "dag": stages,
                     "expected_requests_upper_bound": len(cases) * config.budgets.max_calls_per_case
                     if args.pipeline == "reproduce"
+                    or resolved.get("selected_variant", {}).get("llm_enabled")
                     else 0,
                     "configured_cost_ceiling_usd": len(cases) * config.budgets.max_cost_usd_per_case
                     if args.pipeline == "reproduce"
+                    or resolved.get("selected_variant", {}).get("llm_enabled")
                     else 0,
                     "config": resolved,
+                    "cost_control": "configured_stop_threshold_not_provider_prepaid_cap",
                 },
                 indent=2,
             )
@@ -219,6 +255,23 @@ def pipeline(root, args):
             "resume": args.resume,
             "implementation_hash": code_hash,
         }
+        if resolved["selected_variant"].get("llm_enabled"):
+            from src.llm.providers.openrouter import OpenRouterSettings
+
+            settings = OpenRouterSettings.load(root, Path(config.llm["model_config"]))
+            if (
+                settings.provider != config.llm["provider_route"]
+                or settings.model != config.llm["model"]
+            ):
+                raise ValueError("research model/profile route mismatch")
+            if settings.max_tokens != config.llm["max_output_tokens"]:
+                raise ValueError("research model/profile output cap mismatch")
+            private = dataclasses.asdict(settings)
+            resolved["llm"]["runtime_parameters"] = {
+                k: v for k, v in private.items() if k != "api_key"
+            }
+            # Sent through stdin only, never config, environment, command line or artifacts.
+            request["llm_settings"] = private
         # No inherited oracle/CVE env values or .env; no LLM needed in graph-only.
         env = {k: v for k, v in os.environ.items() if k in {"PATH", "LANG", "LC_ALL", "TZ"}}
         env["PYTHONPATH"] = str(Path(__file__).resolve().parent.parent)
@@ -278,7 +331,11 @@ def parser():
     status.add_argument("--run-id", required=True)
     ev = commands.add_parser("evaluate")
     ev.add_argument("--run-id", required=True)
-    ev.add_argument("--protocol", choices=["iris_paper", "zero_hint"], required=True)
+    ev.add_argument(
+        "--protocol",
+        choices=["iris_paper", "legacy_artifact", "paper_formula_path", "zero_hint"],
+        required=True,
+    )
     ev.add_argument("--labels", type=Path)
     ev.add_argument("--truth", type=Path)
     compare = commands.add_parser("compare")

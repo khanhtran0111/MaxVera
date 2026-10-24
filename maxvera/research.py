@@ -12,6 +12,7 @@ from pathlib import Path
 from maxvera.candidates import generate, rank
 from maxvera.contracts import ORACLE_PATTERN, digest
 from maxvera.graph import normalize_graph
+from maxvera.graph_provenance import scope_graph_sources
 from maxvera.orchestration import Context, Stage, StageFailure
 from maxvera.process import command
 from src.common.provenance import sha256_file
@@ -52,6 +53,14 @@ def _codeql(ctx):
 
 def _database(ctx):
     return ctx.run_dir / "databases" / ctx.case["case_id"]
+
+
+def write_build_script(path: Path, args: list[str]) -> str:
+    """Preserve argv through CodeQL's command parser using a single shell script."""
+    if not args or not all(isinstance(arg, str) for arg in args):
+        raise ValueError("build command requires a nonempty argument list")
+    path.write_text("#!/bin/sh\nset -eu\nexec " + shlex.join(args) + "\n")
+    return "/bin/sh " + json.dumps(str(path))
 
 
 def static_extract(ctx: Context) -> dict:
@@ -109,6 +118,7 @@ def static_extract(ctx: Context) -> dict:
             continue
     if selected is None:
         raise StageFailure("BUILD_FAILED", "all prepared build options failed")
+    build_command = write_build_script(ctx.stage_dir / "codeql-build.sh", selected["command"])
     command(
         [
             str(binary),
@@ -117,7 +127,7 @@ def static_extract(ctx: Context) -> dict:
             str(database),
             "--language=java",
             f"--source-root={source}",
-            "--command=" + shlex.join(selected["command"]),
+            "--command=" + build_command,
             f"--ram={ctx.config['codeql']['ram_mb']}",
             f"--threads={ctx.config['codeql']['threads']}",
         ],
@@ -150,7 +160,13 @@ def static_extract(ctx: Context) -> dict:
 
     alerts = normalize_sarif(sarif, ctx.case["case_id"], "static_alerts")
     atomic_jsonl(ctx.stage_dir / "static_signals.jsonl", alerts)
-    artifacts = ["static.sarif", "static_signals.jsonl", "database.log", "static.log"]
+    artifacts = [
+        "static.sarif",
+        "static_signals.jsonl",
+        "database.log",
+        "static.log",
+        "codeql-build.sh",
+    ]
     graph_enabled = ctx.config["selected_variant"]["graph_enabled"]
     if graph_enabled:
         queries = ctx.root / "src/static_analysis/queries/v2"
@@ -189,8 +205,20 @@ def static_extract(ctx: Context) -> dict:
         "generated_files": generated,
     }
     atomic_json(ctx.stage_dir / "analyzed_snapshot.json", provenance)
-    artifacts += ["analyzed_snapshot.json", *["workspace/" + rel for rel in analyzed]]
-    return {**provenance, "artifacts": artifacts, "graph_enabled": graph_enabled}
+    from maxvera.research_database import freeze_database
+
+    database_identity = freeze_database(ctx, provenance["analyzed_snapshot_id"])
+    artifacts += [
+        "analyzed_snapshot.json",
+        "db_identity.json",
+        *["workspace/" + rel for rel in analyzed],
+    ]
+    return {
+        **provenance,
+        **database_identity,
+        "artifacts": artifacts,
+        "graph_enabled": graph_enabled,
+    }
 
 
 def build_graph(ctx: Context) -> dict:
@@ -219,11 +247,13 @@ def build_graph(ctx: Context) -> dict:
         edges,
         query_hash,
     )
-    for n in graph["nodes"]:
-        n["content_hash"] = ctx.output("static_extract")["analyzed_files"].get(n["file"])
-        if n["content_hash"] is None:
-            raise ValueError("extracted node is not backed by input snapshot")
-    graph["graph_hash"] = digest([graph["nodes"], graph["edges"]])
+    graph = scope_graph_sources(
+        graph,
+        nodes,
+        edges,
+        folder / "workspace",
+        ctx.output("static_extract")["analyzed_files"],
+    )
     graph["quality"]["extraction_seconds"] = ctx.results["static_extract"]["seconds"]
     atomic_jsonl(ctx.stage_dir / "nodes.jsonl", graph["nodes"])
     atomic_jsonl(ctx.stage_dir / "edges.jsonl", graph["edges"])
@@ -231,6 +261,7 @@ def build_graph(ctx: Context) -> dict:
     atomic_json(ctx.stage_dir / "graph.json", graph)
     return {
         "graph_hash": graph["graph_hash"],
+        "source_boundary": graph["quality"]["source_boundary"],
         "artifacts": ["nodes.jsonl", "edges.jsonl", "graph_quality.json", "graph.json"],
     }
 
@@ -289,37 +320,76 @@ def skipped(ctx):
 
 
 def final_rank(ctx):
-    path = ctx.run_dir / "stages" / ctx.case["case_id"] / "candidate_rank/candidates_ranked.jsonl"
-    findings = [
-        {
-            **c,
-            "finding_id": "finding-" + digest(c["candidate_id"])[:24],
-            "decision": "REVIEW",
-            "stage": "final",
+    base = ctx.run_dir / "stages" / ctx.case["case_id"]
+    original = read_jsonl(base / "candidate_rank/candidates_ranked.jsonl")
+    variant = ctx.config.get("selected_variant", {})
+    reasoned = (
+        read_jsonl(base / "llm_reason/candidates_reasoned.jsonl")
+        if variant.get("llm_enabled")
+        else original
+    )
+    original_ids = [c["candidate_id"] for c in original]
+    if len(reasoned) != len(original) or {c["candidate_id"] for c in reasoned} != set(original_ids):
+        raise ValueError("reasoning changed the immutable candidate set")
+    baseline = {c["candidate_id"]: c for c in original}
+    verification = {}
+    if variant.get("targeted_verification"):
+        verification = {
+            r["candidate_id"]: r for r in read_jsonl(base / "targeted_verify/verification.jsonl")
         }
-        for c in read_jsonl(path)
-    ]
+        if set(verification) != set(original_ids):
+            raise ValueError("verification did not account for every candidate")
+    findings = []
+    for c in reasoned:
+        frozen = baseline[c["candidate_id"]]
+        mutable_annotations = {"rank_post_llm", "decision"}
+        if frozen.get("evidence_bundle_id") is None:
+            mutable_annotations.add("evidence_bundle_id")
+        if any(c.get(k) != v for k, v in frozen.items() if k not in mutable_annotations):
+            raise ValueError("reasoning modified frozen candidate evidence")
+        status = verification.get(c["candidate_id"], {}).get("status", "NOT_ATTEMPTED")
+        findings.append(
+            {
+                **c,
+                "finding_id": "finding-" + digest(c["candidate_id"])[:24],
+                "verification_status": status,
+                "verification": verification.get(c["candidate_id"], {}),
+                "decision": "SUPPORTED" if status == "FLOW_FOUND" else "REVIEW",
+                "stage": "final",
+                "score_final": c["score"]
+                + c.get("llm_score_delta", 0)
+                + (2 if status == "FLOW_FOUND" else 0),
+            }
+        )
+    findings.sort(key=lambda c: (-c["score_final"], c["rank_pre_llm"], c["candidate_id"]))
+    findings = [{**c, "rank_final": i + 1} for i, c in enumerate(findings)]
     atomic_jsonl(ctx.stage_dir / "findings.jsonl", findings)
     return {"findings": findings, "artifacts": ["findings.jsonl"]}
 
 
 def stages() -> list[Stage]:
+    from maxvera.research_database import validate_database
+    from maxvera.research_reasoning import evidence_retrieve, llm_reason
+    from maxvera.research_verification import targeted_verify
+
     # build_graph may be skipped in static_only; candidate stage checks variant directly.
     return [
         Stage("ingest", ingest),
-        Stage("static_extract", static_extract, ("ingest",)),
+        Stage(
+            "static_extract", static_extract, ("ingest",), checkpoint_validator=validate_database
+        ),
         Stage("build_graph", build_graph, ("static_extract",)),
         Stage("candidate_generate", candidate_generate, ("static_extract", "build_graph")),
         Stage("candidate_rank", candidate_rank, ("candidate_generate",)),
-        Stage("evidence_retrieve", skipped, ("candidate_rank",)),
-        Stage("llm_reason", skipped, ("candidate_rank",)),
-        Stage("targeted_verify", skipped, ("candidate_rank",)),
-        Stage("final_rank", final_rank, ("candidate_rank",)),
+        Stage("evidence_retrieve", evidence_retrieve, ("candidate_rank",)),
+        Stage("llm_reason", llm_reason, ("candidate_rank", "evidence_retrieve"), paid=True),
+        Stage("targeted_verify", targeted_verify, ("candidate_rank", "llm_reason")),
+        Stage("final_rank", final_rank, ("candidate_rank", "llm_reason", "targeted_verify")),
     ]
 
 
 def finalize(path: Path, cases: list[dict]) -> None:
-    candidates, findings, raw_pool = [], [], []
+    candidates, findings, raw_pool, calls = [], [], [], []
     for case in cases:
         base = path / "stages" / case["case_id"]
         for stage, name, dest in [
@@ -330,9 +400,16 @@ def finalize(path: Path, cases: list[dict]) -> None:
             checkpoint = base / stage / "stage.json"
             if checkpoint.is_file() and json.loads(checkpoint.read_text())["status"] == "SUCCESS":
                 dest.extend(read_jsonl(base / stage / name))
+        journal = base / "llm_reason/journal/llm_calls.jsonl"
+        calls.extend({"case_id": case["case_id"], **r} for r in read_jsonl(journal))
     # Defense in depth; the OS firewall remains the access boundary.
     if ORACLE_PATTERN.search(json.dumps([candidates, findings])):
         raise ValueError("oracle identifier detected in analyzer output")
     atomic_jsonl(path / "candidates_raw.jsonl", raw_pool)
     atomic_jsonl(path / "candidates_pre_llm.jsonl", candidates)
     atomic_jsonl(path / "findings.jsonl", findings)
+    atomic_jsonl(path / "llm_calls.jsonl", calls)
+    atomic_jsonl(
+        path / "usage.jsonl",
+        [{"case_id": c["case_id"], "usage": c.get("usage", {})} for c in calls],
+    )

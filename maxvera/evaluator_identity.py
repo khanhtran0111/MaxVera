@@ -31,15 +31,20 @@ def verified_upstream(iris_root: Path) -> dict:
 
 
 def evaluator_identity(root: Path, protocol: str, policy_version: str) -> dict:
+    from maxvera.evaluation import ORACLE_PROTOCOLS, metric_semantics
+
     package = Path(__file__).resolve().parent
     files = [
         package / name for name in ("evaluation.py", "evaluator_worker.py", "evaluator_identity.py")
     ]
     files.append(package.parent / "src/reproduction/common.py")
-    return {
+    identity = {
         "policy_version": policy_version,
         "implementation_hash": digest({p.name: sha256_file(p) for p in files}),
         "upstream": verified_upstream(root / "third_party/iris")
-        if protocol == "iris_paper"
+        if protocol in ORACLE_PROTOCOLS
         else None,
     }
+    if protocol in ORACLE_PROTOCOLS:
+        identity.update(metric_semantics(protocol))
+    return identity

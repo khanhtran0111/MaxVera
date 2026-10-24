@@ -54,6 +54,53 @@ def test_completed_request_is_replayed_without_double_charge(tmp_path, monkeypat
     assert len(list((tmp_path / "requests").glob("*/request.json"))) == 1
 
 
+def test_successful_content_redacts_echoed_key_before_cache_and_return(tmp_path, monkeypatch):
+    from maxvera.contracts import digest
+    from maxvera.llm import JournaledClient
+
+    private = settings()
+    wire_body = {
+        "id": "gen-echo",
+        "model": "openai/gpt-oss-20b",
+        "provider": "Fixture Provider",
+        "choices": [
+            {
+                "message": {"content": json.dumps({"rationale": private.api_key})},
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 7, "cost": 0.001},
+    }
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+        def read(self):
+            return json.dumps(wire_body).encode()
+
+    def remote(request, timeout):
+        return Response()
+
+    monkeypatch.setattr("urllib.request.urlopen", remote)
+    client = JournaledClient(private, tmp_path, {"max_calls_per_case": 1})
+    actual = client.complete([], expect_json=True, expected_kind="object")
+    assert json.loads(actual) == {"rationale": "[REDACTED]"}
+    # The replay hash describes the redacted content that downstream stages see.
+    state = json.loads(next(tmp_path.glob("requests/*/request.json")).read_text())
+    assert state["response_hash"] == digest(actual)
+    attempt = json.loads(next(tmp_path.glob("requests/*/attempt-1.json")).read_text())
+    assert attempt["cost_usd"] == 0.001
+    assert attempt["usage"] == {"prompt_tokens": 10, "completion_tokens": 7, "cost": 0.001}
+    assert client.complete([], expect_json=True, expected_kind="object") == actual
+    for path in tmp_path.rglob("*"):
+        if path.is_file():
+            assert private.api_key.encode() not in path.read_bytes()
+
+
 def test_pending_remote_request_blocks_resume(tmp_path):
     from maxvera.llm import JournaledClient
 

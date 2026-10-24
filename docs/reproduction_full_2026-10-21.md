@@ -1,6 +1,8 @@
 # Full reproduction executions — 2026-10-21
 
-## Current fast run
+Historical execution record. The user-requested cleanup removed the reproduction outputs and logs referenced below; on 23 October the retained machine-readable summaries were also removed. These runs cannot be resumed. See the [current recheck](research_smoke_2026-10-23.md) for present status.
+
+## Fast run (historical)
 
 The user explicitly requested runtime/flow optimization and approved changing the fixed provider while retaining GPT-OSS-20B. The previous AkashML run was stopped at a request boundary at 21:11 UTC+7; its artifacts and paid-request history remain intact.
 
@@ -51,4 +53,4 @@ Remaining limits are recorded in `preflight.json`:118 other projects were not pr
 tmux attach -t maxvera-repro-full-20261021T092505Z
 ```
 
-Window1 is the15-second progress monitor; window0 is the workflow log. Press Ctrl+b, release, then 1 or0 to switch. Detach with Ctrl+b then d; this leaves an active reproduction running. Old smoke sessions and their evidence remain unchanged.
+Historically, window1 was the15-second progress monitor and window0 the workflow log. The session and its previous smoke evidence have since been removed by the23 October cleanup; these commands are a record of the former run, not a live session.
