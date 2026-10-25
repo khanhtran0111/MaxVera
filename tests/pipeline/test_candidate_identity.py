@@ -72,18 +72,31 @@ def test_identity_match_preserves_paths_to_other_endpoints():
 
 def test_static_alert_shares_the_identity_candidate_instead_of_duplicating_it():
     graph = identity_graph()
+    node = graph["nodes"][0]
+    span = {key: node[key] for key in ("file", "start_line", "start_column", "end_line")}
+    span["end_column_exclusive"] = node["end_column"] + 1
+    specification = {
+        "status": "EXACT_SPAN",
+        "binding_policy": "EXPR_OR_PARAMETER_EXACT_SPAN_V1",
+        "source": span,
+        "sink": span,
+        "sarif_sha256": "original",
+    }
     candidates = generate(
         graph,
         [
             {
                 "path_evidence": "CODEQL_FLOW",
                 "locations": [{"file": "App.java", "start_line": 3, "end_line": 3}],
+                "static_endpoint_spec": specification,
             }
         ],
     )
 
     assert len(candidates) == 1
     assert candidates[0]["default_alert_overlap"] is True
+    assert candidates[0]["static_endpoint_spec"] == specification
+    assert candidates[0]["static_endpoint_specs"] == [specification]
     assert candidates[0]["origin_generators"] == [
         "sink_backward_slice",
         "source_forward_slice",
@@ -100,7 +113,7 @@ def test_identity_candidate_binds_both_exact_span_verifier_endpoints(tmp_path):
     workspace.mkdir(parents=True)
     source_file = workspace / "App.java"
     source_file.write_text(
-        'class App {\n  void run() throws Exception {\n'
+        "class App {\n  void run() throws Exception {\n"
         '    Runtime.getRuntime().exec(System.getenv("COMMAND"));\n  }\n}\n'
     )
     graph = identity_graph()
@@ -130,3 +143,48 @@ def test_identity_candidate_binds_both_exact_span_verifier_endpoints(tmp_path):
         assert query.count("getStartLine() = 3") == 2
         assert query.count("getStartColumn() = 31") == 2
         assert query.count("getEndColumn() = 54") == 2
+
+
+@pytest.mark.parametrize(
+    "changed", ["source", "sink", "missing", "ambiguous", "binding", "multiline"]
+)
+def test_line_overlap_never_discards_a_distinct_or_unresolved_static_endpoint_pair(changed):
+    graph = identity_graph()
+    node = graph["nodes"][0]
+    endpoint = {
+        "file": node["file"],
+        "start_line": node["start_line"],
+        "start_column": node["start_column"],
+        "end_line": node["end_line"],
+        "end_column_exclusive": node["end_column"] + 1,
+    }
+    spec = {
+        "status": "EXACT_SPAN",
+        "binding_policy": "EXPR_OR_PARAMETER_EXACT_SPAN_V1",
+        "source": endpoint.copy(),
+        "sink": endpoint.copy(),
+        "sarif_sha256": "raw",
+    }
+    if changed in ("source", "sink"):
+        spec[changed]["start_column"] += 1
+    elif changed == "ambiguous":
+        spec["status"] = "AMBIGUOUS_SARIF_LINKAGE"
+    elif changed == "binding":
+        spec["binding_policy"] = "UNKNOWN_BINDING"
+    elif changed == "multiline":
+        spec["source"]["end_line"] += 1
+    alert = {
+        "locations": [
+            {"file": node["file"], "start_line": node["start_line"], "end_line": node["end_line"]}
+        ],
+        "path_evidence": "CODEQL_FLOW",
+    }
+    if changed != "missing":
+        alert["static_endpoint_spec"] = spec
+    output = generate(graph, [alert])
+    assert len(output) == 2
+    static = [c for c in output if c["source_node_id"] is None]
+    assert len(static) == 1 and static[0]["origin_generators"] == ["static_alerts"]
+    graph_candidate = next(c for c in output if c["source_node_id"] is not None)
+    assert "static_alerts" not in graph_candidate["origin_generators"]
+    assert graph_candidate["default_alert_overlap"] is False

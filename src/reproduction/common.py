@@ -73,7 +73,11 @@ def normalize_uri(value: str) -> str:
     for prefix in ("file://", "/%SRCROOT%/", "%SRCROOT%/"):
         if decoded.startswith(prefix):
             decoded = decoded[len(prefix) :]
-    return decoded.lstrip("./")
+    # Remove URI/root decoration without rewriting hidden repository paths or
+    # concealing traversal that source-bound research validation must reject.
+    while decoded.startswith("./"):
+        decoded = decoded[2:]
+    return decoded.lstrip("/")
 
 
 def _physical_location(location: Any) -> tuple[str, int] | None:

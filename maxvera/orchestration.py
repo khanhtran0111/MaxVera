@@ -5,6 +5,7 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import shutil
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -308,6 +309,12 @@ class Orchestrator:
                     else:
                         atomic_json(checkpoint, {**base, "status": "RUNNING"})
                         try:
+                            reserve = self.config.get("runtime", {}).get("min_free_disk_gib", 0)
+                            if shutil.disk_usage(self.path).free < reserve * 1024**3:
+                                raise StageFailure(
+                                    "RESOURCE_EXHAUSTED",
+                                    f"less than {reserve:g} GiB disk space free; no stage started",
+                                )
                             result = stage.action(
                                 Context(
                                     self.root,

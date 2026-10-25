@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-MATCH_POLICY_VERSION = "program-point-strong-span-v2.2"
+MATCH_POLICY_VERSION = "program-point-strong-span-v3-vulnerable-alignment"
 ORACLE_PROTOCOLS = frozenset({"iris_paper", "legacy_artifact", "paper_formula_path"})
 
 
@@ -44,6 +44,16 @@ def candidate_pool_hash(records: list[dict]) -> str:
         "provenance",
     )
     content = [{key: c.get(key) for key in keys} for c in records]
+    for candidate in content:
+        if isinstance(candidate["provenance"], dict):
+            # Full build identity remains in each frozen candidate and run checksum.
+            # Paired pool identity compares semantic evidence, excluding volatile
+            # bookkeeping bytes already separated by the extractor.
+            candidate["provenance"] = {
+                key: value
+                for key, value in candidate["provenance"].items()
+                if key != "analyzed_snapshot_id"
+            }
     return digest(sorted(content, key=lambda c: (str(c["case_id"]), str(c["candidate_id"]))))
 
 
@@ -60,10 +70,11 @@ def condition_manifest(run, manifest, config, identity, labels_hash, truth_hash,
             path = run / "stages" / case_id / stage / name
             if path.is_file():
                 record = json.loads(path.read_text())
+                keys = ("source_hash", "snapshot_id", "analyzed_snapshot_id")
+                if protocol == "zero_hint" and record.get("semantic_snapshot_id"):
+                    keys = ("semantic_snapshot_id",)
                 source_records.setdefault(case_id, {})[stage] = {
-                    k: record[k]
-                    for k in ("source_hash", "snapshot_id", "analyzed_snapshot_id")
-                    if k in record
+                    k: record[k] for k in keys if k in record
                 }
     return {
         "protocol": protocol,
@@ -214,7 +225,9 @@ def _paper_case(root, run, case_id, stage, truth, *, protocol="legacy_artifact")
     }
 
 
-def evaluate(root, run, protocol, *, labels, truth):
+def evaluate(
+    root, run, protocol, *, labels, truth, missing_truth_policy="error", truth_alignment=None
+):
     import csv
     import json
     from collections import defaultdict
@@ -233,6 +246,16 @@ def evaluate(root, run, protocol, *, labels, truth):
         write_checksums,
     )
 
+    if protocol == "zero_hint":
+        from maxvera.truth_alignment import _trusted_only
+
+        _trusted_only()
+    elif truth_alignment is not None:
+        raise ValueError("truth alignment mappings are research-only")
+    if missing_truth_policy not in {"error", "report"}:
+        raise ValueError("unknown missing truth policy")
+    if protocol != "zero_hint" and missing_truth_policy != "error":
+        raise ValueError("report missing truth policy is research-only")
     run, root = Path(run).resolve(), Path(root).resolve()
     verify_checksums(run)  # Validate before any GT is read.
     state = (run / "STATUS").read_text().strip()
@@ -251,12 +274,14 @@ def evaluate(root, run, protocol, *, labels, truth):
         truths[row["project_id"]].append(row)
     missing_labels = sorted(set(ids) - label_index.keys())
     missing_truth = sorted(set(ids) - truths.keys())
-    if missing_labels or missing_truth:
+    if (missing_labels or missing_truth) and missing_truth_policy == "error":
         raise ValueError(
             "evaluator ground truth coverage incomplete: "
             f"missing_label_case_ids={missing_labels}; missing_truth_case_ids={missing_truth}"
         )
-    incomplete_labels = sorted(c for c in ids if not label_index[c].get("ground_truth_cwe"))
+    incomplete_labels = sorted(
+        c for c in ids if c in label_index and not label_index[c].get("ground_truth_cwe")
+    )
     incomplete_methods = (
         sorted(
             c
@@ -266,7 +291,7 @@ def evaluate(root, run, protocol, *, labels, truth):
         if protocol in ORACLE_PROTOCOLS
         else []
     )
-    if incomplete_labels or incomplete_methods:
+    if (incomplete_labels or incomplete_methods) and missing_truth_policy == "error":
         raise ValueError(
             "evaluator ground truth fields incomplete: "
             f"incomplete_label_case_ids={incomplete_labels}; "
@@ -279,7 +304,64 @@ def evaluate(root, run, protocol, *, labels, truth):
     condition = condition_manifest(
         run, manifest, config, identity, labels_hash, truth_hash, protocol
     )
-    output = root / "results/evaluations" / manifest["run_id"] / protocol
+    condition["missing_truth_policy"] = missing_truth_policy
+    missing_spans = sorted(
+        cid
+        for cid in ids
+        if truths[cid]
+        and not any(
+            isinstance(row.get("file"), str) and row["file"] and _range(row)[1] is not None
+            for row in truths[cid]
+        )
+    )
+    # Original coordinate gaps remain diagnostic. A reviewed mapping may supply
+    # a valid vulnerable-source span, so only aligned coverage controls scoring.
+    unscorable = set(missing_labels + missing_truth + incomplete_labels)
+    alignment = None
+    alignment_identity = None
+    original_truths = truths
+    unaligned = []
+    if protocol == "zero_hint":
+        from maxvera.truth_alignment import alignment_report, load_mapping
+
+        mapping, alignment_identity = load_mapping(truth_alignment, truth_hash)
+        alignment, aligned_truths = alignment_report(
+            root, [{"case_id": cid} for cid in ids], label_index, truths, run=run, mapping=mapping
+        )
+        unaligned = alignment["unaligned_case_ids"]
+        if unaligned and missing_truth_policy == "error":
+            raise ValueError(
+                f"evaluator truth alignment incomplete: unaligned_truth_case_ids={unaligned}; "
+                f"missing_span_case_ids={sorted(set(missing_spans) & set(unaligned))}"
+            )
+        unscorable.update(unaligned)
+        truths = defaultdict(list, aligned_truths)
+        condition["truth_alignment"] = alignment_identity
+        condition["aligned_source_identities"] = {
+            row["case_id"]: {
+                k: row[k]
+                for k in ("source_commit", "source_inventory_sha256", "preparation_manifest_sha256")
+                if k in row
+            }
+            for row in alignment["cases"]
+        }
+    truth_coverage = {
+        "selected_cases": len(ids),
+        "evaluable_cases": len(ids) - len(unscorable),
+        "missing_label_case_ids": missing_labels,
+        "incomplete_label_case_ids": incomplete_labels,
+        "missing_truth_case_ids": missing_truth,
+        "missing_span_case_ids": missing_spans,
+        "complete": not unscorable,
+        "policy": missing_truth_policy,
+        **({"alignment": alignment, "unaligned_truth_case_ids": unaligned} if alignment else {}),
+    }
+    from maxvera.truth_alignment import EVALUATION_NAMESPACE
+
+    namespace = EVALUATION_NAMESPACE if protocol == "zero_hint" else protocol
+    output = root / "results/evaluations" / manifest["run_id"] / namespace
+    if protocol == "zero_hint":
+        output = output / digest(condition)
     if output.exists():
         verify_checksums(output)
         previous = json.loads((output / "evaluator_manifest.json").read_text())
@@ -288,6 +370,8 @@ def evaluate(root, run, protocol, *, labels, truth):
             or previous["run_hash"] != sha256_file(run / "checksums.sha256")
             or previous["labels_hash"] != sha256_file(Path(labels))
             or previous["truth_hash"] != sha256_file(Path(truth))
+            or previous.get("missing_truth_policy", "error") != missing_truth_policy
+            or previous.get("truth_alignment") != alignment_identity
         ):
             raise ValueError("immutable evaluator identity/input mismatch")
         return output
@@ -359,6 +443,18 @@ def evaluate(root, run, protocol, *, labels, truth):
             for case in cases:
                 cid = case["case_id"]
                 cs = sorted(candidates[cid], key=lambda c: c["rank_pre_llm"])
+                evaluable = cid not in unscorable
+                ground_truth_status = (
+                    "GT_MISSING"
+                    if cid in missing_truth
+                    else "GT_MISSING_LABEL"
+                    if cid in missing_labels or cid in incomplete_labels
+                    else "GT_MISSING_SPAN"
+                    if cid in missing_spans and not evaluable
+                    else "GT_UNALIGNED"
+                    if not evaluable
+                    else "AVAILABLE"
+                )
 
                 def strong(c, truth_rows=truths[cid]):
                     return (
@@ -377,7 +473,7 @@ def evaluate(root, run, protocol, *, labels, truth):
                         )
                     ) and _location_match(c["locations"], truth_rows, require_span=True)
 
-                correct = [c for c in cs if strong(c)]
+                correct = [c for c in cs if strong(c)] if evaluable else []
                 ranking_complete = False
                 if config.get("selected_variant", {}).get("llm_enabled"):
                     stage = run / "stages" / cid / "llm_reason/stage.json"
@@ -401,31 +497,36 @@ def evaluate(root, run, protocol, *, labels, truth):
                         str(k): any(c["rank_final"] <= k and strong(c) for c in finals[cid])
                         for k in cutoffs
                     }
-                    if ranking_complete
+                    if ranking_complete and evaluable
                     else None
                 )
                 rows.append(
                     {
                         "case_id": cid,
                         "status": case["status"],
+                        "ground_truth_status": ground_truth_status,
+                        "ground_truth_evaluable": evaluable,
                         "discovery_recall_at_k": {
-                            str(k): any(c["rank_pre_llm"] <= k for c in correct)
-                            for k in cutoffs
-                        },
+                            str(k): any(c["rank_pre_llm"] <= k for c in correct) for k in cutoffs
+                        }
+                        if evaluable
+                        else None,
                         "ranked_recall_at_k": ranked,
                         "ranking_complete": ranking_complete,
                         "first_correct_rank": min(
                             (c["rank_pre_llm"] for c in correct), default=None
                         ),
                         "weak_location_matches": sum(
-                            _location_match(c["locations"], truths[cid]) and not strong(c)
+                            _location_match(c["locations"], original_truths[cid]) and not strong(c)
                             for c in cs
                         ),
                         "verified_detected": any(
                             c.get("verification_status") == "FLOW_FOUND"
                             and _location_match(c["locations"], truths[cid], require_span=True)
                             for c in finals[cid]
-                        ),
+                        )
+                        if evaluable
+                        else None,
                         "candidate_count": len(cs),
                         "retained_candidate_count": len(cs),
                         "raw_candidate_count": raw_counts[cid] if raw_counts is not None else None,
@@ -441,6 +542,30 @@ def evaluate(root, run, protocol, *, labels, truth):
                         ),
                     }
                 )
+            evaluable_rows = [r for r in rows if r["ground_truth_evaluable"]]
+
+            def discovery_recall(selected):
+                return (
+                    {
+                        str(k): sum(r["discovery_recall_at_k"][str(k)] for r in selected)
+                        / len(selected)
+                        for k in cutoffs
+                    }
+                    if selected
+                    else None
+                )
+
+            def ranked_recall(selected):
+                return (
+                    {
+                        str(k): sum(r["ranked_recall_at_k"][str(k)] for r in selected)
+                        / len(selected)
+                        for k in cutoffs
+                    }
+                    if selected and all(r["ranked_recall_at_k"] is not None for r in selected)
+                    else None
+                )
+
             aggregate = {
                 "panel": "zero_hint",
                 "cases": len(ids),
@@ -448,18 +573,23 @@ def evaluate(root, run, protocol, *, labels, truth):
                 "candidate_pool_hash": candidate_pool_hash(
                     raw_rows if raw_rows is not None else candidate_rows
                 ),
-                "discovery_recall_at_k": {
-                    str(k): sum(r["discovery_recall_at_k"][str(k)] for r in rows) / len(ids)
-                    for k in cutoffs
-                },
-                "ranked_recall_at_k": {
-                    str(k): sum(r["ranked_recall_at_k"][str(k)] for r in rows) / len(ids)
-                    for k in cutoffs
-                }
-                if all(r["ranking_complete"] for r in rows)
-                else None,
+                "truth_coverage": truth_coverage,
+                "discovery_recall_at_k": discovery_recall(rows) if not unscorable else None,
+                "ranked_recall_at_k": ranked_recall(rows) if not unscorable else None,
                 "ranking_complete_cases": sum(r["ranking_complete"] for r in rows),
-                "verified_detection_rate": sum(r["verified_detected"] for r in rows) / len(ids),
+                "verified_detection_rate": sum(r["verified_detected"] for r in rows) / len(ids)
+                if not unscorable
+                else None,
+                "evaluable_subset": {
+                    "denominator": len(evaluable_rows),
+                    "case_ids": [r["case_id"] for r in evaluable_rows],
+                    "discovery_recall_at_k": discovery_recall(evaluable_rows),
+                    "ranked_recall_at_k": ranked_recall(evaluable_rows),
+                    "verified_detection_rate": sum(r["verified_detected"] for r in evaluable_rows)
+                    / len(evaluable_rows)
+                    if evaluable_rows
+                    else None,
+                },
                 "unmatched_label_status": "UNKNOWN_UNREVIEWED",
                 "precision_fdr": "NOT_ESTIMATED_WITHOUT_ADJUDICATED_NEGATIVES",
                 "statuses": dict(Counter(c["status"] for c in cases)),
@@ -480,6 +610,21 @@ def evaluate(root, run, protocol, *, labels, truth):
             raise ValueError("unsupported evaluation protocol")
         aggregate["condition_manifest"] = condition
         aggregate["condition_hash"] = digest(condition)
+        if protocol == "zero_hint":
+            aggregate["build_provenance"] = {}
+            for case_id in ids:
+                provenance_path = run / "stages" / case_id / "static_extract/analyzed_snapshot.json"
+                if provenance_path.is_file():
+                    source = json.loads(provenance_path.read_text())
+                    aggregate["build_provenance"][case_id] = {
+                        key: source[key]
+                        for key in (
+                            "input_snapshot_id",
+                            "analyzed_snapshot_id",
+                            "semantic_snapshot_id",
+                        )
+                        if key in source
+                    }
         atomic_jsonl(output / "metrics_per_case.jsonl", rows)
         atomic_json(output / "metrics_aggregate.json", aggregate)
         atomic_json(
@@ -493,7 +638,11 @@ def evaluate(root, run, protocol, *, labels, truth):
                 "labels_hash": sha256_file(Path(labels)),
                 "truth_hash": sha256_file(Path(truth)),
                 "raw_outputs_modified": False,
-                "missing_ground_truth_policy": "ERROR_WITH_CASE_IDS",
+                "missing_truth_policy": missing_truth_policy,
+                "truth_alignment": alignment_identity,
+                "missing_ground_truth_policy": "ERROR_WITH_CASE_IDS"
+                if missing_truth_policy == "error"
+                else "REPORT_UNKNOWN_KEEP_SELECTED_COHORT",
             },
         )
         table = output / "tables"
@@ -565,7 +714,7 @@ def compare(evaluations, output, *, paired_llm=False):
                 [
                     str(p),
                     m["cases"],
-                    m.get("discovery_recall_at_k", {}).get("5"),
+                    (m.get("discovery_recall_at_k") or {}).get("5"),
                     m.get("verified_detection_rate"),
                 ]
             )

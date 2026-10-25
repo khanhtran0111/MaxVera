@@ -12,7 +12,7 @@ from pathlib import Path
 from maxvera.candidates import generate, rank
 from maxvera.contracts import ORACLE_PATTERN, digest
 from maxvera.graph import normalize_graph
-from maxvera.graph_provenance import scope_graph_sources
+from maxvera.graph_provenance import scope_graph_sources, scope_static_signals
 from maxvera.orchestration import Context, Stage, StageFailure
 from maxvera.process import command
 from src.common.provenance import sha256_file
@@ -64,6 +64,8 @@ def write_build_script(path: Path, args: list[str]) -> str:
 
 
 def static_extract(ctx: Context) -> dict:
+    from maxvera.snapshots import semantic_inventory, source_inventory, tracked_input_policy
+
     original, binary = _source(ctx), _codeql(ctx)
     source = ctx.stage_dir / "workspace"
     if source.exists():
@@ -72,9 +74,14 @@ def static_extract(ctx: Context) -> dict:
         original,
         source,
         symlinks=False,
-        ignore=shutil.ignore_patterns(".git", ".gradle", "target", "build", "classes"),
+        ignore=shutil.ignore_patterns(
+            *(
+                [".git"]
+                if tracked_input_policy(original)
+                else [".git", ".gradle", "target", "build", "classes"]
+            )
+        ),
     )
-    from maxvera.snapshots import source_inventory
 
     if source_inventory(source) != ctx.output("ingest")["files"]:
         raise ValueError("frozen snapshot changed before private build copy")
@@ -159,6 +166,9 @@ def static_extract(ctx: Context) -> dict:
     from maxvera.reproduction import normalize_sarif
 
     alerts = normalize_sarif(sarif, ctx.case["case_id"], "static_alerts")
+    from maxvera.sarif_endpoints import attach_endpoint_specs
+
+    alerts = attach_endpoint_specs(alerts, sarif)
     atomic_jsonl(ctx.stage_dir / "static_signals.jsonl", alerts)
     artifacts = [
         "static.sarif",
@@ -200,6 +210,9 @@ def static_extract(ctx: Context) -> dict:
     provenance = {
         "input_snapshot_id": ctx.output("ingest")["snapshot_id"],
         "analyzed_snapshot_id": digest(analyzed),
+        "semantic_snapshot_id": digest(semantic_inventory(analyzed, baseline)),
+        "semantic_files": semantic_inventory(analyzed, baseline),
+        "semantic_inventory_policy": "repository-inputs-and-generated-java-v1",
         "analyzed_files": analyzed,
         "modified_input_files": changed,
         "generated_files": generated,
@@ -226,23 +239,28 @@ def build_graph(ctx: Context) -> dict:
         return {"status": "SKIPPED_BY_VARIANT", "artifacts": []}
     folder = ctx.run_dir / "stages" / ctx.case["case_id"] / "static_extract"
 
-    def load(name):
+    def load(name, maximum):
+        rows = []
         with (folder / name).open(newline="") as handle:
-            return list(csv.DictReader(handle))
+            for row in csv.DictReader(handle):
+                if len(rows) >= maximum:
+                    raise StageFailure(
+                        "GRAPH_LIMIT", "graph exceeds configured bound; no silent truncation"
+                    )
+                rows.append(row)
+        return rows
 
-    nodes, edges = load("program_nodes.csv"), load("program_edges.csv")
-    if (
-        len(nodes) > ctx.config["research"]["max_nodes"]
-        or len(edges) > ctx.config["research"]["max_edges"]
-    ):
-        raise StageFailure("GRAPH_LIMIT", "graph exceeds configured bound; no silent truncation")
+    nodes = load("program_nodes.csv", ctx.config["research"]["max_nodes"])
+    edges = load("program_edges.csv", ctx.config["research"]["max_edges"])
     queries = ctx.root / "src/static_analysis/queries/v2"
     query_hash = digest(
         {p.name: sha256_file(p) for p in queries.iterdir() if p.suffix in {".ql", ".qll", ".yml"}}
     )
     graph = normalize_graph(
         ctx.case["case_id"],
-        ctx.output("static_extract")["analyzed_snapshot_id"],
+        ctx.output("static_extract").get(
+            "semantic_snapshot_id", ctx.output("static_extract")["analyzed_snapshot_id"]
+        ),
         nodes,
         edges,
         query_hash,
@@ -254,6 +272,7 @@ def build_graph(ctx: Context) -> dict:
         folder / "workspace",
         ctx.output("static_extract")["analyzed_files"],
     )
+    graph["analyzed_snapshot_id"] = ctx.output("static_extract")["analyzed_snapshot_id"]
     graph["quality"]["extraction_seconds"] = ctx.results["static_extract"]["seconds"]
     atomic_jsonl(ctx.stage_dir / "nodes.jsonl", graph["nodes"])
     atomic_jsonl(ctx.stage_dir / "edges.jsonl", graph["edges"])
@@ -269,20 +288,30 @@ def build_graph(ctx: Context) -> dict:
 def candidate_generate(ctx: Context) -> dict:
     base = ctx.run_dir / "stages" / ctx.case["case_id"]
     alerts = read_jsonl(base / "static_extract/static_signals.jsonl")
+    extract = ctx.output("static_extract")
+    alerts, scope = scope_static_signals(
+        alerts, base / "static_extract/workspace", extract["analyzed_files"]
+    )
+    atomic_jsonl(ctx.stage_dir / "static_signals_scoped.jsonl", alerts)
+    atomic_json(ctx.stage_dir / "static_signal_scope.json", scope)
     if ctx.config["selected_variant"]["graph_enabled"]:
         graph = json.loads((base / "build_graph/graph.json").read_text())
     else:
         graph = {
             "case_id": ctx.case["case_id"],
-            "snapshot_id": ctx.output("static_extract")["analyzed_snapshot_id"],
+            "snapshot_id": extract.get("semantic_snapshot_id", extract["analyzed_snapshot_id"]),
+            "analyzed_snapshot_id": extract["analyzed_snapshot_id"],
             "nodes": [],
             "edges": [],
             "graph_hash": digest([]),
         }
+    diagnostics = {}
     candidates = generate(
         graph,
         alerts,
         max_hops=ctx.config["evidence"]["max_graph_hops"],
+        max_traversal_nodes=ctx.config.get("research", {}).get("max_traversal_nodes", 4096),
+        diagnostics=diagnostics,
         check_budget=lambda: ctx.remaining_seconds(7200),
     )
     allowed = ctx.config["selected_variant"]["candidate_sources"]
@@ -290,7 +319,18 @@ def candidate_generate(ctx: Context) -> dict:
         c["origin_generators"] = [g for g in c["origin_generators"] if g in allowed]
     candidates = [c for c in candidates if c["origin_generators"]]
     atomic_jsonl(ctx.stage_dir / "candidates_raw.jsonl", candidates)
-    return {"pool_hash": digest(candidates), "artifacts": ["candidates_raw.jsonl"]}
+    atomic_json(ctx.stage_dir / "discovery_diagnostics.json", diagnostics)
+    return {
+        "pool_hash": digest(candidates),
+        "discovery_diagnostics": {k: v for k, v in diagnostics.items() if k != "truncated_slices"},
+        "static_signal_scope": {k: v for k, v in scope.items() if k != "alerts"},
+        "artifacts": [
+            "candidates_raw.jsonl",
+            "discovery_diagnostics.json",
+            "static_signals_scoped.jsonl",
+            "static_signal_scope.json",
+        ],
+    }
 
 
 def candidate_rank(ctx: Context) -> dict:
@@ -413,3 +453,6 @@ def finalize(path: Path, cases: list[dict]) -> None:
         path / "usage.jsonl",
         [{"case_id": c["case_id"], "usage": c.get("usage", {})} for c in calls],
     )
+    from maxvera.quality import write_quality_report
+
+    write_quality_report(path, cases)

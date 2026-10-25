@@ -5,6 +5,7 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
+import math
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -68,12 +69,20 @@ class Runtime:
     llm_concurrency: int = 1
     timeout_case_s: int = 7200
     dry_run_default: bool = True
+    min_free_disk_gib: float = 20
 
     def __post_init__(self):
         if self.project_workers != 1 or self.llm_concurrency != 1:
             raise ValueError("v2 core requires one project worker and one LLM request")
         if self.timeout_case_s <= 0:
             raise ValueError("timeout must be positive")
+        if (
+            isinstance(self.min_free_disk_gib, bool)
+            or not isinstance(self.min_free_disk_gib, (int, float))
+            or not math.isfinite(self.min_free_disk_gib)
+            or self.min_free_disk_gib < 0
+        ):
+            raise ValueError("minimum free disk space must be nonnegative and finite")
 
 
 @dataclass(frozen=True)
@@ -131,6 +140,7 @@ class PipelineConfig:
                 "labels",
                 "fix_locations",
                 "expected_cases",
+                "expected_selected_cases",
                 "split",
                 "track",
             },
@@ -172,7 +182,13 @@ class PipelineConfig:
         )
         require_keys(
             raw.get("research", {}),
-            {"default_variant", "graph_signal_approved", "max_nodes", "max_edges"},
+            {
+                "default_variant",
+                "graph_signal_approved",
+                "max_nodes",
+                "max_edges",
+                "max_traversal_nodes",
+            },
             "research",
         )
         require_keys(
@@ -181,6 +197,9 @@ class PipelineConfig:
             "reproduction",
         )
         if raw["pipeline"] == "research":
+            maximum = raw.get("research", {}).get("max_traversal_nodes", 4096)
+            if type(maximum) is not int or maximum < 1:
+                raise ValueError("max_traversal_nodes must be an integer >= 1")
             if (
                 "graph_signal_approved" in raw.get("research", {})
                 and type(raw["research"]["graph_signal_approved"]) is not bool
@@ -192,6 +211,11 @@ class PipelineConfig:
             encoded = json.dumps(raw)
             if ORACLE_PATTERN.search(encoded) or "evaluator_only" in encoded:
                 raise ValueError("protected oracle metadata in research config")
+        for name in ("expected_cases", "expected_selected_cases"):
+            if name in raw.get("dataset", {}) and (
+                type(raw["dataset"][name]) is not int or raw["dataset"][name] < 1
+            ):
+                raise ValueError(f"{name} must be a positive integer")
         try:
             raw["runtime"] = Runtime(**raw.get("runtime", {}))
             raw["budgets"] = Budgets(**raw.get("budgets", {}))

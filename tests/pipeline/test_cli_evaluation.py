@@ -42,9 +42,13 @@ def test_dry_run_lists_all_cases_without_network_or_creating_run(tmp_path, capsy
 
 
 def frozen_run(root, run_id="run1"):
+    from test_truth_alignment import frozen_source_stage, source_fixture
+
     from maxvera.orchestration import Orchestrator, Stage
     from src.reproduction.common import atomic_jsonl
 
+    source_fixture(root, "opaque-1", name="X.java")
+    source_fixture(root, "opaque-2", name="Y.java")
     candidates = [
         dict(
             case_id="opaque-1",
@@ -58,9 +62,6 @@ def frozen_run(root, run_id="run1"):
             verification_status="NOT_ATTEMPTED",
         )
     ]
-
-    def work(ctx):
-        return {"artifacts": []}
 
     def finish(path, cases):
         atomic_jsonl(path / "candidates_pre_llm.jsonl", candidates)
@@ -76,7 +77,7 @@ def frozen_run(root, run_id="run1"):
         run_id,
         config,
         [{"case_id": "opaque-1"}, {"case_id": "opaque-2"}],
-        [Stage("extract", work)],
+        [Stage("ingest", frozen_source_stage), Stage("static_extract", frozen_source_stage)],
         implementation_hash="code",
         finalizer=finish,
     )
@@ -89,13 +90,30 @@ def test_evaluator_counts_failures_and_weak_matches_without_false_precision(tmp_
 
     run = frozen_run(tmp_path)
     labels = tmp_path / "labels.csv"
-    labels.write_text("project_id,ground_truth_cwe\nopaque-1,CWE-78\nopaque-2,CWE-22\n")
+    labels.write_text(
+        "project_id,ground_truth_cwe,buggy_commit_id\n"
+        + f"opaque-1,CWE-78,{'b' * 40}\nopaque-2,CWE-22,{'b' * 40}\n"
+    )
     truth = tmp_path / "truth.jsonl"
     truth.write_text(
-        json.dumps({"project_id": "opaque-1", "file": "X.java", "method_start": 5, "method_end": 9})
+        json.dumps(
+            {
+                "project_id": "opaque-1",
+                "file": "X.java",
+                "method_start": 5,
+                "method_end": 9,
+                "commit": "b" * 40,
+            }
+        )
         + "\n"
         + json.dumps(
-            {"project_id": "opaque-2", "file": "Y.java", "method_start": 2, "method_end": 4}
+            {
+                "project_id": "opaque-2",
+                "file": "Y.java",
+                "method_start": 2,
+                "method_end": 4,
+                "commit": "b" * 40,
+            }
         )
         + "\n"
     )
@@ -152,13 +170,30 @@ def test_status_evaluate_and_compare_cli_on_frozen_fixture_runs(tmp_path, capsys
     frozen_run(tmp_path, "one")
     frozen_run(tmp_path, "two")
     labels = tmp_path / "labels.csv"
-    labels.write_text("project_id,ground_truth_cwe\nopaque-1,CWE-78\nopaque-2,CWE-22\n")
+    labels.write_text(
+        "project_id,ground_truth_cwe,buggy_commit_id\n"
+        + f"opaque-1,CWE-78,{'b' * 40}\nopaque-2,CWE-22,{'b' * 40}\n"
+    )
     truth = tmp_path / "truth.jsonl"
     truth.write_text(
-        json.dumps({"project_id": "opaque-1", "file": "X.java", "method_start": 5, "method_end": 9})
+        json.dumps(
+            {
+                "project_id": "opaque-1",
+                "file": "X.java",
+                "method_start": 5,
+                "method_end": 9,
+                "commit": "b" * 40,
+            }
+        )
         + "\n"
         + json.dumps(
-            {"project_id": "opaque-2", "file": "Y.java", "method_start": 2, "method_end": 4}
+            {
+                "project_id": "opaque-2",
+                "file": "Y.java",
+                "method_start": 2,
+                "method_end": 4,
+                "commit": "b" * 40,
+            }
         )
         + "\n"
     )
@@ -204,7 +239,7 @@ def test_status_evaluate_and_compare_cli_on_frozen_fixture_runs(tmp_path, capsys
     assert (tmp_path / "results/aggregate/fixture/comparison.csv").is_file()
 
 
-def test_research_cli_isolated_worker_accounts_missing_snapshot_without_labels(tmp_path):
+def test_research_cli_preflight_blocks_missing_snapshot_without_labels(tmp_path, capsys):
     from maxvera.cli import main
     from maxvera.sandbox import landlock_available
 
@@ -241,8 +276,36 @@ def test_research_cli_isolated_worker_accounts_missing_snapshot_without_labels(t
     )
     assert result == 1
     run = tmp_path / "results/_smoke/research/fixture_failure"
-    rows = [json.loads(line) for line in (run / "cases.jsonl").read_text().splitlines()]
-    assert len(rows) == 1
-    assert rows[0]["stages"]["ingest"] == "FETCH_FAILED"
-    assert (run / "findings.jsonl").read_text() == ""
-    assert "POISON" not in "".join(p.read_text() for p in run.rglob("*.json*"))
+    assert not run.exists()
+    output = capsys.readouterr().out
+    report = json.loads(output)
+    assert report["status"] == "INPUT_PREFLIGHT_FAILED"
+    assert report["input_preflight"]["cases"][0]["issues"][0]["code"] == "SOURCE_MISSING"
+    assert report["input_preflight"]["evaluator_inputs_read"] is False
+    assert "POISON" not in output
+
+
+def test_status_surfaces_quality_gates_when_report_is_present(tmp_path, capsys):
+    from maxvera.cli import main
+
+    run = frozen_run(tmp_path, "quality")
+    (run.path / "quality_report.json").write_text(
+        json.dumps(
+            {
+                "engineering_pass": False,
+                "blockers": ["LOW_VERIFICATION_SUPPORT"],
+                "verification_supported_fraction": 0.2,
+                "full120_ready": False,
+                "private_detail": "not needed in status",
+            }
+        )
+    )
+    assert main(["--root", str(tmp_path), "status", "--run-id", "quality"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["status"] == "COMPLETED"
+    assert report["quality"] == {
+        "engineering_pass": False,
+        "blockers": ["LOW_VERIFICATION_SUPPORT"],
+        "verification_supported_fraction": 0.2,
+        "full120_ready": False,
+    }

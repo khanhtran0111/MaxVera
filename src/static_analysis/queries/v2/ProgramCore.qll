@@ -29,9 +29,10 @@ string programRole(V2Node node) {
 predicate programEdge(V2Node source, V2Node target, string kind) {
   TaintTracking::localTaintStep(source, target) and kind = "MAY_FLOW"
   or
-  exists(Call call, Parameter parameter |
+  exists(Call call, Parameter parameter, Argument argument |
     call.getCallee().getSourceDeclaration() = parameter.getCallable() and
-    source.asExpr() = call.getArgument(parameter.getPosition()) and
+    argument.getCall() = call and argument.getParameterPos() = parameter.getPosition() and
+    source.asExpr() = argument and
     target.asParameter() = parameter and kind = "ARG_TO_PARAM"
   )
   or

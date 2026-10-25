@@ -13,6 +13,97 @@ from src.common.provenance import sha256_file
 ARCHIVE_SUFFIXES = {".jar", ".zip", ".war", ".ear", ".jmod"}
 
 
+def scope_static_signals(
+    alerts: list[dict], workspace: Path, analyzed_files: dict[str, str]
+) -> tuple[list[dict], dict]:
+    """Keep repository evidence and account explicitly for every external location.
+
+    A source-to-source CodeQL flow can cross dependencies; its repository endpoints
+    remain valid flow evidence. An external endpoint leaves only partial location
+    evidence. Raw SARIF and unscoped signals remain immutable extraction artifacts.
+    """
+    workspace = workspace.resolve()
+    retained, records = [], []
+    excluded_locations = partial_alerts = 0
+    backing_cache = {}
+
+    def backed_source(file):
+        relative = relative_file(file)
+        target = workspace / relative
+        ancestors = [
+            workspace.joinpath(*PurePosixPath(relative).parts[:i])
+            for i in range(1, len(PurePosixPath(relative).parts) + 1)
+        ]
+        if any(path.is_symlink() for path in ancestors):
+            raise ValueError("static signal source path contains symlink")
+        if not target.resolve().is_relative_to(workspace):
+            raise ValueError("static signal source path escapes workspace")
+        if relative not in backing_cache:
+            expected = analyzed_files.get(relative)
+            if expected is None:
+                backing_cache[relative] = False
+            else:
+                try:
+                    if not target.is_file() or sha256_file(target) != expected:
+                        raise ValueError("static signal source integrity mismatch")
+                except OSError as error:
+                    raise ValueError("static signal source integrity unreadable") from error
+                backing_cache[relative] = True
+        return backing_cache[relative]
+
+    for index, alert in enumerate(alerts):
+        locations = alert.get("locations", [])
+        valid, excluded = [], []
+        for position, location in enumerate(locations):
+            file = location.get("file", "")
+            if backed_source(file):
+                valid.append((position, location))
+            else:
+                excluded.append(
+                    {
+                        "position": position,
+                        "location": location,
+                        "reason": "OUTSIDE_WORKSPACE_SOURCE_INVENTORY",
+                    }
+                )
+        excluded_locations += len(excluded)
+        status = "EXCLUDED_NO_REPOSITORY_LOCATION"
+        if valid:
+            complete_endpoints = valid[0][0] == 0 and valid[-1][0] == len(locations) - 1
+            partial = alert.get("path_evidence") == "CODEQL_FLOW" and not complete_endpoints
+            status = "PARTIAL_EXTERNAL_FLOW" if partial else "REPOSITORY_ENDPOINTS"
+            partial_alerts += partial
+            retained.append(
+                {
+                    **alert,
+                    "locations": [location for _, location in valid],
+                    "path_evidence": "LOCATION_ONLY" if partial else alert.get("path_evidence"),
+                    "scope_status": status,
+                    "excluded_location_count": len(excluded),
+                    "scope_policy": "workspace-source-files-v1",
+                }
+            )
+        records.append(
+            {
+                "alert_index": index,
+                "finding_id": alert.get("finding_id"),
+                "status": status,
+                "retained_locations": len(valid),
+                "excluded_locations": excluded,
+            }
+        )
+    return retained, {
+        "schema_version": "1.0",
+        "policy": "workspace-source-files-v1",
+        "input_alerts": len(alerts),
+        "retained_alerts": len(retained),
+        "excluded_alerts": len(alerts) - len(retained),
+        "partial_alerts": partial_alerts,
+        "excluded_locations": excluded_locations,
+        "alerts": records,
+    }
+
+
 def _backing_archive(workspace: Path, file: str) -> tuple[str, Path] | None:
     parts = PurePosixPath(file).parts
     if PurePosixPath(file).suffix != ".java":

@@ -10,13 +10,17 @@ Report detected/selected (120 for a full reproduction), detected/successfully-an
 
 ## Zero hint
 
-The preregistered strong match requires a complete extracted candidate evidence path or an actual CodeQL flow result that intersects annotated program points. Sink/source/location-only overlap is `weak_location_match`, reported separately. File-only truth annotations contribute only weak/ambiguous overlap, never strong discovery recall. Method/class spans are required for a strong program-point match. Known-CVE Recall@5/@10/@20 is measured before verification. Final ranked recall requires a successful, complete cited assessment set and complete final ranks for every selected case; otherwise aggregate ranked recall is null. Confirmed detection requires `FLOW_FOUND`; graph-only review candidates are not confirmations.
+The preregistered strong match requires a complete extracted candidate evidence path or an actual CodeQL flow result that intersects annotated program points. Sink/source/location-only overlap is `weak_location_match`, reported separately. File-only truth annotations contribute only weak/ambiguous overlap, never strong discovery recall. Method/class spans and a file are required for a strong program-point match; strict evaluation rejects cases lacking them. Known-CVE Recall@5/@10/@20 is measured before verification. Final ranked recall requires a successful, complete cited assessment set and complete final ranks for every selected case; otherwise aggregate ranked recall is null. Confirmed detection requires `FLOW_FOUND`; graph-only review candidates are not confirmations.
 
 Every declared case is in the denominator. An unmatched candidate is `UNKNOWN_UNREVIEWED`; no precision or FDR is estimated by treating unlabeled locations as negatives. Fixed-version differential and adjudicated negatives are future supplementary evaluation, not analyzer inputs.
+
+Research-only `--missing-truth report` preserves every selected row and marks unavailable truth `GT_MISSING`, `GT_MISSING_LABEL` or `GT_MISSING_SPAN`. Full-cohort discovery/ranked/verified metrics are null when any case is unscorable. `evaluable_subset` publishes only explicitly labeled subset metrics with its own case IDs and denominator. It never counts missing annotations as negatives or silently reduces the cohort. Default `--missing-truth error` remains strict. The policy is part of immutable evaluation identity.
 
 ## Comparison
 
 The comparator validates evaluation checksums and enforces identical case IDs plus a condition manifest containing input/snapshot identity, analyzer/query implementation, recorded tool versions, evaluator/policy identity, label/truth hashes and budgets/model settings. It separates oracle and zero-hint panels. `--paired-llm` checks raw candidate-pool content without run IDs, ranks or LLM/verifier judgments; it does not compare only truncated Top-K output. Text-only is a pipeline-level comparison, not isolated evidence of graph benefit. It emits machine-readable JSON/CSV and does not automatically claim causality or significance.
+
+New research outputs compare semantic source/candidate identities; volatile full-build metadata is retained separately as `build_provenance` and remains bound by the frozen run checksum. Legacy outputs without semantic identity retain their strict original identity. This separation does not permit reuse of a checkpoint or database after integrity mismatch.
 
 Group-aware bootstrap/McNemar, manual ambiguous-match adjudication, full efficiency/peak-RAM summaries and retrieval-paired experiments remain **NOT_IMPLEMENTED** in the new evaluator. These limitations are explicit acceptance gaps, not positive experimental results.
 

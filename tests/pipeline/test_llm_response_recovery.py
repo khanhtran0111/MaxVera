@@ -76,7 +76,7 @@ def wire(monkeypatch):
         queue = list(responses)
 
         def urlopen(request, timeout):
-            assert timeout == 5
+            assert 0 < timeout <= 5  # A case deadline may be shorter than the profile timeout.
             sent.append(json.loads(request.data))
             if not queue:
                 pytest.fail("unexpected additional paid attempt")

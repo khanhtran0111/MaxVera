@@ -12,6 +12,10 @@ def frozen_ranked_run(
     root, *, llm_enabled=True, incomplete=None, top_k=None, raw_count=6, correct_rank=6
 ):
     """Freeze two real orchestrator outputs; only assessment status is controlled."""
+    from test_truth_alignment import frozen_source_stage, source_fixture
+
+    for cid in ("opaque-1", "opaque-2"):
+        source_fixture(root, cid, name="X.java")
     candidates = [
         {
             "case_id": case_id,
@@ -69,18 +73,31 @@ def frozen_ranked_run(
             **({"evidence": {"top_k": top_k}} if top_k is not None else {}),
         },
         [{"case_id": "opaque-1"}, {"case_id": "opaque-2"}],
-        [Stage("llm_reason", reasoning)],
+        [
+            Stage("ingest", frozen_source_stage),
+            Stage("static_extract", frozen_source_stage),
+            Stage("llm_reason", reasoning),
+        ],
         implementation_hash="code",
         finalizer=finish,
     )
     assert run.execute() == "COMPLETED"
     labels = root / "labels.csv"
-    labels.write_text("project_id,ground_truth_cwe\nopaque-1,CWE-78\nopaque-2,CWE-22\n")
+    labels.write_text(
+        "project_id,ground_truth_cwe,buggy_commit_id\n"
+        + f"opaque-1,CWE-78,{'b' * 40}\nopaque-2,CWE-22,{'b' * 40}\n"
+    )
     truth = root / "truth.jsonl"
     atomic_jsonl(
         truth,
         [
-            {"project_id": case_id, "file": "X.java", "method_start": 5, "method_end": 9}
+            {
+                "project_id": case_id,
+                "file": "X.java",
+                "method_start": 5,
+                "method_end": 9,
+                "commit": "b" * 40,
+            }
             for case_id in ("opaque-1", "opaque-2")
         ],
     )

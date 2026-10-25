@@ -251,9 +251,12 @@ def test_database_checkpoint_covers_relations_and_reference_inventories(tmp_path
 
 
 def _evaluation_fixture(root, name, *, source="source-1", file_only=False):
+    from test_truth_alignment import frozen_source_stage, source_fixture
+
     from maxvera.orchestration import Orchestrator, Stage
     from src.reproduction.common import atomic_jsonl
 
+    source_fixture(root, name="X.java")
     candidate = {
         "schema_version": "2.0",
         "run_id": name,
@@ -280,19 +283,22 @@ def _evaluation_fixture(root, name, *, source="source-1", file_only=False):
         name,
         {"dataset": {"track": "dev"}},
         [{"case_id": "opaque-1", "snapshot_content_hash": source}],
-        [Stage("extract", lambda ctx: {"artifacts": []})],
+        [Stage("ingest", frozen_source_stage), Stage("static_extract", frozen_source_stage)],
         implementation_hash="same-code",
         finalizer=finish,
     )
     run.execute()
     labels = root / "labels.csv"
-    labels.write_text("project_id,ground_truth_cwe\nopaque-1,CWE-78\n")
+    labels.write_text(
+        "project_id,ground_truth_cwe,buggy_commit_id\n" + f"opaque-1,CWE-78,{'b' * 40}\n"
+    )
     truth = root / ("file_truth.jsonl" if file_only else "truth.jsonl")
     truth.write_text(
         json.dumps(
             {
                 "project_id": "opaque-1",
                 "file": "X.java",
+                "commit": "b" * 40,
                 **({} if file_only else {"method_start": 5, "method_end": 9}),
             }
         )
@@ -305,10 +311,13 @@ def test_file_only_truth_never_inflates_strong_recall(tmp_path):
     from maxvera.evaluation import evaluate
 
     run, labels, truth = _evaluation_fixture(tmp_path, "file-only", file_only=True)
-    output = evaluate(tmp_path, run.path, "zero_hint", labels=labels, truth=truth)
+    output = evaluate(
+        tmp_path, run.path, "zero_hint", labels=labels, truth=truth, missing_truth_policy="report"
+    )
     metric = json.loads((output / "metrics_aggregate.json").read_text())
     row = json.loads((output / "metrics_per_case.jsonl").read_text())
-    assert metric["discovery_recall_at_k"]["5"] == 0
+    assert metric["discovery_recall_at_k"] is None
+    assert metric["truth_coverage"]["evaluable_cases"] == 0
     assert row["weak_location_matches"] == 1
 
 
@@ -342,6 +351,24 @@ def test_equivalent_default_alert_does_not_count_as_novel_graph_discovery():
         "locations": [
             {"file": file, "start_line": 7, "end_line": 7} for file in ("A.java", "B.java")
         ],
+        "static_endpoint_spec": {
+            "status": "EXACT_SPAN",
+            "binding_policy": "EXPR_OR_PARAMETER_EXACT_SPAN_V1",
+            "source": {
+                "file": "A.java",
+                "start_line": 7,
+                "start_column": 1,
+                "end_line": 7,
+                "end_column_exclusive": 9,
+            },
+            "sink": {
+                "file": "B.java",
+                "start_line": 7,
+                "start_column": 1,
+                "end_line": 7,
+                "end_column_exclusive": 9,
+            },
+        },
     }
     candidates = rank(generate(graph, [alert]))
     assert len(candidates) == 1
@@ -380,14 +407,16 @@ def test_real_run_ids_and_ranking_do_not_change_frozen_pool_identity(tmp_path):
     ) == candidate_pool_hash([{"candidate_id": "c", "run_id": "two", "rank_pre_llm": 9}])
 
 
-def test_evaluator_policy_change_rejects_silent_result_reuse(tmp_path, monkeypatch):
+def test_evaluator_policy_change_creates_separate_immutable_result(tmp_path, monkeypatch):
     import maxvera.evaluation as evaluation
 
     run, labels, truth = _evaluation_fixture(tmp_path, "one")
-    evaluation.evaluate(tmp_path, run.path, "zero_hint", labels=labels, truth=truth)
+    original = evaluation.evaluate(tmp_path, run.path, "zero_hint", labels=labels, truth=truth)
+    before = (original / "checksums.sha256").read_bytes()
     monkeypatch.setattr(evaluation, "MATCH_POLICY_VERSION", "changed-policy", raising=False)
-    with pytest.raises(ValueError, match=r"evaluator|identity|input mismatch"):
-        evaluation.evaluate(tmp_path, run.path, "zero_hint", labels=labels, truth=truth)
+    updated = evaluation.evaluate(tmp_path, run.path, "zero_hint", labels=labels, truth=truth)
+    assert original != updated
+    assert (original / "checksums.sha256").read_bytes() == before
 
 
 def test_database_identity_excludes_mutable_query_cache_and_dynamic_pools(tmp_path):

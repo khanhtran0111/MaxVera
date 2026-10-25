@@ -14,6 +14,12 @@ from maxvera.research_database import validate_database
 from src.common.provenance import sha256_file
 from src.reproduction.common import atomic_jsonl, read_jsonl
 
+FLOW_COLUMNS = [
+    f"{role}_{field}"
+    for role in ("source", "sink")
+    for field in ("file", "line", "start_column", "end_line", "end_column")
+]
+
 
 def classify_verification(source_count: int, sink_count: int, flow_count: int) -> str:
     if source_count != 1 or sink_count != 1:
@@ -76,8 +82,14 @@ from DataFlow::Node source, DataFlow::Node sink
 where ResearchFlow::flow(source, sink)
 select source.getLocation().getFile().getRelativePath() as source_file,
   source.getLocation().getStartLine() as source_line,
+  source.getLocation().getStartColumn() as source_start_column,
+  source.getLocation().getEndLine() as source_end_line,
+  source.getLocation().getEndColumn() as source_end_column,
   sink.getLocation().getFile().getRelativePath() as sink_file,
-  sink.getLocation().getStartLine() as sink_line
+  sink.getLocation().getStartLine() as sink_line,
+  sink.getLocation().getStartColumn() as sink_start_column,
+  sink.getLocation().getEndLine() as sink_end_line,
+  sink.getLocation().getEndColumn() as sink_end_column
 """
     return endpoints, flow
 
@@ -97,16 +109,34 @@ def _csv(path, expected_columns):
 
 
 def _endpoints(ctx: Context, candidate: dict, graph: dict) -> tuple[dict, dict]:
-    snapshot = ctx.output("static_extract")["analyzed_snapshot_id"]
+    extraction = ctx.output("static_extract")
+    snapshot = extraction.get("semantic_snapshot_id", extraction["analyzed_snapshot_id"])
     if candidate["snapshot_id"] != snapshot or graph["snapshot_id"] != snapshot:
         raise ValueError("verification snapshot mismatch")
+    full_snapshot = extraction["analyzed_snapshot_id"]
+    if (
+        graph.get("analyzed_snapshot_id", full_snapshot) != full_snapshot
+        or candidate.get("provenance", {}).get("analyzed_snapshot_id", full_snapshot)
+        != full_snapshot
+    ):
+        raise ValueError("verification mixes different analyzed build snapshots")
     by_id = {n["node_id"]: n for n in graph["nodes"]}
     source, sink = (
         by_id.get(candidate.get("source_node_id")),
         by_id.get(candidate.get("sink_node_id")),
     )
     if source is None or sink is None:
-        raise ValueError("candidate lacks frozen explicit graph source/sink endpoints")
+        if candidate.get("source_node_id") or candidate.get("sink_node_id"):
+            raise ValueError("candidate lacks frozen explicit graph source/sink endpoints")
+        from maxvera.sarif_endpoints import resolve_endpoints
+
+        extraction_dir = ctx.run_dir / "stages" / ctx.case["case_id"] / "static_extract"
+        return resolve_endpoints(
+            candidate,
+            extraction_dir / "static.sarif",
+            extraction_dir / "workspace",
+            extraction["analyzed_files"],
+        )
     if "source" not in source.get("roles", []) or "sink" not in sink.get("roles", []):
         raise ValueError("graph endpoint semantic roles do not match source/sink")
     workspace = (
@@ -175,11 +205,7 @@ def targeted_verify(ctx: Context) -> dict:
             timeout=ctx.remaining_seconds(60),
             failure="QUERY_INVALID",
         )
-        columns = (
-            ["source_count", "sink_count"]
-            if prefix.name == "endpoints"
-            else ["source_file", "source_line", "sink_file", "sink_line"]
-        )
+        columns = ["source_count", "sink_count"] if prefix.name == "endpoints" else FLOW_COLUMNS
         return _csv(csv_path, columns)
 
     for candidate in candidates:
@@ -215,28 +241,43 @@ def targeted_verify(ctx: Context) -> dict:
                     "snapshot_id": candidate["snapshot_id"],
                     "source_node_id": source["node_id"],
                     "sink_node_id": sink["node_id"],
+                    "endpoint_binding_policy": source.get("binding_policy", "GRAPH_EXACT_SPAN_V1"),
+                    "static_endpoint_provenance": candidate.get("static_endpoint_spec"),
                     "query_hash": digest([endpoint_query, flow_query]),
                 }
             )
             inventory = run_query(endpoint_path, folder / "endpoints")
             if len(inventory) != 1 or set(inventory[0]) != {"source_count", "sink_count"}:
                 raise StageFailure("QUERY_INVALID", "invalid targeted endpoint inventory output")
-            source_count, sink_count = (
-                int(inventory[0]["source_count"]),
-                int(inventory[0]["sink_count"]),
-            )
+            try:
+                source_count, sink_count = (
+                    int(inventory[0]["source_count"]),
+                    int(inventory[0]["sink_count"]),
+                )
+                if source_count < 0 or sink_count < 0:
+                    raise ValueError("negative count")
+            except ValueError as error:
+                raise StageFailure(
+                    "QUERY_INVALID", "invalid targeted endpoint inventory count"
+                ) from error
             record.update({"source_count": source_count, "sink_count": sink_count})
             if source_count != 1 or sink_count != 1:
                 record["reason"] = "targeted endpoints absent or ambiguous in current database"
             else:
                 flows = run_query(flow_path, folder / "flow")
                 for flow in flows:
-                    if (
-                        flow.get("source_file") != source["file"]
-                        or flow.get("sink_file") != sink["file"]
-                        or int(flow.get("source_line", -1)) != source["start_line"]
-                        or int(flow.get("sink_line", -1)) != sink["start_line"]
-                    ):
+                    matches = True
+                    for role, endpoint in (("source", source), ("sink", sink)):
+                        matches &= flow[f"{role}_file"] == endpoint["file"]
+                        for field in ("start_line", "start_column", "end_line", "end_column"):
+                            column = "line" if field == "start_line" else field
+                            try:
+                                matches &= int(flow[f"{role}_{column}"]) == endpoint[field]
+                            except ValueError as error:
+                                raise StageFailure(
+                                    "QUERY_INVALID", "invalid targeted flow endpoint coordinate"
+                                ) from error
+                    if not matches:
                         raise StageFailure(
                             "QUERY_INVALID", "flow output does not match frozen endpoints"
                         )

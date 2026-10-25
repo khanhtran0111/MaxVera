@@ -37,6 +37,8 @@ def evaluator_identity(root: Path, protocol: str, policy_version: str) -> dict:
     files = [
         package / name for name in ("evaluation.py", "evaluator_worker.py", "evaluator_identity.py")
     ]
+    if protocol == "zero_hint":
+        files.append(package / "truth_alignment.py")
     files.append(package.parent / "src/reproduction/common.py")
     identity = {
         "policy_version": policy_version,

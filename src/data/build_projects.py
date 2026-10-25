@@ -209,7 +209,7 @@ def build_command_and_env(
         home = _tool_home(repo_root, toolchain, "gradle", str(attempt["gradle"]), machine)
         executable = home / "bin" / "gradle"
         environment["PATH"] = f"{executable.parent}{os.pathsep}{environment.get('PATH', '')}"
-        return [str(executable), "--no-daemon", "build", "-x", "test"], environment
+        return [str(executable), "--no-daemon", "clean", "build", "-x", "test"], environment
     wrapper = source / "gradlew"
     if not wrapper.is_file():
         raise ValueError("project has no gradlew wrapper")
@@ -219,6 +219,9 @@ def build_command_and_env(
         "--no-daemon",
         "-Dorg.gradle.dependency.verification=off",
         "clean",
+        "build",
+        "-x",
+        "test",
     ], environment
 
 

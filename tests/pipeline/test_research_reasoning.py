@@ -341,6 +341,7 @@ def test_static_path_keeps_both_ends_and_reports_omitted_context(tmp_path):
     assert [span["file"] for span in bundle["code_spans"][:2]] == ["Step0.java", "Step24.java"]
     assert bundle["retrieval_truncated"] is True
     assert bundle["graph_nodes"] == []
+    assert bundle["evidence_complete"] is True
     assert candidate_file.read_bytes() == original
 
 
@@ -360,4 +361,191 @@ def test_graph_context_cannot_crowd_out_endpoint_code(tmp_path):
     assert any('System.getenv("VALUE")' in span["code"] for span in bundle["code_spans"])
     assert any("System.out.println" in span["code"] for span in bundle["code_spans"])
     assert bundle["retrieval_truncated"] is True
+    assert bundle["evidence_complete"] is True
     assert len(json.dumps(bundle, ensure_ascii=False).encode()) <= 8192
+
+
+def test_missing_span_preserves_other_candidates_without_paying_for_incomplete_evidence(tmp_path):
+    from maxvera.research_reasoning import llm_reason
+
+    ctx = fixture_context(tmp_path, "evidence_retrieve")
+    candidates_path = ctx.run_dir / "stages/opaque-case/candidate_rank/candidates_ranked.jsonl"
+    candidates = read_jsonl(candidates_path)
+    candidates[0]["locations"].append({"file": "Missing.java", "start_line": 1, "end_line": 1})
+    atomic_jsonl(candidates_path, candidates)
+    bundles = _retrieve(ctx)
+    assert bundles[0]["evidence_complete"] is False
+    assert bundles[0]["missing_evidence"][0]["file"] == "Missing.java"
+    assert bundles[1]["evidence_complete"] is True
+    paid, preflight = [], []
+
+    class Client:
+        def preflight(self, prompts, **kwargs):
+            preflight.extend(prompts)
+
+        def complete(self, messages, **kwargs):
+            bundle = json.loads(messages[-1]["content"])
+            paid.append(bundle["candidate_id"])
+            return json.dumps(
+                {
+                    "candidate_id": bundle["candidate_id"],
+                    "evidence_bundle_id": bundle["evidence_bundle_id"],
+                    "verdict": "UNCERTAIN",
+                    "rationale": "Bounded evidence.",
+                    "citations": [bundle["code_spans"][0]["evidence_id"]],
+                }
+            )
+
+    result = llm_reason(ctx, client=Client())
+    rows = read_jsonl(ctx.stage_dir / "candidates_reasoned.jsonl")
+    assert paid == ["cand-2"] and len(preflight) == 1
+    assert len(rows) == 2 and result["failed_assessments"] == 1
+    assert result["incomplete_evidence_count"] == 1
+    incomplete = next(r for r in rows if r["candidate_id"] == "cand-1")
+    assert incomplete["llm_assessment"]["status"] == "INCOMPLETE_EVIDENCE"
+
+
+@pytest.mark.parametrize("missing", ["file", "line"])
+def test_unavailable_known_span_is_explicit_incomplete_evidence(tmp_path, missing):
+    ctx = fixture_context(tmp_path, "evidence_retrieve", count=1)
+    source = ctx.run_dir / "stages/opaque-case/static_extract/workspace/App.java"
+    if missing == "file":
+        source.unlink()
+    else:
+        graph_path = ctx.run_dir / "stages/opaque-case/build_graph/graph.json"
+        graph = json.loads(graph_path.read_text())
+        for node in graph["nodes"]:
+            node.update(start_line=100, end_line=100)
+        atomic_json(graph_path, graph)
+    bundle = _retrieve(ctx)[0]
+    assert bundle["evidence_complete"] is False
+    assert bundle["missing_evidence"]
+
+
+def test_unsafe_missing_location_still_fails_closed(tmp_path):
+    from maxvera.research_reasoning import evidence_retrieve
+
+    ctx = fixture_context(tmp_path, "evidence_retrieve", count=1)
+    path = ctx.run_dir / "stages/opaque-case/candidate_rank/candidates_ranked.jsonl"
+    rows = read_jsonl(path)
+    rows[0]["locations"].append({"file": "../escape.java", "start_line": 1, "end_line": 1})
+    atomic_jsonl(path, rows)
+    with pytest.raises(ValueError, match=r"safe relative|unsafe"):
+        evidence_retrieve(ctx)
+
+
+def test_semantic_snapshot_identity_keeps_full_source_binding(tmp_path):
+    ctx = fixture_context(tmp_path, "evidence_retrieve", count=1)
+    ctx.results["static_extract"]["result"]["semantic_snapshot_id"] = "frozen-snapshot"
+    ctx.results["static_extract"]["result"]["analyzed_snapshot_id"] = "full-build-snapshot"
+    bundle = _retrieve(ctx)[0]
+    assert bundle["snapshot_id"] == "frozen-snapshot"
+    assert bundle["analyzed_snapshot_id"] == "full-build-snapshot"
+
+
+def test_all_missing_evidence_needs_no_provider_and_cannot_be_validated(tmp_path, monkeypatch):
+    from maxvera.research_reasoning import llm_reason, validate_assessment
+
+    ctx = fixture_context(tmp_path, "evidence_retrieve", count=1)
+    (ctx.run_dir / "stages/opaque-case/static_extract/workspace/App.java").unlink()
+    bundle = _retrieve(ctx)[0]
+
+    def unexpected(*args, **kwargs):
+        pytest.fail("incomplete evidence must not initialize a paid client")
+
+    monkeypatch.setattr("maxvera.research_reasoning.JournaledClient", unexpected)
+    result = llm_reason(ctx)
+    assert result["eligible_candidate_count"] == 0
+    assert result["failed_assessments"] == 1
+    with pytest.raises(ValueError, match="incomplete source evidence"):
+        validate_assessment({}, bundle)
+
+
+@pytest.mark.parametrize("foreign", ["graph", "candidate"])
+def test_semantic_identity_cannot_mix_evidence_from_another_build(tmp_path, foreign):
+    ctx = fixture_context(tmp_path, "evidence_retrieve", count=1)
+    ctx.results["static_extract"]["result"]["semantic_snapshot_id"] = "frozen-snapshot"
+    if foreign == "graph":
+        path = ctx.run_dir / "stages/opaque-case/build_graph/graph.json"
+        graph = json.loads(path.read_text())
+        graph["analyzed_snapshot_id"] = "other-build"
+        atomic_json(path, graph)
+    else:
+        path = ctx.run_dir / "stages/opaque-case/candidate_rank/candidates_ranked.jsonl"
+        candidates = read_jsonl(path)
+        candidates[0]["provenance"] = {"analyzed_snapshot_id": "other-build"}
+        atomic_jsonl(path, candidates)
+    with pytest.raises(ValueError, match="different analyzed build"):
+        _retrieve(ctx)
+
+
+@pytest.mark.parametrize("graph_endpoints", [True, False])
+def test_omitted_endpoint_code_is_incomplete_and_never_paid(tmp_path, monkeypatch, graph_endpoints):
+    from maxvera.research_reasoning import llm_reason
+
+    ctx = fixture_context(tmp_path, "evidence_retrieve", count=1)
+    ctx.config["evidence"]["max_context_tokens_per_call"] = 4500
+    base = ctx.run_dir / "stages/opaque-case"
+    graph_path = base / "build_graph/graph.json"
+    graph = json.loads(graph_path.read_text())
+    for node, name in zip(graph["nodes"], ["Source.java", "Sink.java"], strict=True):
+        source = base / "static_extract/workspace" / name
+        source.write_text("\n".join("x" * 600 for _ in range(8)))
+        content_hash = sha256_file(source)
+        ctx.results["static_extract"]["result"]["analyzed_files"][name] = content_hash
+        node.update(
+            file=name,
+            start_line=1,
+            end_line=1,
+            start_column=1,
+            end_column=3,
+            content_hash=content_hash,
+        )
+    candidate_path = base / "candidate_rank/candidates_ranked.jsonl"
+    candidates = read_jsonl(candidate_path)
+    candidates[0]["locations"] = [
+        {"file": node["file"], "start_line": 1, "end_line": 1} for node in graph["nodes"]
+    ]
+    if not graph_endpoints:
+        candidates[0].update(
+            source_node_id=None, sink_node_id=None, graph_path_node_ids=[], graph_path_edge_ids=[]
+        )
+        graph["nodes"], graph["edges"] = [], []
+    atomic_json(graph_path, graph)
+    atomic_jsonl(candidate_path, candidates)
+    bundle = _retrieve(ctx)[0]
+    assert [span["file"] for span in bundle["code_spans"]] == ["Source.java"]
+    assert bundle["evidence_complete"] is False
+    assert any(
+        missing["file"] == "Sink.java" and missing["reason"] == "ENDPOINT_CODE_NOT_RETAINED"
+        for missing in bundle["missing_evidence"]
+    )
+
+    def unexpected(*args, **kwargs):
+        pytest.fail("missing endpoint code must not initialize a paid client")
+
+    monkeypatch.setattr("maxvera.research_reasoning.JournaledClient", unexpected)
+    result = llm_reason(ctx)
+    assert result["failed_assessments"] == 1 and result["eligible_candidate_count"] == 0
+
+
+def test_endpoint_column_clipped_from_code_is_explicitly_incomplete(tmp_path):
+    ctx = fixture_context(tmp_path, "evidence_retrieve", count=1)
+    base = ctx.run_dir / "stages/opaque-case"
+    source = base / "static_extract/workspace/App.java"
+    source.write_text("class App {\n" + "x" * 600 + "\n void sink() {}\n}\n")
+    content_hash = sha256_file(source)
+    ctx.results["static_extract"]["result"]["analyzed_files"]["App.java"] = content_hash
+    graph_path = base / "build_graph/graph.json"
+    graph = json.loads(graph_path.read_text())
+    for node in graph["nodes"]:
+        node["content_hash"] = content_hash
+    graph["nodes"][0].update(start_column=550, end_column=560)
+    graph["nodes"][1].update(start_column=2, end_column=14)
+    atomic_json(graph_path, graph)
+    bundle = _retrieve(ctx)[0]
+    assert bundle["code_spans"] and bundle["retrieval_truncated"] is True
+    assert bundle["evidence_complete"] is False
+    assert any(
+        missing["reason"] == "ENDPOINT_CODE_CLIPPED" for missing in bundle["missing_evidence"]
+    )

@@ -7,12 +7,14 @@ import hashlib
 import json
 import math
 import os
+import signal
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
-from collections.abc import Mapping, Sequence
-from contextlib import suppress
+from collections.abc import Iterator, Mapping, Sequence
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -29,6 +31,52 @@ from src.llm.providers.openrouter_response import (
 
 CANONICAL_BASE_URL = "https://openrouter.ai/api/v1"
 CANONICAL_MODEL = "openai/gpt-oss-20b"
+
+
+@contextmanager
+def _transport_deadline(deadline: float | None) -> Iterator[None]:
+    """Bound the whole connect/read operation, including a slow trickle body.
+
+    Socket timeouts alone restart after each read. Research is deliberately
+    single threaded on Linux; fail before sending if a caller cannot provide
+    the process timer needed for its explicit absolute deadline.
+    """
+    if deadline is None:
+        yield
+        return
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError("LLM case deadline exhausted before transport")
+    if threading.current_thread() is not threading.main_thread() or not hasattr(
+        signal, "setitimer"
+    ):
+        raise RuntimeError("an absolute LLM deadline requires the main-thread process timer")
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    previous_timer = signal.getitimer(signal.ITIMER_REAL)
+    started = time.monotonic()
+
+    def expired(signum: int, frame: Any) -> None:
+        raise TimeoutError("LLM case deadline exhausted during transport")
+
+    # Do not postpone or replace an earlier owner of the process alarm. Research
+    # owns its single-thread worker, so an unexpected competing timer fails shut.
+    if previous_timer[0] and previous_timer[0] <= remaining:
+        raise RuntimeError("an earlier process timer prevents enforcing the LLM deadline")
+    signal.signal(signal.SIGALRM, expired)
+    signal.setitimer(signal.ITIMER_REAL, remaining)
+    try:
+        yield
+        if time.monotonic() >= deadline:
+            raise TimeoutError("LLM case deadline exhausted during transport")
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous_handler)
+        if previous_timer[0]:
+            signal.setitimer(
+                signal.ITIMER_REAL,
+                max(0.000001, previous_timer[0] - (time.monotonic() - started)),
+                previous_timer[1],
+            )
 
 
 def _provider_slug(value: object) -> str:
@@ -160,6 +208,7 @@ class OpenRouterClient:
         *,
         request_interval_seconds: float = 0,
         response_directory: Path | None = None,
+        deadline: float | None = None,
     ):
         if not 0 <= request_interval_seconds <= 90:
             raise ValueError("request interval must be between 0 and 90 seconds")
@@ -169,6 +218,7 @@ class OpenRouterClient:
         self.call_number = 0
         self.request_interval_seconds = request_interval_seconds
         self.response_directory = response_directory
+        self.deadline = deadline
 
     def _pace_request(self) -> None:
         previous = OpenRouterClient._last_request_started
@@ -238,9 +288,10 @@ class OpenRouterClient:
             handle.write(raw.replace(self.settings.api_key.encode(), b"[REDACTED]"))
 
     @staticmethod
-    def _error_detail(error: urllib.error.HTTPError) -> str:
+    def _error_detail(error: urllib.error.HTTPError, deadline: float | None = None) -> str:
         try:
-            loaded = json.loads(error.read().decode("utf-8", errors="replace"))
+            with _transport_deadline(deadline):
+                loaded = json.loads(error.read().decode("utf-8", errors="replace"))
             error_record = loaded.get("error", {}) if isinstance(loaded, dict) else {}
             message = error_record.get("message") if isinstance(error_record, dict) else None
             metadata = error_record.get("metadata") if isinstance(error_record, dict) else None
@@ -305,11 +356,13 @@ class OpenRouterClient:
                 method="POST",
             )
             try:
-                with urllib.request.urlopen(
-                    request, timeout=self.settings.timeout_seconds
-                ) as response:
-                    received_http_status = 200
-                    raw_body = response.read()
+                with _transport_deadline(self.deadline):
+                    timeout = float(self.settings.timeout_seconds)
+                    if self.deadline is not None:
+                        timeout = min(timeout, max(0.000001, self.deadline - time.monotonic()))
+                    with urllib.request.urlopen(request, timeout=timeout) as response:
+                        received_http_status = 200
+                        raw_body = response.read()
                 parse_error = None
                 try:
                     loaded = json.loads(raw_body.decode("utf-8"))
@@ -394,7 +447,9 @@ class OpenRouterClient:
             except OpenRouterResponseError:
                 raise
             except urllib.error.HTTPError as error:
-                last_error = self._error_detail(error).replace(self.settings.api_key, "[REDACTED]")
+                last_error = self._error_detail(error, self.deadline).replace(
+                    self.settings.api_key, "[REDACTED]"
+                )
                 http_status = error.code
                 retryable = error.code in {408, 409, 429, 500, 502, 503, 504}
                 retry_delay = self._retry_delay(attempt, error)

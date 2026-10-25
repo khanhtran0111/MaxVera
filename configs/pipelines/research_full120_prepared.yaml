@@ -1,0 +1,16 @@
+extends: ../runtime_fast.yaml
+pipeline: research
+dataset:
+  config: configs/datasets/cwe_bench_extended.yaml
+  analysis_manifest: data/processed/analysis_input/go_20261024_full/D_extended_projects.csv
+  expected_cases: 120
+  expected_selected_cases: 120
+  track: full120_verified_input_progress
+research:
+  default_variant: graph_only
+  graph_signal_approved: false
+  max_nodes: 500000
+  max_edges: 1000000
+  max_traversal_nodes: 4096
+variants:
+  config: configs/experiments/variants.yaml

@@ -31,15 +31,14 @@ def test_direct_source_sink_identity_verifies_with_decoded_codeql_flow(tmp_path)
     classes = source / "classes"
     classes.mkdir()
     (source / "App.java").write_text(
-        'class App {\n  void run() throws Exception {\n'
+        "class App {\n  void run() throws Exception {\n"
         '    Runtime.getRuntime().exec(System.getenv("COMMAND"));\n  }\n}\n'
     )
     database = tmp_path / "database"
     pack = tmp_path / "queries"
     pack.mkdir()
     (pack / "qlpack.yml").write_text(
-        "name: maxvera/identity-fixture\nversion: 1.0.0\ndependencies:\n"
-        "  codeql/java-all: 9.2.2\n"
+        "name: maxvera/identity-fixture\nversion: 1.0.0\ndependencies:\n  codeql/java-all: 9.2.2\n"
     )
     original_pack = ROOT / "src/static_analysis/queries/v2"
     for name in ("Grounding.qll", "ProgramCore.qll", "program_nodes.ql"):
@@ -113,7 +112,18 @@ def test_direct_source_sink_identity_verifies_with_decoded_codeql_flow(tmp_path)
     assert inventory == [{"source_count": "1", "sink_count": "1"}]
     flows = query_rows("flow")
     assert flows == [
-        {"source_file": "App.java", "source_line": "3", "sink_file": "App.java", "sink_line": "3"}
+        {
+            "source_file": "App.java",
+            "source_line": "3",
+            "source_start_column": "31",
+            "source_end_line": "3",
+            "source_end_column": str(endpoint["end_column"]),
+            "sink_file": "App.java",
+            "sink_line": "3",
+            "sink_start_column": "31",
+            "sink_end_line": "3",
+            "sink_end_column": str(endpoint["end_column"]),
+        }
     ]
     assert classify_verification(1, 1, len(flows)) == "FLOW_FOUND"
     print(

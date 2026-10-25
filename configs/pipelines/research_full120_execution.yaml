@@ -1,0 +1,18 @@
+extends: ../runtime_fast.yaml
+pipeline: research
+dataset:
+  config: configs/datasets/cwe_bench_extended.yaml
+  analysis_manifest: data/processed/analysis_input/full_20261024_v2/D_extended_projects.csv
+  expected_cases: 120
+  expected_selected_cases: 120
+  track: full120_prospective_exploratory
+runtime:
+  min_free_disk_gib: 20
+research:
+  default_variant: graph_llm_verify
+  graph_signal_approved: false
+  max_nodes: 500000
+  max_edges: 1000000
+  max_traversal_nodes: 4096
+variants:
+  config: configs/experiments/variants.yaml

@@ -6,7 +6,9 @@ Pipeline-first Java vulnerability research with two separate tracks:
 2. **research**: zero-hint static/graph candidate discovery with opaque inputs and an OS filesystem firewall.
 3. **evaluate / compare**: independent evaluation of immutable raw output; labels stay outside research.
 
-**Current acceptance status:** bounded research evidence, cited LLM reranking and targeted CodeQL verification are implemented for smoke validation. The [23 October check](docs/research_smoke_2026-10-23.md) completed both random cases through all stages, with 9/10 schema/citation-valid assessments and Recall@5 of 0/2. Cross-run Top-K repeatability remains affected by generated build metadata in snapshot identities. Full LLM research remains gated on a reviewed, frozen graph-only development signal. Read [implementation status](docs/IMPLEMENTATION_STATUS.md) for repaired defects and remaining scope.
+**Full-cohort inputs are ready: 120/120 verified source snapshots and build recipes.** The [full research runbook](docs/research_full_runbook_2026-10-24.md) uses the corrected tracked-source view and separates execution readiness from truth evaluability and scientific approval. An independent Git audit covers all 120 cases without missing Java/build inputs. Builds across the benchmark remain unproven. Truth aligns for 6/120 cases, so whole-cohort recall remains unavailable and scientific acceptance remains NO-GO. Full LLM execution supports a prospective exploratory protocol after actual paired development measurements; it keeps graph approval false. See the [enablement report](docs/research_full_enablement_2026-10-24.md) and the unchanged [confirmatory pilot criteria](docs/research_pilot_acceptance_2026-10-24.md).
+
+The [actual fixed10 pilot results from 25 October](docs/research_pilot_result_2026-10-25.md) retain all ten cases in both variants: static completes seven, graph completes six, and both runs end with case failures. Evaluations share the same condition and compare successfully; evaluable-subset strong discovery Recall@5 is 2/6 for static and 1/6 for graph. Engineering acceptance remains false, and this pilot does not execute LLM or targeted verification.
 
 ## Safe checks — actually executed during this refactor
 
@@ -30,18 +32,27 @@ The commands below are **not end-to-end benchmark validated in this migration**.
 python -m maxvera dataset prepare --config configs/datasets/cwe_bench_java_v1.yaml
 python -m maxvera dataset prepare --config configs/datasets/cwe_bench_extended.yaml --sources
 
+# Versioned preparation preserves the existing frozen release and snapshots.
+python -m maxvera dataset prepare --config configs/datasets/cwe_bench_extended.yaml --sources --view full_20261024_v2 --fetch-timeout 900
+python -m maxvera preflight --config configs/pipelines/research_full120_execution.yaml --variant graph_only --mode full --require execution
+
 # Reproduction: begin with 1–2 cases; hosted-model calls require existing .env credentials.
 python -m maxvera pipeline reproduce --config configs/pipelines/reproduce.yaml --mode smoke --limit 2 --run-id repro_smoke_001 --execute
 python -m maxvera pipeline reproduce --config configs/pipelines/reproduce.yaml --mode full --run-id repro_gptoss20b_001 --execute
 python -m maxvera pipeline reproduce --config configs/pipelines/reproduce.yaml --mode full --run-id repro_gptoss20b_001 --resume --execute
 
 # Research: the default is the existing frozen 96-project development split.
+python -m maxvera preflight --config configs/pipelines/research.yaml --variant graph_only --mode full
+python -m maxvera preflight --config configs/pipelines/research_pilot10.yaml --variant graph_only --mode full
+python -m maxvera preflight --config configs/pipelines/research_full120.yaml --variant graph_only --mode full
 python -m maxvera pipeline research --config configs/pipelines/research.yaml --variant graph_only --mode smoke --limit 2 --run-id graph_smoke_001 --execute
 python -m maxvera pipeline research --config configs/pipelines/research.yaml --variant static_only --mode full --run-id zh_static_001 --execute
 python -m maxvera pipeline research --config configs/pipelines/research.yaml --variant graph_only --mode full --run-id zh_graph_001 --execute
 ```
 
 A new run ID cannot overwrite an existing run. Full mode rejects `--limit` and accounts for every selected case. `--resume` requires matching source/code/tool/config/schema fingerprints and verified checkpoints. Paid stages interrupted at an uncertain remote-call boundary stop for journal inspection instead of repeating charges automatically.
+
+Research execution checks every selected source, build recipe and preparation manifest before tool/model work. `preflight` additionally reports evaluator truth coverage and experiment gates. `research.yaml` selects 96 development cases, `research_pilot10.yaml` selects ten frozen development IDs, and `research_full120.yaml` selects exactly 120; `full` means the complete configured cohort. A frozen run's `quality_report.json` accounts separately for reasoning, endpoint evidence, traversal limits and verification coverage.
 
 ```bash
 # These CLI handlers are tested on temporary frozen fixture runs; real run IDs must exist.
@@ -52,7 +63,7 @@ python -m maxvera evaluate --run-id zh_graph_001 --protocol zero_hint
 python -m maxvera compare --runs zh_static_001,zh_graph_001 --output results/aggregate/graph_discovery_comparison
 ```
 
-`graph_llm` and `graph_llm_verify` support smoke runs of at most two cases with the existing model/profile. Full LLM runs require `research.graph_signal_approved: true` after review of the frozen development signal. `text_only` remains explicitly `NOT_IMPLEMENTED`. The current random two-case smoke configuration is `configs/pipelines/research_smoke_random.yaml`; its prepared sources and manifest are workspace artifacts, not bundled benchmark data. This profile requires `MAXVERA_OPENROUTER_PROVIDER=groq` to match its pinned model route; use a new run ID for a new execution.
+`graph_llm` and `graph_llm_verify` support smoke runs of at most two cases. Full LLM runs use either the reviewed-signal policy or an explicit `--experiment-protocol` registered prospectively from real paired pilot measurements. Registration freezes input/code/tool/model/config identity, preserves unknown truth, and grants no scientific approval. The [runbook](docs/research_full_runbook_2026-10-24.md) documents registration and full execution/resume. `text_only` remains `NOT_IMPLEMENTED`. Earlier engineering smokes are historical evidence; the [GO report](docs/research_go_execution_2026-10-24.md) records smoke02's repaired endpoint verification separately from scientific recall.
 
 ## Data and output
 

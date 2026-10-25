@@ -156,6 +156,7 @@ def pipeline(root, args):
     if config.pipeline != args.pipeline:
         raise ValueError("pipeline/config mismatch")
     resolved = config.resolved()
+    dry = args.dry_run or (config.runtime.dry_run_default and not args.execute)
     if args.pipeline == "research":
         resolved["selected_variant"] = _variant(root, config, args.variant)
         if (
@@ -165,12 +166,6 @@ def pipeline(root, args):
             and args.limit > 2
         ):
             raise ValueError("LLM research smoke is limited to at most two cases")
-        if (
-            args.mode == "full"
-            and resolved["selected_variant"].get("llm_enabled")
-            and config.research.get("graph_signal_approved") is not True
-        ):
-            raise ValueError("full LLM research requires a reviewed frozen development signal")
         stages = [
             "ingest",
             "static_extract",
@@ -198,7 +193,35 @@ def pipeline(root, args):
     cases = select_cases(
         root, config.dataset, args.mode, args.limit, oracle=args.pipeline == "reproduce"
     )
-    dry = args.dry_run or (config.runtime.dry_run_default and not args.execute)
+    input_report = None
+    if args.pipeline == "research":
+        from maxvera.preflight import input_preflight
+
+        input_report = input_preflight(root, cases)
+        if getattr(args, "experiment_protocol", None):
+            from maxvera.experiments import validate_experiment
+
+            if args.mode != "full":
+                raise ValueError("prospective experiment protocols require full mode")
+            resolved["experiment_protocol"] = validate_experiment(
+                root,
+                config,
+                resolved["selected_variant"],
+                cases,
+                run_id=args.run_id,
+                protocol=args.experiment_protocol,
+            )
+        if (
+            args.mode == "full"
+            and not dry
+            and resolved["selected_variant"].get("llm_enabled")
+            and config.research.get("graph_signal_approved") is not True
+            and "experiment_protocol" not in resolved
+        ):
+            raise ValueError(
+                "full LLM research requires a reviewed frozen development signal or a "
+                "prospectively registered exploratory experiment with development measurements"
+            )
     if dry:
         print(
             json.dumps(
@@ -218,12 +241,20 @@ def pipeline(root, args):
                     or resolved.get("selected_variant", {}).get("llm_enabled")
                     else 0,
                     "config": resolved,
+                    **({"input_preflight": input_report} if input_report is not None else {}),
                     "cost_control": "configured_stop_threshold_not_provider_prepaid_cap",
                 },
                 indent=2,
             )
         )
         return 0
+    if input_report is not None and not input_report["ready"]:
+        print(
+            json.dumps(
+                {"status": "INPUT_PREFLIGHT_FAILED", "input_preflight": input_report}, indent=2
+            )
+        )
+        return 1
     cases = input_fingerprints(root, cases, research=args.pipeline == "research")
     # Fingerprint actual CLI versions and launcher content; do not probe during dry-run.
     tools = {}
@@ -270,6 +301,10 @@ def pipeline(root, args):
             resolved["llm"]["runtime_parameters"] = {
                 k: v for k, v in private.items() if k != "api_key"
             }
+            if "experiment_protocol" in resolved and resolved["experiment_protocol"][
+                "model_runtime_sha256"
+            ] != digest(resolved["llm"]["runtime_parameters"]):
+                raise ValueError("experiment model runtime changed after protocol validation")
             # Sent through stdin only, never config, environment, command line or artifacts.
             request["llm_settings"] = private
         # No inherited oracle/CVE env values or .env; no LLM needed in graph-only.
@@ -314,6 +349,41 @@ def parser():
     prepare = sub.add_parser("prepare")
     prepare.add_argument("--config", type=Path, required=True)
     prepare.add_argument("--sources", action="store_true")
+    prepare.add_argument("--view", help="prepare a new source view without rewriting the release")
+    prepare.add_argument("--reuse-manifest", type=Path)
+    prepare.add_argument("--fetch-timeout", type=int, default=600)
+    prepare.add_argument("--offline", action="store_true")
+    prepare.add_argument("--min-free-gib", type=float, default=20)
+    prepare.add_argument(
+        "--pipeline-config",
+        type=Path,
+        help="prepare only the selected cohort from this pipeline profile",
+    )
+    prepare.add_argument("--mode", choices=["smoke", "full"], default="full")
+    prepare.add_argument("--limit", type=int)
+    preflight = commands.add_parser("preflight")
+    preflight.add_argument("--config", type=Path, required=True)
+    preflight.add_argument("--mode", choices=["smoke", "full"], default="full")
+    preflight.add_argument("--limit", type=int)
+    preflight.add_argument("--variant")
+    preflight.add_argument("--truth-alignment", type=Path)
+    preflight.add_argument("--experiment-protocol", type=Path)
+    preflight.add_argument("--run-id", type=safe_id)
+    preflight.add_argument(
+        "--require",
+        choices=["all", "execution", "evaluation"],
+        default="all",
+        help="select the readiness gate used for the exit code; reports retain every gate",
+    )
+    experiment = commands.add_parser("experiment")
+    experiment_sub = experiment.add_subparsers(dest="experiment_command", required=True)
+    register = experiment_sub.add_parser("register")
+    register.add_argument("--config", type=Path, required=True)
+    register.add_argument("--variant", required=True)
+    register.add_argument("--run-id", type=safe_id, required=True)
+    register.add_argument("--output", type=Path, required=True)
+    register.add_argument("--development-evaluations", nargs=2, type=Path, required=True)
+    register.add_argument("--rationale", required=True)
     pipe = commands.add_parser("pipeline")
     pipe.add_argument("pipeline", choices=["reproduce", "research"])
     pipe.add_argument("--config", type=Path, required=True)
@@ -322,6 +392,7 @@ def parser():
     pipe.add_argument("--limit", type=int)
     pipe.add_argument("--variant")
     pipe.add_argument("--resume", action="store_true")
+    pipe.add_argument("--experiment-protocol", type=Path)
     execution = pipe.add_mutually_exclusive_group()
     execution.add_argument("--dry-run", action="store_true")
     execution.add_argument(
@@ -338,8 +409,12 @@ def parser():
     )
     ev.add_argument("--labels", type=Path)
     ev.add_argument("--truth", type=Path)
+    ev.add_argument("--truth-alignment", type=Path)
+    ev.add_argument("--missing-truth", choices=["error", "report"], default="error")
     compare = commands.add_parser("compare")
-    compare.add_argument("--runs", required=True)
+    comparison_inputs = compare.add_mutually_exclusive_group(required=True)
+    comparison_inputs.add_argument("--runs")
+    comparison_inputs.add_argument("--evaluations", nargs="+", type=Path)
     compare.add_argument("--output", type=Path, required=True)
     compare.add_argument("--paired-llm", action="store_true")
     legacy = commands.add_parser("legacy-index")
@@ -358,7 +433,104 @@ def main(argv=None):
         if args.command == "dataset":
             from maxvera.dataset import prepare
 
-            print(json.dumps(prepare(root, args.config, sources=args.sources), indent=2))
+            if args.view and not args.sources:
+                raise ValueError("--view requires --sources")
+            if not args.view and (
+                args.reuse_manifest
+                or args.offline
+                or args.fetch_timeout != 600
+                or args.min_free_gib != 20
+            ):
+                raise ValueError("versioned source options require --sources and --view")
+            selected = None
+            if args.pipeline_config:
+                profile = PipelineConfig.load(root / args.pipeline_config)
+                selected = [
+                    c["case_id"]
+                    for c in select_cases(
+                        root,
+                        profile.dataset,
+                        args.mode,
+                        args.limit,
+                        oracle=profile.pipeline == "reproduce",
+                    )
+                ]
+            elif args.limit is not None:
+                raise ValueError("preparation --limit requires --pipeline-config")
+            if args.view:
+                from maxvera.preparation import prepare_sources
+
+                report = prepare_sources(
+                    root,
+                    args.config,
+                    view_name=args.view,
+                    reuse_manifest=root / args.reuse_manifest if args.reuse_manifest else None,
+                    selected_ids=selected,
+                    timeout=args.fetch_timeout,
+                    offline=args.offline,
+                    min_free_gib=args.min_free_gib,
+                )
+                print(json.dumps(report, indent=2))
+                return 0 if report["ready"] else 1
+            report = prepare(root, args.config, sources=args.sources, selected_ids=selected)
+            print(json.dumps(report, indent=2))
+            return 0 if report.get("source_preparation", {}).get("ready", True) else 1
+        if args.command == "preflight":
+            from maxvera.preflight import readiness_preflight
+
+            config = PipelineConfig.load(args.config)
+            if config.pipeline != "research":
+                raise ValueError("standalone input preflight currently supports research profiles")
+            variant = _variant(root, config, args.variant)
+            cases = select_cases(root, config.dataset, args.mode, args.limit)
+            experiment = None
+            if args.experiment_protocol:
+                from maxvera.experiments import validate_experiment
+
+                if args.mode != "full" or not args.run_id:
+                    raise ValueError("experiment preflight requires full mode and --run-id")
+                experiment = validate_experiment(
+                    root,
+                    config,
+                    variant,
+                    cases,
+                    run_id=args.run_id,
+                    protocol=args.experiment_protocol,
+                )
+            report = readiness_preflight(
+                root,
+                config,
+                cases,
+                variant,
+                args.mode,
+                truth_alignment=args.truth_alignment,
+                experiment_protocol=experiment,
+            )
+            required = {
+                "all": "ready",
+                "execution": "execution_ready",
+                "evaluation": "evaluation_ready",
+            }
+            report["required_gate"] = args.require
+            print(json.dumps(report, indent=2))
+            return 0 if report[required[args.require]] else 1
+        if args.command == "experiment":
+            from maxvera.experiments import register_experiment
+
+            config = PipelineConfig.load(args.config)
+            variant = _variant(root, config, args.variant)
+            cases = select_cases(root, config.dataset, "full")
+            output = register_experiment(
+                root,
+                config,
+                variant,
+                cases,
+                run_id=args.run_id,
+                output=args.output,
+                development_evaluations=args.development_evaluations,
+                rationale=args.rationale,
+            )
+            print(json.dumps({"protocol": str(output), "scientific_approved": False}, indent=2))
             return 0
         if args.command == "pipeline":
             return pipeline(root, args)
@@ -366,12 +538,27 @@ def main(argv=None):
             from src.reproduction.common import read_jsonl
 
             path = locate(root, args.run_id)
+            quality = {}
+            if (path / "quality_report.json").is_file():
+                report = json.loads((path / "quality_report.json").read_text())
+                quality = {
+                    "quality": {
+                        key: report.get(key)
+                        for key in (
+                            "engineering_pass",
+                            "blockers",
+                            "verification_supported_fraction",
+                            "full120_ready",
+                        )
+                    }
+                }
             print(
                 json.dumps(
                     {
                         "run_id": args.run_id,
                         "status": (path / "STATUS").read_text().strip(),
                         "cases": read_jsonl(path / "cases.jsonl"),
+                        **quality,
                     },
                     indent=2,
                 )
@@ -390,21 +577,41 @@ def main(argv=None):
             truth = args.truth or root / ds.get(
                 "fix_locations", f"data/processed/evaluator_only/{prefix}_fix_locations.jsonl"
             )
-            print(evaluate(root, path, args.protocol, labels=labels, truth=truth))
+            print(
+                evaluate(
+                    root,
+                    path,
+                    args.protocol,
+                    labels=labels,
+                    truth=truth,
+                    missing_truth_policy=args.missing_truth,
+                    truth_alignment=args.truth_alignment,
+                )
+            )
             return 0
         if args.command == "compare":
             from maxvera.evaluation import compare
+            from maxvera.truth_alignment import EVALUATION_NAMESPACE
 
-            dirs = []
-            for run_id in args.runs.split(","):
+            dirs = [root / p for p in args.evaluations] if args.evaluations else []
+            for run_id in args.runs.split(",") if args.runs else []:
                 path = locate(root, run_id)
                 protocol = (
                     "iris_paper"
                     if json.loads((path / "manifest.json").read_text())["pipeline"]
                     == "reproduction"
-                    else "zero_hint"
+                    else EVALUATION_NAMESPACE
                 )
-                dirs.append(root / "results/evaluations" / run_id / protocol)
+                directory = root / "results/evaluations" / run_id / protocol
+                if protocol == EVALUATION_NAMESPACE:
+                    choices = sorted(directory.glob("*/evaluator_manifest.json"))
+                    if len(choices) != 1:
+                        raise ValueError(
+                            f"run {run_id} has {len(choices)} aligned evaluations; "
+                            "select exact output paths with compare --evaluations"
+                        )
+                    directory = choices[0].parent
+                dirs.append(directory)
             print(compare(dirs, root / args.output, paired_llm=args.paired_llm))
             return 0
         if args.command == "legacy-index":

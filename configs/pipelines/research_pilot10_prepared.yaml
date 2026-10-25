@@ -1,0 +1,16 @@
+extends: ../runtime_fast.yaml
+pipeline: research
+dataset:
+  config: configs/datasets/cwe_bench_extended.yaml
+  analysis_manifest: data/processed/analysis_input/go_20261024/D_extended_projects.csv
+  expected_cases: 120
+  track: development_frozen_pilot10_prepared
+  expected_selected_cases: 10
+  split: configs/pipelines/research_pilot10.csv
+research:
+  default_variant: graph_only
+  graph_signal_approved: false
+  max_nodes: 500000
+  max_edges: 1000000
+variants:
+  config: configs/experiments/variants.yaml

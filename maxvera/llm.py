@@ -77,25 +77,40 @@ class JournaledClient:
         budgets: dict,
         *,
         scope: str = "reproduce-only",
+        deadline: float = float("inf"),
     ):
         self.settings, self.directory, self.scope = settings, directory, scope
         self.budgets = {**dataclasses.asdict(Budgets()), **budgets}
+        # Operational time is deliberately outside settings/key: a shorter
+        # remaining deadline must not bypass a prior PENDING/UNCERTAIN charge.
+        self.deadline = min(deadline, time.monotonic() + self.budgets["timeout_case_s"])
         self.directory.mkdir(parents=True, exist_ok=True)
         self.log = directory / "llm_calls.jsonl"
 
-    def _wait_for_request_slot(self, started: float) -> None:
+    def _remaining_seconds(self) -> float:
+        remaining = self.deadline - time.monotonic()
+        if remaining <= 0:
+            raise RuntimeError("LLM time budget exhausted at case deadline")
+        return remaining
+
+    def _wait_for_request_slot(self) -> None:
         interval = self.settings.request_interval_seconds
         if not interval:
             return
         clock = self.directory / "request_clock.json"
         last_finished = json.loads(clock.read_text())["last_finished_at"] if clock.exists() else 0
         delay = max(0, last_finished + interval - time.time())
-        if time.monotonic() - started + delay > self.budgets["timeout_case_s"]:
+        if delay >= self._remaining_seconds():
             raise RuntimeError("LLM time budget exhausted during request spacing")
         if delay:
             time.sleep(delay)
-        if time.monotonic() - started > self.budgets["timeout_case_s"]:
-            raise RuntimeError("LLM time budget exhausted during request spacing")
+        self._remaining_seconds()
+
+    def _backoff(self, delay: float) -> None:
+        if delay >= self._remaining_seconds():
+            raise RuntimeError("LLM time budget exhausted during backoff")
+        time.sleep(delay)
+        self._remaining_seconds()
 
     def key(self, messages, expect_json, max_tokens, validate_json=False, expected_kind=None):
         settings = dataclasses.asdict(self.settings)
@@ -228,7 +243,6 @@ class JournaledClient:
         folder.mkdir(parents=True)
         # UTF-8 bytes conservatively bound token count; include message/template allowance.
         input_reservation = len(json.dumps(messages, ensure_ascii=False).encode()) + 1024
-        started = time.monotonic()
         for attempt in range(self.settings.max_retries + 1):
             records = [
                 json.loads(p.read_text()) for p in self.directory.glob("requests/*/attempt-*.json")
@@ -252,10 +266,10 @@ class JournaledClient:
                 >= self.budgets["max_cost_usd_per_case"]
             ):
                 raise RuntimeError("LLM cost budget exhausted")
-            if time.monotonic() - started > self.budgets["timeout_case_s"]:
-                raise RuntimeError("LLM time budget exhausted")
+            self._remaining_seconds()
             # Wait before creating PENDING: no request has been sent during pacing.
-            self._wait_for_request_slot(started)
+            self._wait_for_request_slot()
+            self._remaining_seconds()
             pending = {
                 "status": "PENDING",
                 "input_reservation": input_reservation,
@@ -272,6 +286,7 @@ class JournaledClient:
                 dataclasses.replace(self.settings, max_retries=0),
                 self.log,
                 response_directory=folder / f"provider-attempt-{attempt + 1}",
+                deadline=self.deadline,
             )
             response_error = None
             raw = None
@@ -311,9 +326,7 @@ class JournaledClient:
                                 self.settings.rate_limit_backoff_seconds * 2**attempt,
                             ),
                         )
-                        if time.monotonic() - started + delay > self.budgets["timeout_case_s"]:
-                            raise RuntimeError("LLM time budget exhausted during backoff") from e
-                        time.sleep(delay)
+                        self._backoff(delay)
                         continue
                     raise RuntimeError("provider rate limit persisted after bounded retry") from e
                 atomic_json(journal, {"status": "UNCERTAIN", "key": key})
@@ -376,17 +389,18 @@ class JournaledClient:
                         self.settings.rate_limit_max_backoff_seconds,
                         self.settings.rate_limit_backoff_seconds * 2**attempt,
                     )
-                    if time.monotonic() - started + delay > self.budgets["timeout_case_s"]:
-                        raise RuntimeError(
-                            "LLM time budget exhausted during response backoff"
-                        ) from response_error
-                    time.sleep(delay)
+                    self._backoff(delay)
                     continue
                 raise RuntimeError(
                     f"LLM response {response_error.failure_kind}; "
                     "bounded retry exhausted or permanent failure; "
                     "inspect private response evidence"
                 ) from response_error
+            if time.monotonic() >= self.deadline:
+                # A complete accounted response is not an uncertain charge, but
+                # it cannot become a successful assessment after the deadline.
+                atomic_json(journal, {"status": "DEADLINE_EXCEEDED", "key": key})
+                raise RuntimeError("LLM time budget exhausted at case deadline")
             try:
                 if calls and calls[-1].get("finish_reason") == "length":
                     raise ValueError("truncated response")

@@ -4,6 +4,12 @@ Bắt đầu với tài liệu tương ứng công việc đang làm:
 
 | Nội dung | Tài liệu |
 | --- | --- |
+| Kết quả pilot10 thực tế, lỗi build/graph và quyết định NO-GO | [Pilot results ngày 25/10/2026](research_pilot_result_2026-10-25.md) |
+| Cách chạy full research, chuẩn bị/resume và protocol exploratory | [Full research runbook ngày 24/10/2026](research_full_runbook_2026-10-24.md) |
+| Nâng cấp full pipeline, source120 và bằng chứng kiểm tra mới | [Full enablement ngày 24/10/2026](research_full_enablement_2026-10-24.md) |
+| Thực thi các bước GO, smoke pass và coverage còn thiếu | [Research GO execution ngày 24/10/2026](research_go_execution_2026-10-24.md) |
+| Tiêu chí ghi nhận trước scientific pilot10 | [Pilot acceptance](research_pilot_acceptance_2026-10-24.md) |
+| Sửa blocker, preflight và quyết định chạy 120 case | [Research readiness ngày 24/10/2026](research_readiness_2026-10-24.md) |
 | Smoke mới trên hai case ngẫu nhiên và kiểm tra pipeline MaxVera | [Research smoke ngày 23/10/2026](research_smoke_2026-10-23.md) |
 | Audit tiếp theo review, lỗi mới tái lập và dọn output | [Research audit ngày 22/10/2026](research_audit_2026-10-22.md) |
 | Sửa research pipeline, smoke 2 case và gate còn thiếu | [Research smoke ngày 22/10/2026](research_smoke_2026-10-22.md) |

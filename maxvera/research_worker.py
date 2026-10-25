@@ -53,6 +53,9 @@ def main():
     os.environ["HOME"] = str(root / ".cache/research-home" / request["run_id"])
     os.environ["TMPDIR"] = str(root / ".cache/research-tmp" / request["run_id"])
     os.environ["MAXVERA_DATA_ROLE"] = "analysis"
+    os.environ["MAXVERA_MIN_FREE_DISK_GIB"] = str(
+        request["config"].get("runtime", {}).get("min_free_disk_gib", 20)
+    )
     os.environ["JAVA_TOOL_OPTIONS"] = (
         "-Djava.io.tmpdir=" + os.environ["TMPDIR"] + " -Duser.home=" + os.environ["HOME"]
     )
@@ -87,7 +90,20 @@ def main():
         ),
     )
     result = runner.execute()
-    print(json.dumps({"run_id": request["run_id"], "status": result, "run_dir": str(runner.path)}))
+    quality_path = runner.path / "quality_report.json"
+    quality = json.loads(quality_path.read_text()) if quality_path.is_file() else {}
+    print(
+        json.dumps(
+            {
+                "run_id": request["run_id"],
+                "status": result,
+                "run_dir": str(runner.path),
+                "engineering_pass": quality.get("engineering_pass"),
+                "quality_blockers": quality.get("blockers", []),
+                "quality_report": str(quality_path),
+            }
+        )
+    )
     return 0 if result == "COMPLETED" else 1
 
 

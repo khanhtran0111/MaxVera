@@ -6,6 +6,7 @@ dataset:
   expected_cases: 120
   split: data/processed/splits/development.csv
   track: development_seen_benchmark
+  expected_selected_cases: 96
 research:
   default_variant: graph_only
   graph_signal_approved: false

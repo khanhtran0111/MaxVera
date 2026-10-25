@@ -110,6 +110,31 @@ def test_real_research_cli_preserves_snapshot_in_filesystem_sandbox(tmp_path):
     source.parent.mkdir(parents=True)
     shutil.copytree(ROOT / "tests/fixtures/java_pipeline", source)
     original = (source / "Controller.java").read_bytes()
+    tracked = source / "example/build/Tracked.java"
+    tracked.parent.mkdir(parents=True)
+    tracked.write_text(
+        "package example.build; public class Tracked { int marker() { return 1; } }\n"
+    )
+    from maxvera.contracts import digest
+    from src.common.provenance import sha256_file
+    from src.reproduction.common import atomic_json
+
+    atomic_json(
+        source / "archive.materialization.json",
+        {
+            "schema_version": "2.0",
+            "inventory_policy": "tracked-archive-v2",
+            **{
+                key: {"count": 0, "receipt_digest": digest([])}
+                for key in (
+                    "materialized_symlinks",
+                    "omitted_test_resource_symlinks",
+                    "omitted_advisory_documents",
+                    "omitted_policy_files",
+                )
+            },
+        },
+    )
     tools = ROOT / ".cache/toolchains"
     (root / ".cache").mkdir()
     (root / ".cache/toolchains").symlink_to(tools, target_is_directory=True)
@@ -148,12 +173,27 @@ select call, "Fixture only"
                             "Service.java",
                             "Repository.java",
                             "LanguageEdges.java",
+                            "example/build/Tracked.java",
                         ],
                         "environment": {"JAVA_HOME": str(java_home)},
                     }
                 ]
             }
         )
+    )
+    from maxvera.dataset import write_snapshot_manifest
+
+    write_snapshot_manifest(
+        source,
+        "opaque-1",
+        {
+            "dataset_id": "fixture",
+            "dataset_revision": "a" * 40,
+            "source_commit": "b" * 40,
+            "build_patch_sha256": None,
+            "preparation_policy": "pinned-git-archive-normalized-v2",
+            "materialization_sha256": sha256_file(source / "archive.materialization.json"),
+        },
     )
     (source.parent.parent / "cases.csv").write_text(
         "project_id,source_dir\nopaque-1,projects/opaque-1\n"
@@ -166,6 +206,9 @@ select call, "Fixture only"
         yaml.safe_dump(
             {
                 "pipeline": "research",
+                # The tiny fixture runs on /tmp, which can be smaller than the
+                # production research reserve even with ample fixture capacity.
+                "runtime": {"min_free_disk_gib": 0},
                 "dataset": {
                     "analysis_manifest": "data/processed/analysis_input/cases.csv",
                     "expected_cases": 1,
@@ -182,25 +225,26 @@ select call, "Fixture only"
             }
         )
     )
+    arguments = [
+        sys.executable,
+        "-m",
+        "maxvera",
+        "--root",
+        str(root),
+        "pipeline",
+        "research",
+        "--config",
+        str(config),
+        "--mode",
+        "smoke",
+        "--limit",
+        "1",
+        "--run-id",
+        "sandbox_fixture",
+        "--execute",
+    ]
     result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "maxvera",
-            "--root",
-            str(root),
-            "pipeline",
-            "research",
-            "--config",
-            str(config),
-            "--mode",
-            "smoke",
-            "--limit",
-            "1",
-            "--run-id",
-            "sandbox_fixture",
-            "--execute",
-        ],
+        arguments,
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -217,4 +261,16 @@ select call, "Fixture only"
     assert (source / "Controller.java").read_bytes() == original
     assert not (source / "classes").exists()
     assert (protected / "labels").read_text() == "POISON_STAYS_UNREAD_AND_UNCHANGED"
+    assert not (run / "llm_calls.jsonl").read_text().strip()
+    analyzed = run / "stages/opaque-1/static_extract/workspace/example/build/Tracked.java"
+    assert analyzed.read_bytes() == tracked.read_bytes()
+    from maxvera.orchestration import verify_checksums
+
+    frozen_index = (run / "checksums.sha256").read_bytes()
+    resumed = subprocess.run(
+        [*arguments, "--resume"], cwd=ROOT, capture_output=True, text=True, timeout=120
+    )
+    assert resumed.returncode == 0, resumed.stdout + resumed.stderr
+    assert (run / "checksums.sha256").read_bytes() == frozen_index
+    verify_checksums(run)
     assert not (run / "llm_calls.jsonl").read_text().strip()
