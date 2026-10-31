@@ -1,0 +1,58 @@
+{
+  "iris_llm_name": "gpt-oss-20b",
+  "base_url": "https://openrouter.ai/api/v1",
+  "model": "openai/gpt-oss-20b",
+  "accepted_returned_model_ids": [
+    "openai/gpt-oss-20b"
+  ],
+  "provider": {
+    "order": [
+      "groq"
+    ],
+    "expected_provider_name": "Groq",
+    "allow_fallbacks": false,
+    "require_parameters": true,
+    "data_collection": "deny",
+    "zdr": true
+  },
+  "decoding": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "seed": 1234,
+    "max_tokens": 2048,
+    "reasoning_effort": "low"
+  },
+  "concurrency": 1,
+  "retry": {
+    "max_attempts": 6,
+    "backoff_base_s": 2.0,
+    "backoff_max_s": 60.0,
+    "retry_status_codes": [
+      408,
+      409,
+      425,
+      429,
+      500,
+      502,
+      503,
+      504,
+      520,
+      522,
+      524,
+      529
+    ]
+  },
+  "timeouts": {
+    "connect_s": 15,
+    "read_s": 180
+  },
+  "json_validation": {
+    "enabled": true,
+    "max_identical_rerequests": 1
+  },
+  "accounting": {
+    "ledger_path": "/home/khanhtg/Documents/MaxVera/runs/iris-v1_gptoss20b_smoke_20261028T023424Z/llm/ledger.jsonl",
+    "cache_path": "/home/khanhtg/Documents/MaxVera/runs/iris-v1_gptoss20b_smoke_20261028T023424Z/llm/response_cache.jsonl",
+    "cost_limit_usd": 3.0
+  }
+}

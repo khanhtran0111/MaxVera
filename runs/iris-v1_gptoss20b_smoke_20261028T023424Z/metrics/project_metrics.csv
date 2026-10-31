@@ -1,0 +1,13 @@
+eval_id,slug,cve,cwe,dataset_cwe,canonical,config,status,alerts,paths,tp_alerts,tp_paths,recall,precision,f1,recall_file,failure_stage,failure_reason
+perwendel__spark_CVE-2018-9159_2.7.1,perwendel__spark_CVE-2018-9159_2.7.1,CVE-2018-9159,CWE-022,CWE-022,True,b0,completed,13,36,3,12,1,0.23076923076923078,0.375,1,,
+perwendel__spark_CVE-2018-9159_2.7.1,perwendel__spark_CVE-2018-9159_2.7.1,CVE-2018-9159,CWE-022,CWE-022,True,b2_raw,completed,0,0,0,0,0,,0.0,0,,
+perwendel__spark_CVE-2018-9159_2.7.1,perwendel__spark_CVE-2018-9159_2.7.1,CVE-2018-9159,CWE-022,CWE-022,True,b2_filtered,completed,0,0,0,0,0,,0.0,0,,
+jenkinsci__perfecto-plugin_CVE-2020-2261_1.17,jenkinsci__perfecto-plugin_CVE-2020-2261_1.17,CVE-2020-2261,CWE-078,CWE-078,True,b0,completed,0,0,0,0,0,,0.0,0,,
+jenkinsci__perfecto-plugin_CVE-2020-2261_1.17,jenkinsci__perfecto-plugin_CVE-2020-2261_1.17,CVE-2020-2261,CWE-078,CWE-078,True,b2_raw,completed,2,2,2,2,1,1.0,1.0,1,,
+jenkinsci__perfecto-plugin_CVE-2020-2261_1.17,jenkinsci__perfecto-plugin_CVE-2020-2261_1.17,CVE-2020-2261,CWE-078,CWE-078,True,b2_filtered,completed,2,2,2,2,1,1.0,1.0,1,,
+nahsra__antisamy_CVE-2022-29577_1.6.6.1,nahsra__antisamy_CVE-2022-29577_1.6.6.1,CVE-2022-29577,CWE-079,CWE-079,True,b0,completed,0,0,0,0,0,,0.0,0,,
+nahsra__antisamy_CVE-2022-29577_1.6.6.1,nahsra__antisamy_CVE-2022-29577_1.6.6.1,CVE-2022-29577,CWE-079,CWE-079,True,b2_raw,completed,9,11,1,1,1,0.1111111111111111,0.19999999999999998,1,,
+nahsra__antisamy_CVE-2022-29577_1.6.6.1,nahsra__antisamy_CVE-2022-29577_1.6.6.1,CVE-2022-29577,CWE-079,CWE-079,True,b2_filtered,completed,9,4,0,0,0,0.0,0.0,0,,
+jmrozanec__cron-utils_CVE-2021-41269_9.1.5,jmrozanec__cron-utils_CVE-2021-41269_9.1.5,CVE-2021-41269,CWE-094,CWE-094,True,b0,completed,0,0,0,0,0,,0.0,0,,
+jmrozanec__cron-utils_CVE-2021-41269_9.1.5,jmrozanec__cron-utils_CVE-2021-41269_9.1.5,CVE-2021-41269,CWE-094,CWE-094,True,b2_raw,completed,0,0,0,0,0,,0.0,0,,
+jmrozanec__cron-utils_CVE-2021-41269_9.1.5,jmrozanec__cron-utils_CVE-2021-41269_9.1.5,CVE-2021-41269,CWE-094,CWE-094,True,b2_filtered,completed,0,0,0,0,0,,0.0,0,,

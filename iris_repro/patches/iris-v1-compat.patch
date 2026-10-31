@@ -1,0 +1,535 @@
+diff --git a/src/codeql_vul.py b/src/codeql_vul.py
+index e8876e6..d88fa66 100644
+--- a/src/codeql_vul.py
++++ b/src/codeql_vul.py
+@@ -16,7 +16,7 @@ from tqdm import tqdm
+ from tqdm.contrib.concurrent import thread_map
+ 
+ THIS_SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+-NEUROSYMSA_ROOT_DIR = os.path.abspath(f"{THIS_SCRIPT_DIR}/../../")
++NEUROSYMSA_ROOT_DIR = os.path.abspath(f"{THIS_SCRIPT_DIR}/../")
+ sys.path.append(NEUROSYMSA_ROOT_DIR)
+ 
+ from src.config import CODEQL_DIR, CODEQL_DB_PATH, OUTPUT_DIR, ALL_METHOD_INFO_DIR, PROJECT_SOURCE_CODE_DIR, CVES_MAPPED_W_COMMITS_DIR
+@@ -43,13 +43,15 @@ class CodeQLSAPipeline:
+             project_name: str,
+             query: str,
+             evaluation_only: bool = False,
+-            overwrite: bool = False
++            overwrite: bool = False,
++            run_id: str = "common",
+     ):
+         # Store basic information
+         self.project_name = project_name
+         self.query = query
+         self.evaluation_only = evaluation_only
+         self.overwrite = overwrite
++        self.run_id = run_id
+ 
+         # Setup logger
+         self.master_logger = Logger(f"{NEUROSYMSA_ROOT_DIR}/log")
+@@ -68,14 +70,14 @@ class CodeQLSAPipeline:
+ 
+         # Load some basic information, such as commits and fixes related to the CVE
+         self.all_cves_with_commit = pd.read_csv(CVES_MAPPED_W_COMMITS_DIR)
+-        self.project_cve_with_commit_info = self.all_cves_with_commit[self.all_cves_with_commit["cve"] == self.cve_id].iloc[0]
+-        self.cve_fixing_commits = self.project_cve_with_commit_info["commits"].split(";")
++        self.project_cve_with_commit_info = self.all_cves_with_commit[self.all_cves_with_commit["cve_id"] == self.cve_id].iloc[0]
++        self.cve_fixing_commits = self.project_cve_with_commit_info["fix_commit_ids"].split(";")
+         self.fixed_methods = pd.read_csv(ALL_METHOD_INFO_DIR)
+-        self.project_fixed_methods = self.fixed_methods[self.fixed_methods["db_name"] == self.project_name]
++        self.project_fixed_methods = self.fixed_methods[self.fixed_methods["project_slug"] == self.project_name]
+         self.project_source_code_dir = f"{PROJECT_SOURCE_CODE_DIR}/{self.project_name}"
+ 
+         # Basic path information
+-        self.project_output_path = f"{OUTPUT_DIR}/{self.project_name}/common"
++        self.project_output_path = f"{OUTPUT_DIR}/{self.project_name}/{self.run_id}"
+ 
+         # Setup codeql database path
+         self.project_codeql_db_path = f"{CODEQL_DB_PATH}/{self.project_name}"
+@@ -104,16 +106,15 @@ class CodeQLSAPipeline:
+             "database",
+             "analyze",
+             self.project_codeql_db_path,
+-            f"--output={self.query_output_result_sarif_path}",
+             f"{CODEQL_DIR}/qlpacks/codeql/java-queries/0.8.3/{exp}Security/CWE/CWE-{self.cwe_id}/"
+         ]
+ 
+         if self.overwrite:
+             cmd += ["--rerun"]
+ 
+-        sp.run(cmd + ["--format=sarif-latest"])
++        sp.run(cmd + ["--format=sarif-latest", f"--output={self.query_output_result_sarif_path}"])
+ 
+-        sp.run(cmd + ["--format=csv"])
++        sp.run(cmd + ["--format=csv", f"--output={self.query_output_result_csv_path}"])
+ 
+     def run_simple_codeql_query(self, query, target_csv_path=None, suffix=None, dyn_queries={}):
+         runner = CodeQLQueryRunner(self.project_name, self.project_output_path, self.project_codeql_db_path, self.master_logger)
+@@ -168,6 +169,7 @@ if __name__ == '__main__':
+     parser.add_argument("--query", type=str, default="cwe-022wCodeQL", required=True)
+     parser.add_argument("--overwrite", action="store_true")
+     parser.add_argument("--evaluation-only", action="store_true")
++    parser.add_argument("--run-id", type=str, default="common")
+     args = parser.parse_args()
+ 
+     pipeline = CodeQLSAPipeline(
+@@ -175,5 +177,6 @@ if __name__ == '__main__':
+         args.query,
+         evaluation_only=args.evaluation_only,
+         overwrite=args.overwrite,
++        run_id=args.run_id,
+     )
+     pipeline.run()
+diff --git a/src/models/llm.py b/src/models/llm.py
+index e8603d5..1e8f440 100644
+--- a/src/models/llm.py
++++ b/src/models/llm.py
+@@ -231,6 +231,9 @@ class LLM:
+         elif model_name.lower().startswith("mistral") or model_name.lower().startswith("mixtral"):
+             from models.mistral import MistralModel
+             model=MistralModel(model_name=model_name, logger=logger, **kwargs)
++        elif model_name.lower() == "gpt-oss-20b":
++            from src.models.openrouter import OpenRouterModel
++            model=OpenRouterModel(model_name=model_name, logger=logger, **kwargs)
+         elif model_name.lower().startswith("gpt"):
+             from models.gpt import GPTModel
+             model=GPTModel(model_name=model_name, logger=logger, **kwargs)
+diff --git a/src/models/openrouter.py b/src/models/openrouter.py
+new file mode 100644
+index 0000000..849f7b1
+--- /dev/null
++++ b/src/models/openrouter.py
+@@ -0,0 +1,62 @@
++import os
++import sys
++
++from src.utils.mylogger import MyLogger
++from src.models.llm import LLM
++from src.models.openrouter_client import OpenRouterClient, OpenRouterError
++
++# IRIS model name -> OpenRouter model id. The IRIS name must start with "gpt" so that
++# LLM.__init__ returns before trying to load a local HuggingFace checkpoint.
++_model_name_map = {
++    "gpt-oss-20b": "openai/gpt-oss-20b",
++}
++
++
++class OpenRouterModel(LLM):
++    """GPT-OSS 20B served through OpenRouter, with the same predict() interface as GPTModel.
++
++    Requests are issued sequentially (one concurrent request), whatever batch_size the caller
++    passes; batch_size only controls thread fan-out in GPTModel and does not change which
++    prompts are built or how results are merged.
++    """
++
++    def __init__(self, model_name, logger: MyLogger, **kwargs):
++        super().__init__(model_name, logger, _model_name_map, **kwargs)
++        context = {
++            "project": os.environ.get("IRIS_REPRO_PROJECT"),
++            "query": os.environ.get("IRIS_REPRO_QUERY"),
++            "run_id": os.environ.get("IRIS_REPRO_RUN_ID"),
++        }
++        try:
++            self.client = OpenRouterClient.from_env(context=context)
++        except OpenRouterError as e:
++            self._fatal(e)
++        if self.client.model != self.model_id:
++            self._fatal(OpenRouterError(f"Configured model {self.client.model} != IRIS mapping {self.model_id}"))
++        decoding = self.client.cfg["decoding"]
++        for (iris_key, cfg_key) in (("seed", "seed"), ("max_new_tokens", "max_tokens")):
++            if iris_key in kwargs and kwargs[iris_key] != decoding.get(cfg_key):
++                self.log(f">>>[openrouter] IRIS requested {iris_key}={kwargs[iris_key]} but config pins {cfg_key}={decoding.get(cfg_key)}; using config")
++
++    def _fatal(self, err):
++        # IRIS wraps LLM calls in bare `except:` blocks that would turn API failures into
++        # silently empty responses. Fatal errors therefore terminate the process with a
++        # dedicated exit code so the harness records the failure and can resume later.
++        sys.stderr.write(f"[openrouter] FATAL ({type(err).__name__}): {err}\n")
++        sys.stderr.flush()
++        sys.stdout.flush()
++        os._exit(getattr(err, "exit_code", 76))
++
++    def _predict(self, main_prompt, expect_json=False):
++        system_prompt = main_prompt[0]['content']
++        user_prompt = main_prompt[1]['content']
++        prompt = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
++        try:
++            return self.client.chat(prompt, expect_json=expect_json)
++        except OpenRouterError as e:
++            self._fatal(e)
++
++    def predict(self, prompt, expect_json=False, batch_size=0, no_progress_bar=False):
++        if batch_size == 0:
++            return self._predict(prompt, expect_json)
++        return [self._predict(p, expect_json) for p in prompt]
+diff --git a/src/models/openrouter_client.py b/src/models/openrouter_client.py
+new file mode 100644
+index 0000000..546ed3b
+--- /dev/null
++++ b/src/models/openrouter_client.py
+@@ -0,0 +1,337 @@
++"""
++OpenRouter chat-completions client used by the IRIS v1 reproduction (GPT-OSS 20B).
++
++This module is intentionally dependency-light (requests only) so that it can be
++used both by the IRIS model wrapper (src/models/openrouter.py) and by the
++standalone preflight script without importing torch/transformers.
++
++Configuration is a JSON file whose path is given by IRIS_REPRO_LLM_CONFIG.
++The API key is read from OPENROUTER_API_KEY, or from the dotenv file given by
++IRIS_REPRO_DOTENV. The key is never logged or written to disk by this module.
++
++Features:
++  * explicit provider routing (fallbacks disabled, ZDR / data_collection=deny)
++  * bounded retries for 429 / 5xx / transient network errors, with timeouts
++  * verification of returned model id and serving provider
++  * token, reasoning-token and cost accounting into an append-only JSONL ledger
++  * a hard API cost limit, checked before every request
++  * a persistent request-level response cache (checkpoint/resume)
++  * JSON-shape validation with a bounded number of identical re-requests
++"""
++import fcntl
++import hashlib
++import json
++import os
++import random
++import re
++import time
++
++import requests
++
++
++EXIT_BUDGET_EXCEEDED = 75
++EXIT_API_FAILURE = 76
++EXIT_CONFIG_ERROR = 77
++
++
++class OpenRouterError(Exception):
++    exit_code = EXIT_API_FAILURE
++
++
++class OpenRouterConfigError(OpenRouterError):
++    exit_code = EXIT_CONFIG_ERROR
++
++
++class OpenRouterBudgetExceeded(OpenRouterError):
++    exit_code = EXIT_BUDGET_EXCEEDED
++
++
++def _read_dotenv_value(path, name):
++    if not path or not os.path.exists(path):
++        return None
++    with open(path) as f:
++        for line in f:
++            line = line.strip()
++            if not line or line.startswith("#") or "=" not in line:
++                continue
++            k, v = line.split("=", 1)
++            if k.strip() == name:
++                return v.strip().strip('"').strip("'")
++    return None
++
++
++def load_api_key():
++    key = os.environ.get("OPENROUTER_API_KEY")
++    if not key:
++        key = _read_dotenv_value(os.environ.get("IRIS_REPRO_DOTENV"), "OPENROUTER_API_KEY")
++    if not key:
++        raise OpenRouterConfigError("OPENROUTER_API_KEY is not available (env or IRIS_REPRO_DOTENV)")
++    return key
++
++
++def load_config(path=None):
++    path = path or os.environ.get("IRIS_REPRO_LLM_CONFIG")
++    if not path or not os.path.exists(path):
++        raise OpenRouterConfigError(f"LLM config not found (IRIS_REPRO_LLM_CONFIG={path})")
++    with open(path) as f:
++        return json.load(f)
++
++
++def response_has_json(text):
++    """Mirror of the cleaning IRIS applies before json.loads (neusym_vul.parse_json and
++    contextual_analysis_pipeline.parse_posthoc_filter_json_result). Returns True if a JSON
++    list or object can be decoded from the response."""
++    if not text:
++        return False
++    s = text.replace("\\n", "").replace("\\\n", "")
++    s = re.sub("//.*", "", s)
++    s = re.sub("\"\"", "\"", s)
++    for pattern in (r"\[[\s\S]*\]", r"\{[\s\S]*\}"):
++        found = re.findall(pattern, s)
++        if found:
++            try:
++                json.loads(found[0])
++                return True
++            except Exception:
++                pass
++    return False
++
++
++class _LockedFile:
++    def __init__(self, path):
++        self.path = path
++
++    def __enter__(self):
++        os.makedirs(os.path.dirname(self.path), exist_ok=True)
++        self.f = open(self.path, "a+")
++        fcntl.flock(self.f, fcntl.LOCK_EX)
++        return self.f
++
++    def __exit__(self, *exc):
++        self.f.flush()
++        os.fsync(self.f.fileno())
++        fcntl.flock(self.f, fcntl.LOCK_UN)
++        self.f.close()
++
++
++class OpenRouterClient:
++    def __init__(self, config, api_key=None, context=None):
++        self.cfg = config
++        self.api_key = api_key or load_api_key()
++        self.context = context or {}
++        self.base_url = config["base_url"].rstrip("/")
++        self.model = config["model"]
++        self.expected_provider = config["provider"]["expected_provider_name"]
++        self.ledger_path = config["accounting"]["ledger_path"]
++        self.cache_path = config["accounting"]["cache_path"]
++        self.cost_limit_usd = float(config["accounting"]["cost_limit_usd"])
++        self.retry = config["retry"]
++        self.timeouts = (config["timeouts"]["connect_s"], config["timeouts"]["read_s"])
++        self.session = requests.Session()
++        self._cache = None
++        self._spent = None
++
++    @classmethod
++    def from_env(cls, context=None):
++        return cls(load_config(), context=context)
++
++    # ------------------------------------------------------------------ cache
++    def _load_cache(self):
++        if self._cache is not None:
++            return self._cache
++        self._cache = {}
++        if os.path.exists(self.cache_path):
++            with open(self.cache_path) as f:
++                for line in f:
++                    try:
++                        rec = json.loads(line)
++                        self._cache[rec["request_hash"]] = rec
++                    except Exception:
++                        continue
++        return self._cache
++
++    def _append_jsonl(self, path, record):
++        with _LockedFile(path) as f:
++            f.write(json.dumps(record) + "\n")
++
++    # ------------------------------------------------------------- accounting
++    def spent_usd(self):
++        # The ledger is read once per process; afterwards new costs are added in memory.
++        # Experiments run one process at a time, so this is exact.
++        if self._spent is not None:
++            return self._spent
++        total = 0.0
++        if os.path.exists(self.ledger_path):
++            with open(self.ledger_path) as f:
++                for line in f:
++                    try:
++                        total += float(json.loads(line).get("cost_usd") or 0.0)
++                    except Exception:
++                        continue
++        self._spent = total
++        return total
++
++    # ---------------------------------------------------------------- request
++    def build_body(self, messages, expect_json=False):
++        d = self.cfg["decoding"]
++        p = self.cfg["provider"]
++        body = {
++            "model": self.model,
++            "messages": messages,
++            "temperature": d["temperature"],
++            "top_p": d["top_p"],
++            "max_tokens": d["max_tokens"],
++            "provider": {
++                "order": p["order"],
++                "only": p["order"],
++                "allow_fallbacks": p["allow_fallbacks"],
++                "require_parameters": p["require_parameters"],
++                "data_collection": p["data_collection"],
++                "zdr": p["zdr"],
++            },
++            "usage": {"include": True},
++        }
++        if d.get("seed") is not None:
++            body["seed"] = d["seed"]
++        if d.get("reasoning_effort"):
++            body["reasoning"] = {"effort": d["reasoning_effort"]}
++        if expect_json:
++            body["response_format"] = {"type": "json_object"}
++        return body
++
++    @staticmethod
++    def request_hash(body):
++        return hashlib.sha256(json.dumps(body, sort_keys=True).encode("utf-8")).hexdigest()
++
++    def _headers(self):
++        return {
++            "Authorization": f"Bearer {self.api_key}",
++            "Content-Type": "application/json",
++            "X-Title": "IRIS-v1 reproduction",
++        }
++
++    def _post_once(self, body):
++        return self.session.post(f"{self.base_url}/chat/completions", headers=self._headers(),
++                                 data=json.dumps(body), timeout=self.timeouts)
++
++    def _post_with_retries(self, body):
++        max_attempts = int(self.retry["max_attempts"])
++        base = float(self.retry["backoff_base_s"])
++        cap = float(self.retry["backoff_max_s"])
++        retryable = set(self.retry["retry_status_codes"])
++        last_err = None
++        for attempt in range(1, max_attempts + 1):
++            try:
++                resp = self._post_once(body)
++                status = resp.status_code
++                try:
++                    data = resp.json()
++                except ValueError:
++                    data = None
++                if status == 200 and isinstance(data, dict) and "choices" in data and data["choices"]:
++                    return data, attempt - 1
++                err_msg = (data or {}).get("error", {}) if isinstance(data, dict) else {}
++                err_code = err_msg.get("code") if isinstance(err_msg, dict) else None
++                eff_status = status if status != 200 else (err_code if isinstance(err_code, int) else 502)
++                last_err = f"HTTP {status} (effective {eff_status}): {str(err_msg)[:500]}"
++                if eff_status in (400, 401, 402, 403, 404) and eff_status not in retryable:
++                    raise OpenRouterConfigError(f"Non-retryable OpenRouter error: {last_err}")
++                if eff_status not in retryable:
++                    raise OpenRouterError(f"Non-retryable OpenRouter error: {last_err}")
++                retry_after = resp.headers.get("Retry-After")
++                delay = float(retry_after) if retry_after and retry_after.replace(".", "", 1).isdigit() else min(cap, base * (2 ** (attempt - 1)))
++            except (requests.ConnectionError, requests.Timeout, requests.exceptions.ChunkedEncodingError) as e:
++                last_err = f"{type(e).__name__}: {str(e)[:300]}"
++                delay = min(cap, base * (2 ** (attempt - 1)))
++            if attempt < max_attempts:
++                time.sleep(delay + random.uniform(0, 0.5))
++        raise OpenRouterError(f"OpenRouter request failed after {max_attempts} attempts: {last_err}")
++
++    def _check_identity(self, data):
++        returned_model = data.get("model", "")
++        returned_provider = data.get("provider", "")
++        if returned_provider and returned_provider != self.expected_provider:
++            raise OpenRouterConfigError(
++                f"Request served by provider '{returned_provider}', expected '{self.expected_provider}'")
++        allowed = set(self.cfg.get("accepted_returned_model_ids", [self.model]))
++        if returned_model and returned_model not in allowed:
++            raise OpenRouterConfigError(f"Returned model '{returned_model}' not in accepted ids {sorted(allowed)}")
++        return returned_model, returned_provider
++
++    def chat(self, messages, expect_json=False, tag=None):
++        """Returns the assistant content string. Raises OpenRouterError subclasses on fatal errors."""
++        body = self.build_body(messages, expect_json=expect_json)
++        rhash = self.request_hash(body)
++        cache = self._load_cache()
++        if rhash in cache:
++            self._append_jsonl(self.ledger_path, {
++                "ts": time.time(), "request_hash": rhash, "cache_hit": True, "cost_usd": 0.0,
++                "context": self.context, "tag": tag,
++            })
++            return cache[rhash]["content"]
++
++        repair_budget = int(self.cfg["json_validation"]["max_identical_rerequests"])
++        attempts_record = []
++        content, data = None, None
++        for repair_round in range(repair_budget + 1):
++            spent = self.spent_usd()
++            if spent >= self.cost_limit_usd:
++                raise OpenRouterBudgetExceeded(
++                    f"API cost limit reached: spent ${spent:.4f} >= limit ${self.cost_limit_usd:.2f}")
++            t0 = time.time()
++            data, n_retries = self._post_with_retries(body)
++            latency = time.time() - t0
++            returned_model, returned_provider = self._check_identity(data)
++            choice = data["choices"][0]
++            msg = choice.get("message", {}) or {}
++            content = msg.get("content") or ""
++            usage = data.get("usage", {}) or {}
++            details = usage.get("completion_tokens_details") or {}
++            rec = {
++                "ts": time.time(),
++                "request_hash": rhash,
++                "cache_hit": False,
++                "repair_round": repair_round,
++                "generation_id": data.get("id"),
++                "requested_model": self.model,
++                "returned_model": returned_model,
++                "provider": returned_provider,
++                "finish_reason": choice.get("finish_reason"),
++                "native_finish_reason": choice.get("native_finish_reason"),
++                "prompt_tokens": usage.get("prompt_tokens"),
++                "completion_tokens": usage.get("completion_tokens"),
++                "reasoning_tokens": details.get("reasoning_tokens"),
++                "cached_prompt_tokens": (usage.get("prompt_tokens_details") or {}).get("cached_tokens"),
++                "cost_usd": usage.get("cost"),
++                "http_retries": n_retries,
++                "latency_s": round(latency, 3),
++                "content_chars": len(content),
++                "json_valid": response_has_json(content),
++                "expect_json": expect_json,
++                "context": self.context,
++                "tag": tag,
++            }
++            self._append_jsonl(self.ledger_path, rec)
++            self._spent = self.spent_usd() + float(rec["cost_usd"] or 0.0)
++            attempts_record.append(rec)
++            if rec["json_valid"] or not self.cfg["json_validation"]["enabled"]:
++                break
++            # Only re-request when the output is empty or truncated; a complete answer that simply
++            # contains no JSON is passed through unchanged to the original IRIS parser.
++            if content.strip() and rec["finish_reason"] != "length":
++                break
++
++        cache_rec = {
++            "request_hash": rhash,
++            "content": content,
++            "reasoning": (data["choices"][0].get("message", {}) or {}).get("reasoning"),
++            "finish_reason": attempts_record[-1]["finish_reason"],
++            "returned_model": attempts_record[-1]["returned_model"],
++            "provider": attempts_record[-1]["provider"],
++            "n_rounds": len(attempts_record),
++            "context": self.context,
++            "tag": tag,
++        }
++        self._append_jsonl(self.cache_path, cache_rec)
++        self._cache[rhash] = cache_rec
++        return content
+diff --git a/src/neusym_vul.py b/src/neusym_vul.py
+index 7eda458..4c8a9f2 100644
+--- a/src/neusym_vul.py
++++ b/src/neusym_vul.py
+@@ -41,6 +41,9 @@ from src.modules.evaluation_pipeline import EvaluationPipeline
+ from src.models.llm import LLM
+ 
+ CODEQL = f"{CODEQL_DIR}/codeql"
++# Compat (iris_repro): CodeQL's default query-compiler heap is ~3.4 GB, which overflows on large projects.
++# The CLI honours only an explicit --ram; the harness provides it through this variable.
++CODEQL_EXTRA_ARGS = ["--ram", os.environ["IRIS_REPRO_CODEQL_RAM_MB"]] if os.environ.get("IRIS_REPRO_CODEQL_RAM_MB") else []
+ CODEQL_CUSTOM_QUERY_DIR = f"{CODEQL_DIR}/qlpacks/codeql/java-queries/0.8.3/myqueries"
+ CODEQL_CUSTOM_YML_DIR = f"{CODEQL_DIR}/qlpacks/codeql/java-queries/0.8.3/.codeql/libraries/codeql/java-all/0.8.3/ext"
+ 
+@@ -1003,10 +1006,10 @@ class SAPipeline:
+         self.project_logger.info("  ==> Running CodeQL analysis...")
+         query_filename = QUERIES[self.query]["queries"][0].split("/")[-1]
+         to_run_query_full_path = f"{codeql_query_dir}/{query_filename}"
+-        sp.run([CODEQL, "database", "analyze", "--rerun", self.project_codeql_db_path, "--format=sarif-latest", f"--output={self.query_output_result_sarif_path}", to_run_query_full_path])
++        sp.run([CODEQL, "database", "analyze", "--rerun"] + CODEQL_EXTRA_ARGS + [self.project_codeql_db_path, "--format=sarif-latest", f"--output={self.query_output_result_sarif_path}", to_run_query_full_path])
+         if not os.path.exists(self.query_output_result_sarif_path):
+             self.project_logger.error("  ==> Result SARIF not produced; aborting"); return
+-        sp.run([CODEQL, "database", "analyze", "--rerun", self.project_codeql_db_path, "--format=csv", f"--output={self.query_output_result_csv_path}", to_run_query_full_path])
++        sp.run([CODEQL, "database", "analyze", "--rerun"] + CODEQL_EXTRA_ARGS + [self.project_codeql_db_path, "--format=csv", f"--output={self.query_output_result_csv_path}", to_run_query_full_path])
+         if not os.path.exists(self.query_output_result_csv_path):
+             self.project_logger.error("  ==> Result CSV not produced; aborting"); return
+ 

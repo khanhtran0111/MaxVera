@@ -1,0 +1,25 @@
+{
+  "run_id": "iris-v1_gptoss20b_smoke_20261028T023424Z",
+  "generated": "2026-10-28T03:13:04Z",
+  "requests": 75,
+  "cache_hits": 1,
+  "http_retries": 0,
+  "repair_rerequests": 2,
+  "json_invalid_responses": 3,
+  "prompt_tokens": 78373,
+  "completion_tokens": 42569,
+  "reasoning_tokens": 10610,
+  "cost_usd": 0.018207075000000003,
+  "cost_limit_usd": 3.0,
+  "returned_models": {
+    "openai/gpt-oss-20b": 75
+  },
+  "providers": {
+    "Groq": 75
+  },
+  "finish_reasons": {
+    "stop": 72,
+    "length": 3
+  },
+  "note": "Includes preflight requests (project '__preflight__'). Costs are OpenRouter-reported usage.cost."
+}

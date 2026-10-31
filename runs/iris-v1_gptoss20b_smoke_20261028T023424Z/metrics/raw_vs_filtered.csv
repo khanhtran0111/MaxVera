@@ -1,0 +1,5 @@
+eval_id,cwe,status,raw_alerts,raw_paths,raw_recall,raw_precision,filtered_alerts,filtered_paths,filtered_recall,filtered_precision,lost_detection,paths_removed
+perwendel__spark_CVE-2018-9159_2.7.1,CWE-022,completed,0,0,0,,0,0,0,,0,0
+jenkinsci__perfecto-plugin_CVE-2020-2261_1.17,CWE-078,completed,2,2,1,1.0,2,2,1,1.0,0,0
+nahsra__antisamy_CVE-2022-29577_1.6.6.1,CWE-079,completed,9,11,1,0.1111111111111111,9,4,0,0.0,1,7
+jmrozanec__cron-utils_CVE-2021-41269_9.1.5,CWE-094,completed,0,0,0,,0,0,0,,0,0

@@ -1,0 +1,5 @@
+eval_id,cwe,candidates,returned,merged_exact,merged_exact_sink,merged_exact_taint-propagator,merged_exact_source,dropped_signature,dropped_signature_taint-propagator,dropped_signature_sink,dropped_other,invalid_entry
+perwendel__spark_CVE-2018-9159_2.7.1,CWE-022,553,172,166,5,106,55,6,3,3,,
+jenkinsci__perfecto-plugin_CVE-2020-2261_1.17,CWE-078,106,9,9,3,3,3,,,,,
+nahsra__antisamy_CVE-2022-29577_1.6.6.1,CWE-079,354,134,132,8,102,22,,,,2,
+jmrozanec__cron-utils_CVE-2021-41269_9.1.5,CWE-094,384,107,107,3,101,3,,,,,1

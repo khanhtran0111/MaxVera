@@ -1,0 +1,85 @@
+{
+  "ts": "2026-10-28T02:53:35Z",
+  "base_url": "https://openrouter.ai/api/v1",
+  "model": "openai/gpt-oss-20b",
+  "provider_config": {
+    "order": [
+      "groq"
+    ],
+    "expected_provider_name": "Groq",
+    "allow_fallbacks": false,
+    "require_parameters": true,
+    "data_collection": "deny",
+    "zdr": true
+  },
+  "decoding": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "seed": 1234,
+    "max_tokens": 2048,
+    "reasoning_effort": "low"
+  },
+  "checks": {
+    "auth": {
+      "ok": true,
+      "limit": null,
+      "limit_remaining": null,
+      "usage": 7.38888007,
+      "is_free_tier": false,
+      "rate_limit": {
+        "requests": -1,
+        "interval": "10s",
+        "note": "This field is deprecated and safe to ignore."
+      }
+    },
+    "endpoint": {
+      "ok": true,
+      "tag": "groq",
+      "quantization": "unknown",
+      "status": 0,
+      "context_length": 131072,
+      "max_completion_tokens": 65536,
+      "pricing": {
+        "prompt": "0.000000075",
+        "completion": "0.0000003",
+        "input_cache_read": "0.0000000375",
+        "discount": 0
+      },
+      "supported_parameters": [
+        "reasoning",
+        "include_reasoning",
+        "max_tokens",
+        "temperature",
+        "top_p",
+        "stop",
+        "seed",
+        "response_format",
+        "tools",
+        "tool_choice",
+        "structured_outputs",
+        "reasoning_effort"
+      ],
+      "missing_required_parameters": []
+    },
+    "zdr": {
+      "ok": true
+    },
+    "completion": {
+      "ok": true,
+      "content": "[{\"ok\": true}]",
+      "returned_model": "openai/gpt-oss-20b",
+      "provider": "Groq",
+      "finish_reason": "stop",
+      "prompt_tokens": 113,
+      "completion_tokens": 28,
+      "reasoning_tokens": 13,
+      "cost_usd": 1.6875e-05,
+      "latency_s": 0.922,
+      "json_valid": true,
+      "http_retries": 0,
+      "cache_hit": false
+    }
+  },
+  "ok": true,
+  "errors": []
+}

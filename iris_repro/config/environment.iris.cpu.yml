@@ -1,0 +1,18 @@
+# Upstream vendor/iris-v1/environment.yml + `cpuonly` (documented deviation:
+# the host has no GPU; torch is only imported by src/models/llm.py and is never
+# used for inference when the LLM is served through OpenRouter).
+name: iris
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pandas
+  - requests
+  - tqdm
+  - openai
+  - accelerate
+  - transformers
+  - pytorch=2.5
+  - cpuonly

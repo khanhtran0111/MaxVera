@@ -1,2 +1,12 @@
 .env
 .env.*
+# Large / third-party / regenerable artifacts (pinned and re-created by scripts/setup_iris_env.sh)
+vendor/
+tools/
+__pycache__/
+# Run outputs: keep manifests, configs, status, metrics and reports; drop bulky logs and LLM caches
+runs/*/logs/
+runs/*/llm/response_cache.jsonl
+runs/_dataset/logs/
+runs/_dataset/pkgnames_work/
+.claude/

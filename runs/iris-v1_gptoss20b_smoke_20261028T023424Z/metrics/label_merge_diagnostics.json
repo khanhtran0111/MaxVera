@@ -1,0 +1,19 @@
+{
+  "run_id": "iris-v1_gptoss20b_smoke_20261028T023424Z",
+  "rows": 4,
+  "totals": {
+    "returned": 422,
+    "merged_exact": 414,
+    "merged_exact_sink": 19,
+    "merged_exact_taint-propagator": 312,
+    "merged_exact_source": 83,
+    "dropped_signature": 6,
+    "dropped_signature_taint-propagator": 3,
+    "dropped_signature_sink": 3,
+    "dropped_other": 2,
+    "invalid_entry": 1,
+    "dropped_signature_share": 0.014218009478672985,
+    "merged_exact_share": 0.981042654028436
+  },
+  "note": "Diagnostic only; IRIS's exact-match merge is used unchanged for all predictions."
+}

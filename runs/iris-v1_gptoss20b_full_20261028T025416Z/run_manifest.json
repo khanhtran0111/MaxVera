@@ -1,0 +1,16 @@
+{
+  "run_id": "iris-v1_gptoss20b_full_20261028T025416Z",
+  "created": "2026-10-28T02:54:18Z",
+  "cohort": "full",
+  "projects": null,
+  "official": true,
+  "cost_limit_usd": 40.0,
+  "iris_commit": "67140e84e6a01da2b44803a6208be2ea7bd4bd51",
+  "compat_patch_sha256": "3cd099b04364777f0992c9cfe2ca911fd91cbd2c4c0adebcf1feed70fcd9e22c",
+  "llm_config_sha256": "86af5b01168d290aaa0976223571497f826399c41764588ad2ad699f4bf72cf0",
+  "experiment_config_sha256": "9f32bc5a20b7d504c7e8870a6bb336b6ce92f3d3cc5ac7be0fc9514df77c4c0e",
+  "configs": [
+    "b0",
+    "b2"
+  ]
+}

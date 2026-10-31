@@ -1,0 +1,399 @@
+{
+  "run_id": "iris-v1_gptoss20b_full_20261028T025416Z",
+  "generated": "2026-10-31T06:28:30Z",
+  "policy": "dataset_canonical",
+  "cohort": "full",
+  "official": true,
+  "row_definition": "the 120 canonical CWE-Bench-Java cases, each evaluated only under its dataset CWE",
+  "metric_policy": {
+    "detected": "rows with Recall == 1 (fixed-method intersection, IRIS evaluator)",
+    "avg_fdr": "mean of (1 - TP Alerts/Alerts) over completed rows with Alerts > 0",
+    "avg_f1": "mean F1 over all rows; rows without alerts or not completed contribute 0",
+    "not_completed_rows": "counted as not detected and F1 = 0, excluded from AvgFDR; listed explicitly",
+    "micro_fdr_NOT_PAPER_METRIC": "1 - sum(TP Alerts)/sum(Alerts); global, not the paper's AvgFDR"
+  },
+  "configs": {
+    "b0": {
+      "n_rows": 120,
+      "n_completed": 111,
+      "n_not_completed": 9,
+      "not_completed": [
+        "apache__activemq_CVE-2014-3576_5.10.2",
+        "apache__camel_CVE-2018-8041_2.20.3",
+        "apache__camel_CVE-2019-0194_2.21.4",
+        "asf__james-project_CVE-2022-22931_3.6.0",
+        "spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE",
+        "srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2",
+        "testng-team__testng_CVE-2022-4065_7.5",
+        "x-stream__xstream_CVE-2020-26217_1.4.14-java7",
+        "xwiki__xwiki-commons_CVE-2022-24897_12.6.6"
+      ],
+      "detected": 27,
+      "detection_rate": 0.225,
+      "detection_rate_completed_only": 0.24324324324324326,
+      "avg_fdr": 0.89437814648897,
+      "avg_fdr_n_rows_with_alerts": 63,
+      "avg_f1": 0.07588114732457062,
+      "avg_f1_completed_only": 0.08203367278331958,
+      "micro_fdr_NOT_PAPER_METRIC": 0.9148373983739837,
+      "total_alerts": 4920,
+      "total_tp_alerts": 419,
+      "total_paths": 11757,
+      "per_cwe": {
+        "CWE-022": {
+          "n_rows": 55,
+          "n_completed": 49,
+          "detected": 22,
+          "avg_fdr": 0.8894145778547857,
+          "avg_f1": 0.11954315420759289
+        },
+        "CWE-078": {
+          "n_rows": 13,
+          "n_completed": 11,
+          "detected": 1,
+          "avg_fdr": 0.95,
+          "avg_f1": 0.025641025641025644
+        },
+        "CWE-079": {
+          "n_rows": 31,
+          "n_completed": 31,
+          "detected": 4,
+          "avg_fdr": 0.8869006849315069,
+          "avg_f1": 0.07088809239346874
+        },
+        "CWE-094": {
+          "n_rows": 21,
+          "n_completed": 20,
+          "detected": 0,
+          "avg_fdr": 1.0,
+          "avg_f1": 0.0
+        }
+      }
+    },
+    "b2_raw": {
+      "n_rows": 120,
+      "n_completed": 108,
+      "n_not_completed": 12,
+      "not_completed": [
+        "apache__activemq_CVE-2014-3576_5.10.2",
+        "apache__camel_CVE-2018-8041_2.20.3",
+        "apache__camel_CVE-2019-0194_2.21.4",
+        "apache__nifi_CVE-2022-33140_1.16.2",
+        "asf__james-project_CVE-2022-22931_3.6.0",
+        "asf__nifi_CVE-2023-34468_1.21.0",
+        "asf__nifi_CVE-2023-36542_1.22.0",
+        "spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE",
+        "srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2",
+        "testng-team__testng_CVE-2022-4065_7.5",
+        "x-stream__xstream_CVE-2020-26217_1.4.14-java7",
+        "xwiki__xwiki-commons_CVE-2022-24897_12.6.6"
+      ],
+      "detected": 43,
+      "detection_rate": 0.35833333333333334,
+      "detection_rate_completed_only": 0.39814814814814814,
+      "avg_fdr": 0.9132162632088849,
+      "avg_fdr_n_rows_with_alerts": 97,
+      "avg_f1": 0.0989510284072508,
+      "avg_f1_completed_only": 0.10994558711916756,
+      "micro_fdr_NOT_PAPER_METRIC": 0.9593724607787987,
+      "total_alerts": 15999,
+      "total_tp_alerts": 650,
+      "total_paths": 47081,
+      "per_cwe": {
+        "CWE-022": {
+          "n_rows": 55,
+          "n_completed": 49,
+          "detected": 29,
+          "avg_fdr": 0.8728870949736168,
+          "avg_f1": 0.15485790410977843
+        },
+        "CWE-078": {
+          "n_rows": 13,
+          "n_completed": 10,
+          "detected": 0,
+          "avg_fdr": 1.0,
+          "avg_f1": 0.0
+        },
+        "CWE-079": {
+          "n_rows": 31,
+          "n_completed": 31,
+          "detected": 8,
+          "avg_fdr": 0.9343470619027487,
+          "avg_f1": 0.08089315912796795
+        },
+        "CWE-094": {
+          "n_rows": 21,
+          "n_completed": 18,
+          "detected": 6,
+          "avg_fdr": 0.9718634846618398,
+          "avg_f1": 0.040440511898346534
+        }
+      }
+    },
+    "b2_filtered": {
+      "n_rows": 120,
+      "n_completed": 108,
+      "n_not_completed": 12,
+      "not_completed": [
+        "apache__activemq_CVE-2014-3576_5.10.2",
+        "apache__camel_CVE-2018-8041_2.20.3",
+        "apache__camel_CVE-2019-0194_2.21.4",
+        "apache__nifi_CVE-2022-33140_1.16.2",
+        "asf__james-project_CVE-2022-22931_3.6.0",
+        "asf__nifi_CVE-2023-34468_1.21.0",
+        "asf__nifi_CVE-2023-36542_1.22.0",
+        "spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE",
+        "srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2",
+        "testng-team__testng_CVE-2022-4065_7.5",
+        "x-stream__xstream_CVE-2020-26217_1.4.14-java7",
+        "xwiki__xwiki-commons_CVE-2022-24897_12.6.6"
+      ],
+      "detected": 32,
+      "detection_rate": 0.26666666666666666,
+      "detection_rate_completed_only": 0.2962962962962963,
+      "avg_fdr": 0.9675529127851173,
+      "avg_fdr_n_rows_with_alerts": 97,
+      "avg_f1": 0.043714557675803026,
+      "avg_f1_completed_only": 0.04857173075089225,
+      "micro_fdr_NOT_PAPER_METRIC": 0.9908744296518532,
+      "total_alerts": 15999,
+      "total_tp_alerts": 146,
+      "total_paths": 4700,
+      "per_cwe": {
+        "CWE-022": {
+          "n_rows": 55,
+          "n_completed": 49,
+          "detected": 25,
+          "avg_fdr": 0.952095247408244,
+          "avg_f1": 0.07045106682049605
+        },
+        "CWE-078": {
+          "n_rows": 13,
+          "n_completed": 10,
+          "detected": 0,
+          "avg_fdr": 1.0,
+          "avg_f1": 0.0
+        },
+        "CWE-079": {
+          "n_rows": 31,
+          "n_completed": 31,
+          "detected": 5,
+          "avg_fdr": 0.9774545475438332,
+          "avg_f1": 0.032413484754511196
+        },
+        "CWE-094": {
+          "n_rows": 21,
+          "n_completed": 18,
+          "detected": 2,
+          "avg_fdr": 0.9872549019607844,
+          "avg_f1": 0.017434296122820714
+        }
+      }
+    }
+  },
+  "reference_from_original_artifact_csv": {
+    "CodeQL": {
+      "artifact_121_rows": {
+        "n_rows": 121,
+        "n_completed": 121,
+        "n_not_completed": 0,
+        "detected": 27,
+        "detection_rate": 0.2231404958677686,
+        "detection_rate_completed_only": 0.2231404958677686,
+        "avg_fdr": 0.9003742584752238,
+        "avg_fdr_n_rows_with_alerts": 67,
+        "avg_f1": 0.07597253777760334,
+        "avg_f1_completed_only": 0.07597253777760334,
+        "micro_fdr_NOT_PAPER_METRIC": 0.9619460500963392,
+        "total_alerts": 4152,
+        "total_tp_alerts": 158,
+        "total_paths": 10351,
+        "per_cwe": {
+          "CWE-022": {
+            "n_rows": 55,
+            "n_completed": 55,
+            "detected": 22,
+            "avg_fdr": 0.9050490972216667,
+            "avg_f1": 0.11862832675618183
+          },
+          "CWE-078": {
+            "n_rows": 13,
+            "n_completed": 13,
+            "detected": 1,
+            "avg_fdr": 0.84615384615,
+            "avg_f1": 0.03619909502307692
+          },
+          "CWE-079": {
+            "n_rows": 31,
+            "n_completed": 31,
+            "detected": 4,
+            "avg_fdr": 0.8869006849312501,
+            "avg_f1": 0.07088809239354839
+          },
+          "CWE-094": {
+            "n_rows": 22,
+            "n_completed": 22,
+            "detected": 0,
+            "avg_fdr": 1.0,
+            "avg_f1": 0.0
+          }
+        }
+      },
+      "canonical_120_rows": {
+        "n_rows": 120,
+        "n_completed": 120,
+        "n_not_completed": 0,
+        "detected": 27,
+        "detection_rate": 0.225,
+        "detection_rate_completed_only": 0.225,
+        "avg_fdr": 0.9003742584752238,
+        "avg_fdr_n_rows_with_alerts": 67,
+        "avg_f1": 0.07660564225908335,
+        "avg_f1_completed_only": 0.07660564225908335,
+        "micro_fdr_NOT_PAPER_METRIC": 0.9619460500963392,
+        "total_alerts": 4152,
+        "total_tp_alerts": 158,
+        "total_paths": 10351,
+        "per_cwe": {
+          "CWE-022": {
+            "n_rows": 55,
+            "n_completed": 55,
+            "detected": 22,
+            "avg_fdr": 0.9050490972216667,
+            "avg_f1": 0.11862832675618183
+          },
+          "CWE-078": {
+            "n_rows": 13,
+            "n_completed": 13,
+            "detected": 1,
+            "avg_fdr": 0.84615384615,
+            "avg_f1": 0.03619909502307692
+          },
+          "CWE-079": {
+            "n_rows": 31,
+            "n_completed": 31,
+            "detected": 4,
+            "avg_fdr": 0.8869006849312501,
+            "avg_f1": 0.07088809239354839
+          },
+          "CWE-094": {
+            "n_rows": 21,
+            "n_completed": 21,
+            "detected": 0,
+            "avg_fdr": 1.0,
+            "avg_f1": 0.0
+          }
+        }
+      },
+      "paper_table1": {
+        "detected": 27,
+        "avg_fdr": 0.9003,
+        "avg_f1": 0.076
+      },
+      "source_file": "vendor/iris-v1/results/CodeQL.csv"
+    },
+    "IRIS + GPT-4": {
+      "artifact_121_rows": {
+        "n_rows": 121,
+        "n_completed": 121,
+        "n_not_completed": 0,
+        "detected": 55,
+        "detection_rate": 0.45454545454545453,
+        "detection_rate_completed_only": 0.45454545454545453,
+        "avg_fdr": 0.8493555148718696,
+        "avg_fdr_n_rows_with_alerts": 115,
+        "avg_f1": 0.17707259125280167,
+        "avg_f1_completed_only": 0.17707259125280167,
+        "micro_fdr_NOT_PAPER_METRIC": 0.9688593027191695,
+        "total_alerts": 8863,
+        "total_tp_alerts": 276,
+        "total_paths": 10900,
+        "per_cwe": {
+          "CWE-022": {
+            "n_rows": 55,
+            "n_completed": 55,
+            "detected": 31,
+            "avg_fdr": 0.7995600580590385,
+            "avg_f1": 0.23806048198727273
+          },
+          "CWE-078": {
+            "n_rows": 13,
+            "n_completed": 13,
+            "detected": 3,
+            "avg_fdr": 0.7575757575727273,
+            "avg_f1": 0.21538461538461537
+          },
+          "CWE-079": {
+            "n_rows": 31,
+            "n_completed": 31,
+            "detected": 13,
+            "avg_fdr": 0.8927528298530324,
+            "avg_f1": 0.1331244844126129
+          },
+          "CWE-094": {
+            "n_rows": 22,
+            "n_completed": 22,
+            "detected": 8,
+            "avg_fdr": 0.9566709586881428,
+            "avg_f1": 0.06389081888627272
+          }
+        }
+      },
+      "canonical_120_rows": {
+        "n_rows": 120,
+        "n_completed": 120,
+        "n_not_completed": 0,
+        "detected": 54,
+        "detection_rate": 0.45,
+        "detection_rate_completed_only": 0.45,
+        "avg_fdr": 0.8483549962817105,
+        "avg_fdr_n_rows_with_alerts": 114,
+        "avg_f1": 0.17795996088582502,
+        "avg_f1_completed_only": 0.17795996088582502,
+        "micro_fdr_NOT_PAPER_METRIC": 0.9689101469080971,
+        "total_alerts": 8781,
+        "total_tp_alerts": 273,
+        "total_paths": 10717,
+        "per_cwe": {
+          "CWE-022": {
+            "n_rows": 55,
+            "n_completed": 55,
+            "detected": 31,
+            "avg_fdr": 0.7995600580590385,
+            "avg_f1": 0.23806048198727273
+          },
+          "CWE-078": {
+            "n_rows": 13,
+            "n_completed": 13,
+            "detected": 3,
+            "avg_fdr": 0.7575757575727273,
+            "avg_f1": 0.21538461538461537
+          },
+          "CWE-079": {
+            "n_rows": 31,
+            "n_completed": 31,
+            "detected": 13,
+            "avg_fdr": 0.8927528298530324,
+            "avg_f1": 0.1331244844126129
+          },
+          "CWE-094": {
+            "n_rows": 21,
+            "n_completed": 21,
+            "detected": 7,
+            "avg_fdr": 0.95633377491505,
+            "avg_f1": 0.06357189429561905
+          }
+        }
+      },
+      "paper_table1": {
+        "detected": 55,
+        "avg_fdr": 0.8482,
+        "avg_f1": 0.177
+      },
+      "source_file": "vendor/iris-v1/results/IRIS+GPT-4.csv"
+    }
+  },
+  "inputs_sha256": {
+    "project_metrics.csv": "5447e0b6fc838be9eb4f995b122edb92e04f8eec44509f8cac9d5566a2f7b38a"
+  }
+}

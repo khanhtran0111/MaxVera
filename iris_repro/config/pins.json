@@ -1,0 +1,40 @@
+{
+  "iris": {
+    "url": "https://github.com/iris-sast/iris",
+    "branch": "v1",
+    "commit": "67140e84e6a01da2b44803a6208be2ea7bd4bd51"
+  },
+  "cwe_bench_java": {
+    "url": "https://github.com/iris-sast/cwe-bench-java",
+    "submodule_path": "data/cwe-bench-java",
+    "commit": "698fb7248ae30cb7f7782d59c841f05ad70ea9cc"
+  },
+  "codeql": {
+    "url": "https://github.com/iris-sast/iris/releases/download/codeql-0.8.3-patched/codeql.zip",
+    "release_tag": "codeql-0.8.3-patched",
+    "expected_size_bytes": 807846025,
+    "expected_cli_version": "2.15.5",
+    "cli_version_note": "The release asset codeql-0.8.3-patched reports CLI 2.15.5 (bundled java-queries/java-all packs 0.8.3); the IRIS README describes it as CodeQL 2.15.3.",
+    "expected_java_queries_pack": "0.8.3"
+  },
+  "jdks": {
+    "7u80":  {"file": "jdk-7u80-linux-x64.tar.gz",   "dir": "jdk1.7.0_80",  "url": "https://repo.huaweicloud.com/java/jdk/7u80-b15/jdk-7u80-linux-x64.tar.gz", "oracle_md5": "6152f8a7561acf795ca4701daa10a965", "checksum_source": "https://www.oracle.com/webfolder/s/digest/7u80checksum.html"},
+    "8u202": {"file": "jdk-8u202-linux-x64.tar.gz",  "dir": "jdk1.8.0_202", "url": "https://repo.huaweicloud.com/java/jdk/8u202-b08/jdk-8u202-linux-x64.tar.gz", "oracle_sha256": "9a5c32411a6a06e22b69c495b7975034409fa1652d03aeb8eb5b6f59fd4594e0", "checksum_source": "https://www.oracle.com/webfolder/s/digest/8u202checksum.html"},
+    "17":    {"file": "jdk-17_linux-x64_bin.tar.gz", "dir": "jdk-17.0.12",  "url": "https://download.oracle.com/java/17/archive/jdk-17.0.12_linux-x64_bin.tar.gz", "oracle_sha256": "311f1448312ecab391fe2a1b2ac140d6e1c7aea6fbf08416b466a58874f2b40f", "checksum_source": "https://download.oracle.com/java/17/archive/jdk-17.0.12_linux-x64_bin.tar.gz.sha256"}
+  },
+  "maven": {
+    "3.2.1": "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.2.1/apache-maven-3.2.1-bin.zip",
+    "3.5.0": "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.0/apache-maven-3.5.0-bin.zip",
+    "3.9.8": "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.8/apache-maven-3.9.8-bin.zip"
+  },
+  "gradle": {
+    "6.8.2": "https://services.gradle.org/distributions/gradle-6.8.2-bin.zip",
+    "7.6.4": "https://services.gradle.org/distributions/gradle-7.6.4-bin.zip",
+    "8.9":   "https://services.gradle.org/distributions/gradle-8.9-bin.zip"
+  },
+  "python_env": {
+    "conda_installer": "https://github.com/conda-forge/miniforge/releases/download/24.11.3-0/Miniforge3-24.11.3-0-Linux-x86_64.sh",
+    "env_name": "iris",
+    "environment_yml": "vendor/iris-v1/environment.yml"
+  }
+}

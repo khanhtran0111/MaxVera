@@ -1,0 +1,56 @@
+{
+  "provider_platform": "OpenRouter",
+  "base_url": "https://openrouter.ai/api/v1",
+  "requested_model": "openai/gpt-oss-20b",
+  "iris_llm_name": "gpt-oss-20b",
+  "provider_routing": {
+    "order": [
+      "groq"
+    ],
+    "expected_provider_name": "Groq",
+    "allow_fallbacks": false,
+    "require_parameters": true,
+    "data_collection": "deny",
+    "zdr": true
+  },
+  "decoding": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "seed": 1234,
+    "max_tokens": 2048,
+    "reasoning_effort": "low"
+  },
+  "concurrency": 1,
+  "retry": {
+    "max_attempts": 6,
+    "backoff_base_s": 2.0,
+    "backoff_max_s": 60.0,
+    "retry_status_codes": [
+      408,
+      409,
+      425,
+      429,
+      500,
+      502,
+      503,
+      504,
+      520,
+      522,
+      524,
+      529
+    ]
+  },
+  "timeouts": {
+    "connect_s": 15,
+    "read_s": 180
+  },
+  "json_validation": {
+    "enabled": true,
+    "max_identical_rerequests": 1
+  },
+  "cost_limit_usd": 40.0,
+  "api_key": "read from .env at request time; never stored",
+  "dotenv_provider_value": "akashml",
+  "note": "The task specification pins the groq route; .env's MAXVERA_OPENROUTER_PROVIDER is recorded here but not used for routing.",
+  "config_sha256": "86af5b01168d290aaa0976223571497f826399c41764588ad2ad699f4bf72cf0"
+}

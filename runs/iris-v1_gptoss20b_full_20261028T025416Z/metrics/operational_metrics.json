@@ -1,0 +1,964 @@
+{
+  "run_id": "iris-v1_gptoss20b_full_20261028T025416Z",
+  "generated": "2026-10-31T06:28:30Z",
+  "unique_projects": 120,
+  "evaluation_rows": 121,
+  "source_acquisition_success": {
+    "count": 120,
+    "n": 120,
+    "rate": 1.0
+  },
+  "build_and_codeql_db_success": {
+    "count": 111,
+    "n": 120,
+    "rate": 0.925
+  },
+  "build_note": "The project build is performed by CodeQL autobuild inside `codeql database create` (upstream build_codeql_dbs.py), so build success and database success coincide.",
+  "b0_codeql_analysis_success": {
+    "count": 112,
+    "n": 121,
+    "rate": 0.9256198347107438
+  },
+  "b2_candidate_extraction_success": {
+    "count": 112,
+    "n": 121,
+    "rate": 0.9256198347107438
+  },
+  "b2_spec_generation_success": {
+    "count": 112,
+    "n": 121,
+    "rate": 0.9256198347107438
+  },
+  "b2_query_generation_success": {
+    "count": 112,
+    "n": 121,
+    "rate": 0.9256198347107438
+  },
+  "b2_codeql_query_compile_and_run_success": {
+    "count": 109,
+    "n": 121,
+    "rate": 0.9008264462809917
+  },
+  "b2_contextual_analysis_success": {
+    "count": 109,
+    "n": 121,
+    "rate": 0.9008264462809917
+  },
+  "b2_end_to_end_success": {
+    "count": 109,
+    "n": 121,
+    "rate": 0.9008264462809917
+  },
+  "runtime_s": {
+    "b0": {
+      "n": 112,
+      "total": 20583.200000000004,
+      "mean": 183.77857142857147,
+      "max": 1940.3
+    },
+    "b2": {
+      "n": 109,
+      "total": 86169.8,
+      "mean": 790.548623853211,
+      "max": 15184.1
+    }
+  },
+  "db_build_runtime_s": {
+    "DSpace__DSpace_CVE-2016-10726_4.4": 183.3,
+    "DSpace__DSpace_CVE-2022-31192_5.10": 156.0,
+    "DSpace__DSpace_CVE-2022-31194_5.10": 147.1,
+    "DSpace__DSpace_CVE-2022-31195_5.10": 157.2,
+    "ESAPI__esapi-java-legacy_CVE-2022-23457_2.2.3.1": 29.2,
+    "ESAPI__esapi-java-legacy_CVE-2022-24891_2.2.3.1": 29.2,
+    "Graylog2__graylog2-server_CVE-2023-41044_5.1.2": 577.4,
+    "OWASP__json-sanitizer_CVE-2020-13973_1.2.0": 12.5,
+    "SpringSource__spring-security-oauth_CVE-2018-1260_2.3.2.RELEASE": 148.5,
+    "alibaba__nacos_CVE-2021-44667_2.0.3": 156.1,
+    "alibaba__one-java-agent_CVE-2022-25842_0.0.1": 31.6,
+    "apache__activemq_CVE-2014-3576_5.10.2": 464.0,
+    "apache__activemq_CVE-2019-0222_5.15.8": 599.5,
+    "apache__activemq_CVE-2020-11998_5.15.12": 499.4,
+    "apache__camel_CVE-2018-8041_2.20.3": 1474.4,
+    "apache__camel_CVE-2019-0194_2.21.4": 1556.1,
+    "apache__dolphinscheduler_CVE-2022-26884_2.0.5": 213.8,
+    "apache__dolphinscheduler_CVE-2022-34662_2.0.9": 207.2,
+    "apache__dolphinscheduler_CVE-2023-49109_3.2.0": 916.4,
+    "apache__dolphinscheduler_CVE-2023-51770_3.2.0": 925.0,
+    "apache__dubbo_CVE-2021-30180_2.7.9": 408.7,
+    "apache__flink_CVE-2020-17519_1.11.2": 2071.4,
+    "apache__incubator-dubbo_CVE-2021-30181_2.6.8": 290.9,
+    "apache__jspwiki_CVE-2019-0225_2.11.0.M2": 84.7,
+    "apache__jspwiki_CVE-2019-10076_2.11.0.M3": 80.0,
+    "apache__jspwiki_CVE-2019-10077_2.11.0.M3": 84.8,
+    "apache__jspwiki_CVE-2019-10078_2.11.0.M3": 83.8,
+    "apache__jspwiki_CVE-2019-10089_2.11.0.M4": 87.6,
+    "apache__jspwiki_CVE-2022-46907_2.11.3": 138.8,
+    "apache__mina-sshd_CVE-2023-35887_2.9.2": 181.5,
+    "apache__myfaces_CVE-2011-4367_2.0.11": 83.6,
+    "apache__nifi_CVE-2022-33140_1.16.2": 3007.4,
+    "apache__rocketmq_CVE-2019-17572_4.6.0": 123.2,
+    "apache__rocketmq_CVE-2023-33246_5.1.0": 198.7,
+    "apache__rocketmq_CVE-2023-37582_4.9.6": 126.5,
+    "apache__shiro_CVE-2023-34478_1.11.0": 172.4,
+    "apache__shiro_CVE-2023-46749_1.12.0": 173.4,
+    "apache__sling-org-apache-sling-servlets-resolver_CVE-2024-23673_2.10.0": 23.0,
+    "apache__sling-org-apache-sling-xss_CVE-2016-5394_1.0.8": 17.2,
+    "apache__struts_CVE-2020-17530_2.5.25": 285.6,
+    "apache__tika_CVE-2018-11762_1.18": 227.0,
+    "apache__uima-uimaj_CVE-2022-32287_3.3.0": 444.3,
+    "asf__commons-io_CVE-2021-29425_2.6": 23.4,
+    "asf__commons-text_CVE-2022-42889_1.9": 35.3,
+    "asf__cxf_CVE-2016-6812_3.0.11": 1016.8,
+    "asf__cxf_CVE-2019-17573_3.2.11": 934.6,
+    "asf__james-project_CVE-2022-22931_3.6.0": 8.9,
+    "asf__karaf_CVE-2022-22932_4.3.5": 528.6,
+    "asf__nifi_CVE-2023-34468_1.21.0": 3247.1,
+    "asf__nifi_CVE-2023-36542_1.22.0": 3110.0,
+    "asf__tapestry-5_CVE-2019-0207_5.4.4": 229.5,
+    "aws__aws-sdk-java_CVE-2022-31159_1.12.260": 3455.5,
+    "codecentric__spring-boot-admin_CVE-2022-46166_2.6.9": 202.6,
+    "codehaus-plexus__plexus-archiver_CVE-2018-1002200_3.5": 16.6,
+    "codehaus-plexus__plexus-archiver_CVE-2023-37460_4.7.1": 22.5,
+    "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15": 19.3,
+    "codehaus-plexus__plexus-utils_CVE-2022-4244_3.0.23": 19.1,
+    "diffplug__goomph_CVE-2022-26049_3.37.1": 44.1,
+    "dromara__hutool_CVE-2018-17297_4.1.11": 173.6,
+    "eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5": 1673.6,
+    "eclipse__hawkbit_CVE-2020-27219_0.3.0M6": 310.3,
+    "fabric8io__kubernetes-client_CVE-2021-4178_5.0.2": 618.6,
+    "ff4j__ff4j_CVE-2022-44262_1.8.13": 201.0,
+    "hapifhir__org.hl7.fhir.core_CVE-2023-24057_5.6.91": 889.9,
+    "hapifhir__org.hl7.fhir.core_CVE-2023-28465_5.6.105": 1181.0,
+    "hibernate__hibernate-validator_CVE-2019-10219_6.0.17.Final": 80.1,
+    "jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17": 34.1,
+    "jenkinsci__git-client-plugin_CVE-2019-10392_2.8.4": 31.7,
+    "jenkinsci__perfecto-plugin_CVE-2020-2261_1.17": 26.8,
+    "jenkinsci__script-security-plugin_CVE-2023-24422_1228.vd93135a_2fb_25": 36.6,
+    "jenkinsci__workflow-cps-global-lib-plugin_CVE-2022-25174_544.vff04fa68714d": 38.5,
+    "jenkinsci__workflow-cps-plugin_CVE-2022-25173_2646.v6ed3b5b01ff1": 61.1,
+    "jenkinsci__workflow-multibranch-plugin_CVE-2022-25175_706.vd43c65dec013": 35.7,
+    "jeremylong__DependencyCheck_CVE-2018-12036_3.1.2": 61.8,
+    "jlangch__venice_CVE-2022-36007_1.10.16": 65.0,
+    "jmrozanec__cron-utils_CVE-2021-41269_9.1.5": 23.4,
+    "joniles__mpxj_CVE-2020-35460_8.3.4": 60.4,
+    "jstachio__jstachio_CVE-2023-33962_1.0.0": 70.2,
+    "keycloak__keycloak_CVE-2014-3656_1.0.5.Final": 200.2,
+    "keycloak__keycloak_CVE-2022-1274_20.0.4": 618.7,
+    "keycloak__keycloak_CVE-2022-3782_20.0.1": 613.5,
+    "keycloak__keycloak_CVE-2022-4137_20.0.4": 615.6,
+    "keycloak__keycloak_CVE-2022-4361_21.1.1": 832.7,
+    "kubernetes-client__java_CVE-2020-8570_client-java-parent-9.0.1": 210.1,
+    "nahsra__antisamy_CVE-2016-10006_1.5.3": 23.1,
+    "nahsra__antisamy_CVE-2017-14735_1.5.6": 22.2,
+    "nahsra__antisamy_CVE-2022-28367_1.6.5": 18.7,
+    "nahsra__antisamy_CVE-2022-29577_1.6.6.1": 21.6,
+    "payara__Payara_CVE-2022-37422_5.2022.2": 1848.6,
+    "perwendel__spark_CVE-2016-9177_2.5.1": 19.0,
+    "perwendel__spark_CVE-2018-9159_2.7.1": 20.5,
+    "rhuss__jolokia_CVE-2018-1000129_1.4.0": 77.9,
+    "spring-cloud__spring-cloud-config_CVE-2020-5405_2.1.6.RELEASE": 69.4,
+    "spring-cloud__spring-cloud-config_CVE-2020-5410_2.1.8.RELEASE": 75.8,
+    "spring-cloud__spring-cloud-gateway_CVE-2022-22947_3.0.6": 107.3,
+    "spring-projects__spring-framework_CVE-2022-22965_5.2.19.RELEASE": 448.3,
+    "spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE": 3.6,
+    "square__retrofit_CVE-2018-1000850_2.4.0": 239.1,
+    "srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2": 19.0,
+    "testng-team__testng_CVE-2022-4065_7.5": 83.0,
+    "undertow-io__undertow_CVE-2014-7816_1.0.16.Final": 57.7,
+    "vert-x3__vertx-web_CVE-2018-12542_3.5.3.CR1": 133.1,
+    "vert-x3__vertx-web_CVE-2019-17640_3.9.3": 109.1,
+    "whitesource__curekit_CVE-2022-23082_1.1.3": 13.3,
+    "wildfly__wildfly_CVE-2018-1047_11.0.0.Final": 521.4,
+    "x-stream__xstream_CVE-2013-7285_1.4.6": 45.6,
+    "x-stream__xstream_CVE-2020-26217_1.4.14-java7": 5.5,
+    "x-stream__xstream_CVE-2021-21345_1.4.15": 62.5,
+    "xerial__sqlite-jdbc_CVE-2023-32697_3.41.2.1": 38.0,
+    "xuxueli__xxl-job_CVE-2020-29204_2.2.0": 36.4,
+    "xwiki__xwiki-commons_CVE-2022-24897_12.6.6": 4.8,
+    "xwiki__xwiki-commons_CVE-2023-29201_14.6": 269.3,
+    "xwiki__xwiki-commons_CVE-2023-29528_14.9-rc-1": 275.4,
+    "xwiki__xwiki-commons_CVE-2023-31126_14.10.3": 269.2,
+    "xwiki__xwiki-commons_CVE-2023-36471_14.10.5": 271.4,
+    "xwiki__xwiki-rendering_CVE-2023-32070_14.6": 167.2,
+    "xwiki__xwiki-rendering_CVE-2023-37908_14.10.3": 176.8,
+    "yamcs__yamcs_CVE-2023-45277_5.8.6": 193.0,
+    "yamcs__yamcs_CVE-2023-45278_5.8.6": 196.7,
+    "zeroturnaround__zt-zip_CVE-2018-1002201_1.12": 14.4
+  },
+  "failure_causes": {
+    "b2:failed:codeql_analysis": 3,
+    "db:CalledProcessError: Command '['codeql', 'database', 'create', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/codeql-dbs/apache__activemq_CVE-2014-3576_5.10.2', '--source-root', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/cwe-bench-java/project-sources/apache__activemq_CVE-2014-3576_5.10.2', '--language', 'java', '--overwrite']' returned non-zero exit status 2.": 1,
+    "db:CalledProcessError: Command '['codeql', 'database', 'create', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/codeql-dbs/apache__camel_CVE-2018-8041_2.20.3', '--source-root', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/cwe-bench-java/project-sources/apache__camel_CVE-2018-8041_2.20.3', '--language', 'java', '--overwrite']' returned non-zero exit status 2.": 1,
+    "db:CalledProcessError: Command '['codeql', 'database', 'create', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/codeql-dbs/apache__camel_CVE-2019-0194_2.21.4', '--source-root', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/cwe-bench-java/project-sources/apache__camel_CVE-2019-0194_2.21.4', '--language', 'java', '--overwrite']' returned non-zero exit status 2.": 1,
+    "db:CalledProcessError: Command '['codeql', 'database', 'create', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/codeql-dbs/asf__james-project_CVE-2022-22931_3.6.0', '--source-root', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/cwe-bench-java/project-sources/asf__james-project_CVE-2022-22931_3.6.0', '--language', 'java', '--overwrite']' returned non-zero exit status 2.": 1,
+    "db:CalledProcessError: Command '['codeql', 'database', 'create', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/codeql-dbs/spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE', '--source-root', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/cwe-bench-java/project-sources/spring-projects__spring-security_CVE-2011-2732_2.0.6.RELEASE', '--language', 'java', '--overwrite']' returned non-zero exit status 2.": 1,
+    "db:CalledProcessError: Command '['codeql', 'database', 'create', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/codeql-dbs/srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2', '--source-root', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/cwe-bench-java/project-sources/srikanth-lingala__zip4j_CVE-2018-1002202_1.3.2', '--language', 'java', '--overwrite']' returned non-zero exit status 2.": 1,
+    "db:CalledProcessError: Command '['codeql', 'database', 'create', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/codeql-dbs/testng-team__testng_CVE-2022-4065_7.5', '--source-root', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/cwe-bench-java/project-sources/testng-team__testng_CVE-2022-4065_7.5', '--language', 'java', '--overwrite']' returned non-zero exit status 2.": 1,
+    "db:CalledProcessError: Command '['codeql', 'database', 'create', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/codeql-dbs/x-stream__xstream_CVE-2020-26217_1.4.14-java7', '--source-root', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/cwe-bench-java/project-sources/x-stream__xstream_CVE-2020-26217_1.4.14-java7', '--language', 'java', '--overwrite']' returned non-zero exit status 2.": 1,
+    "db:CalledProcessError: Command '['codeql', 'database', 'create', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/codeql-dbs/xwiki__xwiki-commons_CVE-2022-24897_12.6.6', '--source-root', '/home/khanhtg/Documents/MaxVera/vendor/iris-v1/data/cwe-bench-java/project-sources/xwiki__xwiki-commons_CVE-2022-24897_12.6.6', '--language', 'java', '--overwrite']' returned non-zero exit status 2.": 1
+  },
+  "b2_filtered_miss_causes": {
+    "alerts found but no path through a fixed method": 43,
+    "true-positive path removed by contextual filtering": 12,
+    "no CodeQL alerts with inferred specifications": 11,
+    "no evaluable fixed method in fix_info.csv (undetectable under evaluator)": 11
+  },
+  "b2_filtered_miss_detail": {
+    "DSpace__DSpace_CVE-2016-10726_4.4": "alerts found but no path through a fixed method",
+    "perwendel__spark_CVE-2018-9159_2.7.1": "true-positive path removed by contextual filtering",
+    "wildfly__wildfly_CVE-2018-1047_11.0.0.Final": "alerts found but no path through a fixed method",
+    "dromara__hutool_CVE-2018-17297_4.1.11": "true-positive path removed by contextual filtering",
+    "apache__tika_CVE-2018-11762_1.18": "true-positive path removed by contextual filtering",
+    "square__retrofit_CVE-2018-1000850_2.4.0": "no CodeQL alerts with inferred specifications",
+    "apache__jspwiki_CVE-2019-0225_2.11.0.M2": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "apache__rocketmq_CVE-2019-17572_4.6.0": "alerts found but no path through a fixed method",
+    "apache__flink_CVE-2020-17519_1.11.2": "alerts found but no path through a fixed method",
+    "asf__commons-io_CVE-2021-29425_2.6": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "vert-x3__vertx-web_CVE-2019-17640_3.9.3": "alerts found but no path through a fixed method",
+    "ESAPI__esapi-java-legacy_CVE-2022-23457_2.2.3.1": "alerts found but no path through a fixed method",
+    "alibaba__one-java-agent_CVE-2022-25842_0.0.1": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "whitesource__curekit_CVE-2022-23082_1.1.3": "alerts found but no path through a fixed method",
+    "aws__aws-sdk-java_CVE-2022-31159_1.12.260": "alerts found but no path through a fixed method",
+    "jlangch__venice_CVE-2022-36007_1.10.16": "true-positive path removed by contextual filtering",
+    "payara__Payara_CVE-2022-37422_5.2022.2": "alerts found but no path through a fixed method",
+    "apache__dolphinscheduler_CVE-2022-26884_2.0.5": "alerts found but no path through a fixed method",
+    "apache__dolphinscheduler_CVE-2022-34662_2.0.9": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "keycloak__keycloak_CVE-2022-3782_20.0.1": "alerts found but no path through a fixed method",
+    "eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "Graylog2__graylog2-server_CVE-2023-41044_5.1.2": "alerts found but no path through a fixed method",
+    "apache__shiro_CVE-2023-34478_1.11.0": "alerts found but no path through a fixed method",
+    "apache__shiro_CVE-2023-46749_1.12.0": "alerts found but no path through a fixed method",
+    "x-stream__xstream_CVE-2013-7285_1.4.6": "alerts found but no path through a fixed method",
+    "x-stream__xstream_CVE-2021-21345_1.4.15": "alerts found but no path through a fixed method",
+    "jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17": "alerts found but no path through a fixed method",
+    "jenkinsci__workflow-cps-plugin_CVE-2022-25173_2646.v6ed3b5b01ff1": "no CodeQL alerts with inferred specifications",
+    "jenkinsci__workflow-cps-global-lib-plugin_CVE-2022-25174_544.vff04fa68714d": "no CodeQL alerts with inferred specifications",
+    "jenkinsci__workflow-multibranch-plugin_CVE-2022-25175_706.vd43c65dec013": "alerts found but no path through a fixed method",
+    "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15": "no CodeQL alerts with inferred specifications",
+    "jenkinsci__git-client-plugin_CVE-2019-10392_2.8.4": "no CodeQL alerts with inferred specifications",
+    "jenkinsci__perfecto-plugin_CVE-2020-2261_1.17": "no CodeQL alerts with inferred specifications",
+    "jenkinsci__script-security-plugin_CVE-2023-24422_1228.vd93135a_2fb_25": "no CodeQL alerts with inferred specifications",
+    "nahsra__antisamy_CVE-2016-10006_1.5.3": "alerts found but no path through a fixed method",
+    "apache__jspwiki_CVE-2019-10076_2.11.0.M3": "alerts found but no path through a fixed method",
+    "apache__jspwiki_CVE-2019-10078_2.11.0.M3": "alerts found but no path through a fixed method",
+    "apache__jspwiki_CVE-2019-10089_2.11.0.M4": "alerts found but no path through a fixed method",
+    "hibernate__hibernate-validator_CVE-2019-10219_6.0.17.Final": "no CodeQL alerts with inferred specifications",
+    "asf__cxf_CVE-2019-17573_3.2.11": "true-positive path removed by contextual filtering",
+    "xuxueli__xxl-job_CVE-2020-29204_2.2.0": "alerts found but no path through a fixed method",
+    "OWASP__json-sanitizer_CVE-2020-13973_1.2.0": "no CodeQL alerts with inferred specifications",
+    "eclipse__hawkbit_CVE-2020-27219_0.3.0M6": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "alibaba__nacos_CVE-2021-44667_2.0.3": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "nahsra__antisamy_CVE-2022-28367_1.6.5": "alerts found but no path through a fixed method",
+    "ESAPI__esapi-java-legacy_CVE-2022-24891_2.2.3.1": "true-positive path removed by contextual filtering",
+    "nahsra__antisamy_CVE-2022-29577_1.6.6.1": "alerts found but no path through a fixed method",
+    "keycloak__keycloak_CVE-2014-3656_1.0.5.Final": "alerts found but no path through a fixed method",
+    "asf__cxf_CVE-2016-6812_3.0.11": "true-positive path removed by contextual filtering",
+    "apache__sling-org-apache-sling-xss_CVE-2016-5394_1.0.8": "no CodeQL alerts with inferred specifications",
+    "DSpace__DSpace_CVE-2022-31192_5.10": "alerts found but no path through a fixed method",
+    "keycloak__keycloak_CVE-2022-4137_20.0.4": "alerts found but no path through a fixed method",
+    "keycloak__keycloak_CVE-2022-1274_20.0.4": "alerts found but no path through a fixed method",
+    "xwiki__xwiki-commons_CVE-2023-29201_14.6": "alerts found but no path through a fixed method",
+    "xwiki__xwiki-commons_CVE-2023-29528_14.9-rc-1": "alerts found but no path through a fixed method",
+    "xwiki__xwiki-commons_CVE-2023-31126_14.10.3": "alerts found but no path through a fixed method",
+    "keycloak__keycloak_CVE-2022-4361_21.1.1": "alerts found but no path through a fixed method",
+    "xwiki__xwiki-commons_CVE-2023-36471_14.10.5": "alerts found but no path through a fixed method",
+    "jstachio__jstachio_CVE-2023-33962_1.0.0": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "xwiki__xwiki-rendering_CVE-2023-37908_14.10.3": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "SpringSource__spring-security-oauth_CVE-2018-1260_2.3.2.RELEASE": "alerts found but no path through a fixed method",
+    "apache__activemq_CVE-2019-0222_5.15.8": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "jmrozanec__cron-utils_CVE-2021-41269_9.1.5": "no CodeQL alerts with inferred specifications",
+    "apache__struts_CVE-2020-17530_2.5.25": "true-positive path removed by contextual filtering",
+    "apache__activemq_CVE-2020-11998_5.15.12": "alerts found but no path through a fixed method",
+    "spring-projects__spring-framework_CVE-2022-22965_5.2.19.RELEASE": "alerts found but no path through a fixed method",
+    "spring-cloud__spring-cloud-gateway_CVE-2022-22947_3.0.6": "alerts found but no path through a fixed method",
+    "apache__incubator-dubbo_CVE-2021-30181_2.6.8": "alerts found but no path through a fixed method",
+    "fabric8io__kubernetes-client_CVE-2021-4178_5.0.2": "no evaluable fixed method in fix_info.csv (undetectable under evaluator)",
+    "asf__commons-text_CVE-2022-42889_1.9": "alerts found but no path through a fixed method",
+    "ff4j__ff4j_CVE-2022-44262_1.8.13": "true-positive path removed by contextual filtering",
+    "codecentric__spring-boot-admin_CVE-2022-46166_2.6.9": "alerts found but no path through a fixed method",
+    "apache__rocketmq_CVE-2023-37582_4.9.6": "true-positive path removed by contextual filtering",
+    "apache__rocketmq_CVE-2023-33246_5.1.0": "true-positive path removed by contextual filtering",
+    "apache__dolphinscheduler_CVE-2023-51770_3.2.0": "alerts found but no path through a fixed method",
+    "apache__dolphinscheduler_CVE-2023-49109_3.2.0": "alerts found but no path through a fixed method",
+    "x-stream__xstream_CVE-2021-21345_1.4.15__CWE-094": "true-positive path removed by contextual filtering"
+  },
+  "structurally_undetectable_cases": [
+    "alibaba__nacos_CVE-2021-44667_2.0.3",
+    "alibaba__one-java-agent_CVE-2022-25842_0.0.1",
+    "apache__activemq_CVE-2019-0222_5.15.8",
+    "apache__dolphinscheduler_CVE-2022-34662_2.0.9",
+    "apache__jspwiki_CVE-2019-0225_2.11.0.M2",
+    "asf__commons-io_CVE-2021-29425_2.6",
+    "asf__nifi_CVE-2023-34468_1.21.0",
+    "eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5",
+    "eclipse__hawkbit_CVE-2020-27219_0.3.0M6",
+    "fabric8io__kubernetes-client_CVE-2021-4178_5.0.2",
+    "jstachio__jstachio_CVE-2023-33962_1.0.0",
+    "x-stream__xstream_CVE-2020-26217_1.4.14-java7",
+    "xwiki__xwiki-rendering_CVE-2023-37908_14.10.3"
+  ],
+  "b2_rows_without_func_param_candidates": [
+    "DSpace__DSpace_CVE-2016-10726_4.4",
+    "DSpace__DSpace_CVE-2022-31192_5.10",
+    "DSpace__DSpace_CVE-2022-31194_5.10",
+    "DSpace__DSpace_CVE-2022-31195_5.10",
+    "jenkinsci__perfecto-plugin_CVE-2020-2261_1.17",
+    "xuxueli__xxl-job_CVE-2020-29204_2.2.0"
+  ],
+  "posthoc_stats": {
+    "DSpace__DSpace_CVE-2016-10726_4.4": {
+      "num_gpt_calls": 216,
+      "num_cached": 1269,
+      "num_failure": 0,
+      "num_vulnerable_paths": 83
+    },
+    "perwendel__spark_CVE-2018-9159_2.7.1": {
+      "num_gpt_calls": 9,
+      "num_cached": 26,
+      "num_failure": 0,
+      "num_vulnerable_paths": 8
+    },
+    "perwendel__spark_CVE-2016-9177_2.5.1": {
+      "num_gpt_calls": 9,
+      "num_cached": 35,
+      "num_failure": 0,
+      "num_vulnerable_paths": 9
+    },
+    "wildfly__wildfly_CVE-2018-1047_11.0.0.Final": {
+      "num_gpt_calls": 186,
+      "num_cached": 117,
+      "num_failure": 0,
+      "num_vulnerable_paths": 44
+    },
+    "vert-x3__vertx-web_CVE-2018-12542_3.5.3.CR1": {
+      "num_gpt_calls": 9,
+      "num_cached": 1,
+      "num_failure": 0,
+      "num_vulnerable_paths": 6
+    },
+    "dromara__hutool_CVE-2018-17297_4.1.11": {
+      "num_gpt_calls": 151,
+      "num_cached": 466,
+      "num_failure": 0,
+      "num_vulnerable_paths": 134
+    },
+    "apache__tika_CVE-2018-11762_1.18": {
+      "num_gpt_calls": 198,
+      "num_cached": 137,
+      "num_failure": 0,
+      "num_vulnerable_paths": 111
+    },
+    "square__retrofit_CVE-2018-1000850_2.4.0": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "apache__jspwiki_CVE-2019-0225_2.11.0.M2": {
+      "num_gpt_calls": 63,
+      "num_cached": 117,
+      "num_failure": 0,
+      "num_vulnerable_paths": 72
+    },
+    "asf__tapestry-5_CVE-2019-0207_5.4.4": {
+      "num_gpt_calls": 21,
+      "num_cached": 19,
+      "num_failure": 0,
+      "num_vulnerable_paths": 6
+    },
+    "spring-cloud__spring-cloud-config_CVE-2020-5410_2.1.8.RELEASE": {
+      "num_gpt_calls": 27,
+      "num_cached": 62,
+      "num_failure": 0,
+      "num_vulnerable_paths": 19
+    },
+    "spring-cloud__spring-cloud-config_CVE-2020-5405_2.1.6.RELEASE": {
+      "num_gpt_calls": 24,
+      "num_cached": 57,
+      "num_failure": 0,
+      "num_vulnerable_paths": 19
+    },
+    "apache__rocketmq_CVE-2019-17572_4.6.0": {
+      "num_gpt_calls": 45,
+      "num_cached": 30,
+      "num_failure": 0,
+      "num_vulnerable_paths": 34
+    },
+    "joniles__mpxj_CVE-2020-35460_8.3.4": {
+      "num_gpt_calls": 48,
+      "num_cached": 17,
+      "num_failure": 0,
+      "num_vulnerable_paths": 33
+    },
+    "apache__flink_CVE-2020-17519_1.11.2": {
+      "num_gpt_calls": 261,
+      "num_cached": 360,
+      "num_failure": 0,
+      "num_vulnerable_paths": 198
+    },
+    "kubernetes-client__java_CVE-2020-8570_client-java-parent-9.0.1": {
+      "num_gpt_calls": 24,
+      "num_cached": 10,
+      "num_failure": 0,
+      "num_vulnerable_paths": 24
+    },
+    "asf__commons-io_CVE-2021-29425_2.6": {
+      "num_gpt_calls": 155,
+      "num_cached": 235,
+      "num_failure": 0,
+      "num_vulnerable_paths": 129
+    },
+    "asf__karaf_CVE-2022-22932_4.3.5": {
+      "num_gpt_calls": 249,
+      "num_cached": 277,
+      "num_failure": 0,
+      "num_vulnerable_paths": 215
+    },
+    "vert-x3__vertx-web_CVE-2019-17640_3.9.3": {
+      "num_gpt_calls": 9,
+      "num_cached": 5,
+      "num_failure": 0,
+      "num_vulnerable_paths": 10
+    },
+    "ESAPI__esapi-java-legacy_CVE-2022-23457_2.2.3.1": {
+      "num_gpt_calls": 18,
+      "num_cached": 11,
+      "num_failure": 0,
+      "num_vulnerable_paths": 5
+    },
+    "alibaba__one-java-agent_CVE-2022-25842_0.0.1": {
+      "num_gpt_calls": 12,
+      "num_cached": 15,
+      "num_failure": 0,
+      "num_vulnerable_paths": 8
+    },
+    "apache__myfaces_CVE-2011-4367_2.0.11": {
+      "num_gpt_calls": 17,
+      "num_cached": 85,
+      "num_failure": 0,
+      "num_vulnerable_paths": 7
+    },
+    "undertow-io__undertow_CVE-2014-7816_1.0.16.Final": {
+      "num_gpt_calls": 6,
+      "num_cached": 2,
+      "num_failure": 0,
+      "num_vulnerable_paths": 5
+    },
+    "jeremylong__DependencyCheck_CVE-2018-12036_3.1.2": {
+      "num_gpt_calls": 93,
+      "num_cached": 244,
+      "num_failure": 4,
+      "num_vulnerable_paths": 87
+    },
+    "codehaus-plexus__plexus-archiver_CVE-2018-1002200_3.5": {
+      "num_gpt_calls": 36,
+      "num_cached": 56,
+      "num_failure": 0,
+      "num_vulnerable_paths": 41
+    },
+    "zeroturnaround__zt-zip_CVE-2018-1002201_1.12": {
+      "num_gpt_calls": 117,
+      "num_cached": 204,
+      "num_failure": 0,
+      "num_vulnerable_paths": 89
+    },
+    "whitesource__curekit_CVE-2022-23082_1.1.3": {
+      "num_gpt_calls": 1,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "aws__aws-sdk-java_CVE-2022-31159_1.12.260": {
+      "num_gpt_calls": 96,
+      "num_cached": 178,
+      "num_failure": 0,
+      "num_vulnerable_paths": 16
+    },
+    "jlangch__venice_CVE-2022-36007_1.10.16": {
+      "num_gpt_calls": 36,
+      "num_cached": 46,
+      "num_failure": 0,
+      "num_vulnerable_paths": 29
+    },
+    "DSpace__DSpace_CVE-2022-31195_5.10": {
+      "num_gpt_calls": 282,
+      "num_cached": 1308,
+      "num_failure": 0,
+      "num_vulnerable_paths": 124
+    },
+    "payara__Payara_CVE-2022-37422_5.2022.2": {
+      "num_gpt_calls": 924,
+      "num_cached": 2467,
+      "num_failure": 3,
+      "num_vulnerable_paths": 421
+    },
+    "DSpace__DSpace_CVE-2022-31194_5.10": {
+      "num_gpt_calls": 282,
+      "num_cached": 1308,
+      "num_failure": 0,
+      "num_vulnerable_paths": 124
+    },
+    "diffplug__goomph_CVE-2022-26049_3.37.1": {
+      "num_gpt_calls": 55,
+      "num_cached": 68,
+      "num_failure": 0,
+      "num_vulnerable_paths": 29
+    },
+    "apache__dolphinscheduler_CVE-2022-26884_2.0.5": {
+      "num_gpt_calls": 69,
+      "num_cached": 182,
+      "num_failure": 0,
+      "num_vulnerable_paths": 65
+    },
+    "apache__dolphinscheduler_CVE-2022-34662_2.0.9": {
+      "num_gpt_calls": 57,
+      "num_cached": 195,
+      "num_failure": 0,
+      "num_vulnerable_paths": 59
+    },
+    "apache__uima-uimaj_CVE-2022-32287_3.3.0": {
+      "num_gpt_calls": 192,
+      "num_cached": 297,
+      "num_failure": 0,
+      "num_vulnerable_paths": 122
+    },
+    "keycloak__keycloak_CVE-2022-3782_20.0.1": {
+      "num_gpt_calls": 90,
+      "num_cached": 199,
+      "num_failure": 0,
+      "num_vulnerable_paths": 41
+    },
+    "eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5": {
+      "num_gpt_calls": 846,
+      "num_cached": 2094,
+      "num_failure": 3,
+      "num_vulnerable_paths": 372
+    },
+    "hapifhir__org.hl7.fhir.core_CVE-2023-24057_5.6.91": {
+      "num_gpt_calls": 193,
+      "num_cached": 544,
+      "num_failure": 0,
+      "num_vulnerable_paths": 181
+    },
+    "hapifhir__org.hl7.fhir.core_CVE-2023-28465_5.6.105": {
+      "num_gpt_calls": 105,
+      "num_cached": 1030,
+      "num_failure": 0,
+      "num_vulnerable_paths": 62
+    },
+    "Graylog2__graylog2-server_CVE-2023-41044_5.1.2": {
+      "num_gpt_calls": 48,
+      "num_cached": 5,
+      "num_failure": 0,
+      "num_vulnerable_paths": 21
+    },
+    "apache__mina-sshd_CVE-2023-35887_2.9.2": {
+      "num_gpt_calls": 102,
+      "num_cached": 332,
+      "num_failure": 0,
+      "num_vulnerable_paths": 84
+    },
+    "apache__shiro_CVE-2023-34478_1.11.0": {
+      "num_gpt_calls": 3,
+      "num_cached": 5,
+      "num_failure": 0,
+      "num_vulnerable_paths": 2
+    },
+    "codehaus-plexus__plexus-archiver_CVE-2023-37460_4.7.1": {
+      "num_gpt_calls": 26,
+      "num_cached": 30,
+      "num_failure": 0,
+      "num_vulnerable_paths": 28
+    },
+    "codehaus-plexus__plexus-utils_CVE-2022-4244_3.0.23": {
+      "num_gpt_calls": 102,
+      "num_cached": 103,
+      "num_failure": 0,
+      "num_vulnerable_paths": 80
+    },
+    "yamcs__yamcs_CVE-2023-45278_5.8.6": {
+      "num_gpt_calls": 113,
+      "num_cached": 155,
+      "num_failure": 1,
+      "num_vulnerable_paths": 106
+    },
+    "yamcs__yamcs_CVE-2023-45277_5.8.6": {
+      "num_gpt_calls": 113,
+      "num_cached": 155,
+      "num_failure": 1,
+      "num_vulnerable_paths": 106
+    },
+    "apache__shiro_CVE-2023-46749_1.12.0": {
+      "num_gpt_calls": 3,
+      "num_cached": 5,
+      "num_failure": 0,
+      "num_vulnerable_paths": 2
+    },
+    "apache__sling-org-apache-sling-servlets-resolver_CVE-2024-23673_2.10.0": {
+      "num_gpt_calls": 16,
+      "num_cached": 22,
+      "num_failure": 0,
+      "num_vulnerable_paths": 16
+    },
+    "x-stream__xstream_CVE-2013-7285_1.4.6": {
+      "num_gpt_calls": 4,
+      "num_cached": 1,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "x-stream__xstream_CVE-2021-21345_1.4.15": {
+      "num_gpt_calls": 5,
+      "num_cached": 1,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "jenkinsci__docker-commons-plugin_CVE-2022-20617_1.17": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "jenkinsci__workflow-cps-plugin_CVE-2022-25173_2646.v6ed3b5b01ff1": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "jenkinsci__workflow-cps-global-lib-plugin_CVE-2022-25174_544.vff04fa68714d": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "jenkinsci__workflow-multibranch-plugin_CVE-2022-25175_706.vd43c65dec013": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "codehaus-plexus__plexus-utils_CVE-2017-1000487_3.0.15": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "jenkinsci__git-client-plugin_CVE-2019-10392_2.8.4": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "jenkinsci__perfecto-plugin_CVE-2020-2261_1.17": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "jenkinsci__script-security-plugin_CVE-2023-24422_1228.vd93135a_2fb_25": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "nahsra__antisamy_CVE-2016-10006_1.5.3": {
+      "num_gpt_calls": 9,
+      "num_cached": 5,
+      "num_failure": 0,
+      "num_vulnerable_paths": 9
+    },
+    "nahsra__antisamy_CVE-2017-14735_1.5.6": {
+      "num_gpt_calls": 9,
+      "num_cached": 5,
+      "num_failure": 0,
+      "num_vulnerable_paths": 9
+    },
+    "apache__jspwiki_CVE-2019-10077_2.11.0.M3": {
+      "num_gpt_calls": 54,
+      "num_cached": 136,
+      "num_failure": 0,
+      "num_vulnerable_paths": 37
+    },
+    "apache__jspwiki_CVE-2019-10076_2.11.0.M3": {
+      "num_gpt_calls": 54,
+      "num_cached": 136,
+      "num_failure": 0,
+      "num_vulnerable_paths": 37
+    },
+    "apache__jspwiki_CVE-2019-10078_2.11.0.M3": {
+      "num_gpt_calls": 54,
+      "num_cached": 136,
+      "num_failure": 0,
+      "num_vulnerable_paths": 37
+    },
+    "apache__jspwiki_CVE-2019-10089_2.11.0.M4": {
+      "num_gpt_calls": 54,
+      "num_cached": 136,
+      "num_failure": 0,
+      "num_vulnerable_paths": 37
+    },
+    "hibernate__hibernate-validator_CVE-2019-10219_6.0.17.Final": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "asf__cxf_CVE-2019-17573_3.2.11": {
+      "num_gpt_calls": 261,
+      "num_cached": 998,
+      "num_failure": 0,
+      "num_vulnerable_paths": 127
+    },
+    "xuxueli__xxl-job_CVE-2020-29204_2.2.0": {
+      "num_gpt_calls": 5,
+      "num_cached": 2,
+      "num_failure": 0,
+      "num_vulnerable_paths": 1
+    },
+    "OWASP__json-sanitizer_CVE-2020-13973_1.2.0": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "eclipse__hawkbit_CVE-2020-27219_0.3.0M6": {
+      "num_gpt_calls": 28,
+      "num_cached": 42,
+      "num_failure": 0,
+      "num_vulnerable_paths": 9
+    },
+    "alibaba__nacos_CVE-2021-44667_2.0.3": {
+      "num_gpt_calls": 9,
+      "num_cached": 5,
+      "num_failure": 0,
+      "num_vulnerable_paths": 1
+    },
+    "nahsra__antisamy_CVE-2022-28367_1.6.5": {
+      "num_gpt_calls": 6,
+      "num_cached": 6,
+      "num_failure": 0,
+      "num_vulnerable_paths": 4
+    },
+    "ESAPI__esapi-java-legacy_CVE-2022-24891_2.2.3.1": {
+      "num_gpt_calls": 8,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "nahsra__antisamy_CVE-2022-29577_1.6.6.1": {
+      "num_gpt_calls": 6,
+      "num_cached": 6,
+      "num_failure": 0,
+      "num_vulnerable_paths": 4
+    },
+    "rhuss__jolokia_CVE-2018-1000129_1.4.0": {
+      "num_gpt_calls": 3,
+      "num_cached": 8,
+      "num_failure": 0,
+      "num_vulnerable_paths": 2
+    },
+    "keycloak__keycloak_CVE-2014-3656_1.0.5.Final": {
+      "num_gpt_calls": 9,
+      "num_cached": 3,
+      "num_failure": 0,
+      "num_vulnerable_paths": 1
+    },
+    "asf__cxf_CVE-2016-6812_3.0.11": {
+      "num_gpt_calls": 243,
+      "num_cached": 914,
+      "num_failure": 0,
+      "num_vulnerable_paths": 81
+    },
+    "apache__sling-org-apache-sling-xss_CVE-2016-5394_1.0.8": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "DSpace__DSpace_CVE-2022-31192_5.10": {
+      "num_gpt_calls": 41,
+      "num_cached": 92,
+      "num_failure": 0,
+      "num_vulnerable_paths": 6
+    },
+    "keycloak__keycloak_CVE-2022-4137_20.0.4": {
+      "num_gpt_calls": 107,
+      "num_cached": 159,
+      "num_failure": 0,
+      "num_vulnerable_paths": 31
+    },
+    "keycloak__keycloak_CVE-2022-1274_20.0.4": {
+      "num_gpt_calls": 107,
+      "num_cached": 159,
+      "num_failure": 0,
+      "num_vulnerable_paths": 31
+    },
+    "xwiki__xwiki-commons_CVE-2023-29201_14.6": {
+      "num_gpt_calls": 21,
+      "num_cached": 19,
+      "num_failure": 0,
+      "num_vulnerable_paths": 3
+    },
+    "xwiki__xwiki-commons_CVE-2023-29528_14.9-rc-1": {
+      "num_gpt_calls": 26,
+      "num_cached": 20,
+      "num_failure": 0,
+      "num_vulnerable_paths": 5
+    },
+    "xwiki__xwiki-rendering_CVE-2023-32070_14.6": {
+      "num_gpt_calls": 30,
+      "num_cached": 34,
+      "num_failure": 0,
+      "num_vulnerable_paths": 30
+    },
+    "xwiki__xwiki-commons_CVE-2023-31126_14.10.3": {
+      "num_gpt_calls": 29,
+      "num_cached": 21,
+      "num_failure": 0,
+      "num_vulnerable_paths": 10
+    },
+    "apache__jspwiki_CVE-2022-46907_2.11.3": {
+      "num_gpt_calls": 63,
+      "num_cached": 129,
+      "num_failure": 0,
+      "num_vulnerable_paths": 49
+    },
+    "keycloak__keycloak_CVE-2022-4361_21.1.1": {
+      "num_gpt_calls": 110,
+      "num_cached": 170,
+      "num_failure": 0,
+      "num_vulnerable_paths": 21
+    },
+    "xwiki__xwiki-commons_CVE-2023-36471_14.10.5": {
+      "num_gpt_calls": 29,
+      "num_cached": 21,
+      "num_failure": 0,
+      "num_vulnerable_paths": 10
+    },
+    "jstachio__jstachio_CVE-2023-33962_1.0.0": {
+      "num_gpt_calls": 6,
+      "num_cached": 18,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "xwiki__xwiki-rendering_CVE-2023-37908_14.10.3": {
+      "num_gpt_calls": 18,
+      "num_cached": 43,
+      "num_failure": 0,
+      "num_vulnerable_paths": 21
+    },
+    "SpringSource__spring-security-oauth_CVE-2018-1260_2.3.2.RELEASE": {
+      "num_gpt_calls": 10,
+      "num_cached": 2,
+      "num_failure": 0,
+      "num_vulnerable_paths": 7
+    },
+    "apache__activemq_CVE-2019-0222_5.15.8": {
+      "num_gpt_calls": 83,
+      "num_cached": 227,
+      "num_failure": 0,
+      "num_vulnerable_paths": 29
+    },
+    "jmrozanec__cron-utils_CVE-2021-41269_9.1.5": {
+      "num_gpt_calls": 0,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "apache__struts_CVE-2020-17530_2.5.25": {
+      "num_gpt_calls": 336,
+      "num_cached": 1948,
+      "num_failure": 0,
+      "num_vulnerable_paths": 81
+    },
+    "apache__activemq_CVE-2020-11998_5.15.12": {
+      "num_gpt_calls": 90,
+      "num_cached": 36,
+      "num_failure": 0,
+      "num_vulnerable_paths": 22
+    },
+    "spring-projects__spring-framework_CVE-2022-22965_5.2.19.RELEASE": {
+      "num_gpt_calls": 564,
+      "num_cached": 1101,
+      "num_failure": 0,
+      "num_vulnerable_paths": 162
+    },
+    "spring-cloud__spring-cloud-gateway_CVE-2022-22947_3.0.6": {
+      "num_gpt_calls": 32,
+      "num_cached": 20,
+      "num_failure": 0,
+      "num_vulnerable_paths": 0
+    },
+    "apache__dubbo_CVE-2021-30180_2.7.9": {
+      "num_gpt_calls": 192,
+      "num_cached": 213,
+      "num_failure": 0,
+      "num_vulnerable_paths": 59
+    },
+    "apache__incubator-dubbo_CVE-2021-30181_2.6.8": {
+      "num_gpt_calls": 95,
+      "num_cached": 107,
+      "num_failure": 0,
+      "num_vulnerable_paths": 26
+    },
+    "fabric8io__kubernetes-client_CVE-2021-4178_5.0.2": {
+      "num_gpt_calls": 24,
+      "num_cached": 4,
+      "num_failure": 0,
+      "num_vulnerable_paths": 10
+    },
+    "asf__commons-text_CVE-2022-42889_1.9": {
+      "num_gpt_calls": 3,
+      "num_cached": 3,
+      "num_failure": 0,
+      "num_vulnerable_paths": 2
+    },
+    "ff4j__ff4j_CVE-2022-44262_1.8.13": {
+      "num_gpt_calls": 150,
+      "num_cached": 93,
+      "num_failure": 0,
+      "num_vulnerable_paths": 83
+    },
+    "codecentric__spring-boot-admin_CVE-2022-46166_2.6.9": {
+      "num_gpt_calls": 5,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 5
+    },
+    "xerial__sqlite-jdbc_CVE-2023-32697_3.41.2.1": {
+      "num_gpt_calls": 6,
+      "num_cached": 5,
+      "num_failure": 0,
+      "num_vulnerable_paths": 4
+    },
+    "apache__rocketmq_CVE-2023-37582_4.9.6": {
+      "num_gpt_calls": 15,
+      "num_cached": 0,
+      "num_failure": 0,
+      "num_vulnerable_paths": 6
+    },
+    "apache__rocketmq_CVE-2023-33246_5.1.0": {
+      "num_gpt_calls": 27,
+      "num_cached": 3,
+      "num_failure": 0,
+      "num_vulnerable_paths": 7
+    },
+    "apache__dolphinscheduler_CVE-2023-51770_3.2.0": {
+      "num_gpt_calls": 186,
+      "num_cached": 528,
+      "num_failure": 0,
+      "num_vulnerable_paths": 49
+    },
+    "apache__dolphinscheduler_CVE-2023-49109_3.2.0": {
+      "num_gpt_calls": 186,
+      "num_cached": 528,
+      "num_failure": 0,
+      "num_vulnerable_paths": 49
+    },
+    "x-stream__xstream_CVE-2021-21345_1.4.15__CWE-094": {
+      "num_gpt_calls": 120,
+      "num_cached": 151,
+      "num_failure": 0,
+      "num_vulnerable_paths": 63
+    }
+  }
+}

@@ -1,0 +1,226 @@
+{
+  "run_id": "iris-v1_gptoss20b_full_20261028T025416Z",
+  "generated": "2026-10-31T06:29:22Z",
+  "status": "PASS",
+  "row_level_mismatches": [],
+  "aggregate_checks": [
+    {
+      "policy": "artifact_compatible",
+      "config": "b0",
+      "metric": "detected",
+      "reported": 27,
+      "independent": 27,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b0",
+      "metric": "avg_fdr",
+      "reported": 0.89437814648897,
+      "independent": 0.89437814648897,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b0",
+      "metric": "avg_f1",
+      "reported": 0.07525403040453284,
+      "independent": 0.07525403040453284,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b0",
+      "metric": "n_rows",
+      "reported": 121,
+      "independent": 121,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b2_raw",
+      "metric": "detected",
+      "reported": 44,
+      "independent": 44,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b2_raw",
+      "metric": "avg_fdr",
+      "reported": 0.9136881325583806,
+      "independent": 0.9136881325583806,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b2_raw",
+      "metric": "avg_f1",
+      "reported": 0.0987772354280345,
+      "independent": 0.0987772354280345,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b2_raw",
+      "metric": "n_rows",
+      "reported": 121,
+      "independent": 121,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b2_filtered",
+      "metric": "detected",
+      "reported": 32,
+      "independent": 32,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b2_filtered",
+      "metric": "avg_fdr",
+      "reported": 0.9678840055117998,
+      "independent": 0.9678840055117998,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b2_filtered",
+      "metric": "avg_f1",
+      "reported": 0.043353280339639366,
+      "independent": 0.043353280339639366,
+      "match": true
+    },
+    {
+      "policy": "artifact_compatible",
+      "config": "b2_filtered",
+      "metric": "n_rows",
+      "reported": 121,
+      "independent": 121,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b0",
+      "metric": "detected",
+      "reported": 27,
+      "independent": 27,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b0",
+      "metric": "avg_fdr",
+      "reported": 0.89437814648897,
+      "independent": 0.89437814648897,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b0",
+      "metric": "avg_f1",
+      "reported": 0.07588114732457062,
+      "independent": 0.07588114732457062,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b0",
+      "metric": "n_rows",
+      "reported": 120,
+      "independent": 120,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b2_raw",
+      "metric": "detected",
+      "reported": 43,
+      "independent": 43,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b2_raw",
+      "metric": "avg_fdr",
+      "reported": 0.9132162632088849,
+      "independent": 0.9132162632088849,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b2_raw",
+      "metric": "avg_f1",
+      "reported": 0.0989510284072508,
+      "independent": 0.0989510284072508,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b2_raw",
+      "metric": "n_rows",
+      "reported": 120,
+      "independent": 120,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b2_filtered",
+      "metric": "detected",
+      "reported": 32,
+      "independent": 32,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b2_filtered",
+      "metric": "avg_fdr",
+      "reported": 0.9675529127851173,
+      "independent": 0.9675529127851173,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b2_filtered",
+      "metric": "avg_f1",
+      "reported": 0.043714557675803026,
+      "independent": 0.043714557675803026,
+      "match": true
+    },
+    {
+      "policy": "dataset_canonical",
+      "config": "b2_filtered",
+      "metric": "n_rows",
+      "reported": 120,
+      "independent": 120,
+      "match": true
+    }
+  ],
+  "calibration_on_original_artifact_csv": {
+    "CodeQL": {
+      "detected": 27,
+      "avg_fdr": 0.9003742584752514,
+      "avg_f1": 0.07597253777882072,
+      "n_rows": 121
+    },
+    "IRIS+GPT-4": {
+      "detected": 55,
+      "avg_fdr": 0.8493555148723525,
+      "avg_f1": 0.17707259125317426,
+      "n_rows": 121
+    }
+  },
+  "paper_table1": {
+    "CodeQL": {
+      "detected": 27,
+      "avg_fdr": 0.9003,
+      "avg_f1": 0.076
+    },
+    "IRIS+GPT-4": {
+      "detected": 55,
+      "avg_fdr": 0.8482,
+      "avg_f1": 0.177
+    }
+  }
+}

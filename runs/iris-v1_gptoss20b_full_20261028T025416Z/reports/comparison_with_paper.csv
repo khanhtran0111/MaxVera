@@ -1,0 +1,5 @@
+method,policy,rows,completed,detected,avg_fdr,avg_f1,paper_method,paper_detected_of_120,paper_avg_fdr,paper_avg_f1
+CodeQL,artifact_compatible,121,112,27,0.89437814648897,0.07525403040453284,CodeQL,27,0.9003,0.076
+CodeQL,dataset_canonical,120,111,27,0.89437814648897,0.07588114732457062,CodeQL,27,0.9003,0.076
+IRIS (filtered),artifact_compatible,121,109,32,0.9678840055117998,0.043353280339639366,IRIS + GPT-4,55,0.8482,0.177
+IRIS (filtered),dataset_canonical,120,108,32,0.9675529127851173,0.043714557675803026,IRIS + GPT-4,55,0.8482,0.177

@@ -1,0 +1,363 @@
+{
+  "run_id": "iris-v1_gptoss20b_smoke_20261028T023424Z",
+  "generated": "2026-10-28T03:13:04Z",
+  "policy": "dataset_canonical",
+  "cohort": "smoke",
+  "official": false,
+  "row_definition": "the 120 canonical CWE-Bench-Java cases, each evaluated only under its dataset CWE",
+  "metric_policy": {
+    "detected": "rows with Recall == 1 (fixed-method intersection, IRIS evaluator)",
+    "avg_fdr": "mean of (1 - TP Alerts/Alerts) over completed rows with Alerts > 0",
+    "avg_f1": "mean F1 over all rows; rows without alerts or not completed contribute 0",
+    "not_completed_rows": "counted as not detected and F1 = 0, excluded from AvgFDR; listed explicitly",
+    "micro_fdr_NOT_PAPER_METRIC": "1 - sum(TP Alerts)/sum(Alerts); global, not the paper's AvgFDR"
+  },
+  "configs": {
+    "b0": {
+      "n_rows": 4,
+      "n_completed": 4,
+      "n_not_completed": 0,
+      "not_completed": [],
+      "detected": 1,
+      "detection_rate": 0.25,
+      "detection_rate_completed_only": 0.25,
+      "avg_fdr": 0.7692307692307692,
+      "avg_fdr_n_rows_with_alerts": 1,
+      "avg_f1": 0.09375,
+      "avg_f1_completed_only": 0.09375,
+      "micro_fdr_NOT_PAPER_METRIC": 0.7692307692307692,
+      "total_alerts": 13,
+      "total_tp_alerts": 3,
+      "total_paths": 36,
+      "per_cwe": {
+        "CWE-022": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 1,
+          "avg_fdr": 0.7692307692307692,
+          "avg_f1": 0.375
+        },
+        "CWE-078": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 0,
+          "avg_fdr": null,
+          "avg_f1": 0.0
+        },
+        "CWE-079": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 0,
+          "avg_fdr": null,
+          "avg_f1": 0.0
+        },
+        "CWE-094": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 0,
+          "avg_fdr": null,
+          "avg_f1": 0.0
+        }
+      }
+    },
+    "b2_raw": {
+      "n_rows": 4,
+      "n_completed": 4,
+      "n_not_completed": 0,
+      "not_completed": [],
+      "detected": 2,
+      "detection_rate": 0.5,
+      "detection_rate_completed_only": 0.5,
+      "avg_fdr": 0.4444444444444444,
+      "avg_fdr_n_rows_with_alerts": 2,
+      "avg_f1": 0.3,
+      "avg_f1_completed_only": 0.3,
+      "micro_fdr_NOT_PAPER_METRIC": 0.7272727272727273,
+      "total_alerts": 11,
+      "total_tp_alerts": 3,
+      "total_paths": 13,
+      "per_cwe": {
+        "CWE-022": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 0,
+          "avg_fdr": null,
+          "avg_f1": 0.0
+        },
+        "CWE-078": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 1,
+          "avg_fdr": 0.0,
+          "avg_f1": 1.0
+        },
+        "CWE-079": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 1,
+          "avg_fdr": 0.8888888888888888,
+          "avg_f1": 0.19999999999999998
+        },
+        "CWE-094": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 0,
+          "avg_fdr": null,
+          "avg_f1": 0.0
+        }
+      }
+    },
+    "b2_filtered": {
+      "n_rows": 4,
+      "n_completed": 4,
+      "n_not_completed": 0,
+      "not_completed": [],
+      "detected": 1,
+      "detection_rate": 0.25,
+      "detection_rate_completed_only": 0.25,
+      "avg_fdr": 0.5,
+      "avg_fdr_n_rows_with_alerts": 2,
+      "avg_f1": 0.25,
+      "avg_f1_completed_only": 0.25,
+      "micro_fdr_NOT_PAPER_METRIC": 0.8181818181818181,
+      "total_alerts": 11,
+      "total_tp_alerts": 2,
+      "total_paths": 6,
+      "per_cwe": {
+        "CWE-022": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 0,
+          "avg_fdr": null,
+          "avg_f1": 0.0
+        },
+        "CWE-078": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 1,
+          "avg_fdr": 0.0,
+          "avg_f1": 1.0
+        },
+        "CWE-079": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 0,
+          "avg_fdr": 1.0,
+          "avg_f1": 0.0
+        },
+        "CWE-094": {
+          "n_rows": 1,
+          "n_completed": 1,
+          "detected": 0,
+          "avg_fdr": null,
+          "avg_f1": 0.0
+        }
+      }
+    }
+  },
+  "reference_from_original_artifact_csv": {
+    "CodeQL": {
+      "artifact_121_rows": {
+        "n_rows": 121,
+        "n_completed": 121,
+        "n_not_completed": 0,
+        "detected": 27,
+        "detection_rate": 0.2231404958677686,
+        "detection_rate_completed_only": 0.2231404958677686,
+        "avg_fdr": 0.9003742584752238,
+        "avg_fdr_n_rows_with_alerts": 67,
+        "avg_f1": 0.07597253777760334,
+        "avg_f1_completed_only": 0.07597253777760334,
+        "micro_fdr_NOT_PAPER_METRIC": 0.9619460500963392,
+        "total_alerts": 4152,
+        "total_tp_alerts": 158,
+        "total_paths": 10351,
+        "per_cwe": {
+          "CWE-022": {
+            "n_rows": 55,
+            "n_completed": 55,
+            "detected": 22,
+            "avg_fdr": 0.9050490972216667,
+            "avg_f1": 0.11862832675618183
+          },
+          "CWE-078": {
+            "n_rows": 13,
+            "n_completed": 13,
+            "detected": 1,
+            "avg_fdr": 0.84615384615,
+            "avg_f1": 0.03619909502307692
+          },
+          "CWE-079": {
+            "n_rows": 31,
+            "n_completed": 31,
+            "detected": 4,
+            "avg_fdr": 0.8869006849312501,
+            "avg_f1": 0.07088809239354839
+          },
+          "CWE-094": {
+            "n_rows": 22,
+            "n_completed": 22,
+            "detected": 0,
+            "avg_fdr": 1.0,
+            "avg_f1": 0.0
+          }
+        }
+      },
+      "canonical_120_rows": {
+        "n_rows": 120,
+        "n_completed": 120,
+        "n_not_completed": 0,
+        "detected": 27,
+        "detection_rate": 0.225,
+        "detection_rate_completed_only": 0.225,
+        "avg_fdr": 0.9003742584752238,
+        "avg_fdr_n_rows_with_alerts": 67,
+        "avg_f1": 0.07660564225908335,
+        "avg_f1_completed_only": 0.07660564225908335,
+        "micro_fdr_NOT_PAPER_METRIC": 0.9619460500963392,
+        "total_alerts": 4152,
+        "total_tp_alerts": 158,
+        "total_paths": 10351,
+        "per_cwe": {
+          "CWE-022": {
+            "n_rows": 55,
+            "n_completed": 55,
+            "detected": 22,
+            "avg_fdr": 0.9050490972216667,
+            "avg_f1": 0.11862832675618183
+          },
+          "CWE-078": {
+            "n_rows": 13,
+            "n_completed": 13,
+            "detected": 1,
+            "avg_fdr": 0.84615384615,
+            "avg_f1": 0.03619909502307692
+          },
+          "CWE-079": {
+            "n_rows": 31,
+            "n_completed": 31,
+            "detected": 4,
+            "avg_fdr": 0.8869006849312501,
+            "avg_f1": 0.07088809239354839
+          },
+          "CWE-094": {
+            "n_rows": 21,
+            "n_completed": 21,
+            "detected": 0,
+            "avg_fdr": 1.0,
+            "avg_f1": 0.0
+          }
+        }
+      },
+      "paper_table1": {
+        "detected": 27,
+        "avg_fdr": 0.9003,
+        "avg_f1": 0.076
+      },
+      "source_file": "vendor/iris-v1/results/CodeQL.csv"
+    },
+    "IRIS + GPT-4": {
+      "artifact_121_rows": {
+        "n_rows": 121,
+        "n_completed": 121,
+        "n_not_completed": 0,
+        "detected": 55,
+        "detection_rate": 0.45454545454545453,
+        "detection_rate_completed_only": 0.45454545454545453,
+        "avg_fdr": 0.8493555148718696,
+        "avg_fdr_n_rows_with_alerts": 115,
+        "avg_f1": 0.17707259125280167,
+        "avg_f1_completed_only": 0.17707259125280167,
+        "micro_fdr_NOT_PAPER_METRIC": 0.9688593027191695,
+        "total_alerts": 8863,
+        "total_tp_alerts": 276,
+        "total_paths": 10900,
+        "per_cwe": {
+          "CWE-022": {
+            "n_rows": 55,
+            "n_completed": 55,
+            "detected": 31,
+            "avg_fdr": 0.7995600580590385,
+            "avg_f1": 0.23806048198727273
+          },
+          "CWE-078": {
+            "n_rows": 13,
+            "n_completed": 13,
+            "detected": 3,
+            "avg_fdr": 0.7575757575727273,
+            "avg_f1": 0.21538461538461537
+          },
+          "CWE-079": {
+            "n_rows": 31,
+            "n_completed": 31,
+            "detected": 13,
+            "avg_fdr": 0.8927528298530324,
+            "avg_f1": 0.1331244844126129
+          },
+          "CWE-094": {
+            "n_rows": 22,
+            "n_completed": 22,
+            "detected": 8,
+            "avg_fdr": 0.9566709586881428,
+            "avg_f1": 0.06389081888627272
+          }
+        }
+      },
+      "canonical_120_rows": {
+        "n_rows": 120,
+        "n_completed": 120,
+        "n_not_completed": 0,
+        "detected": 54,
+        "detection_rate": 0.45,
+        "detection_rate_completed_only": 0.45,
+        "avg_fdr": 0.8483549962817105,
+        "avg_fdr_n_rows_with_alerts": 114,
+        "avg_f1": 0.17795996088582502,
+        "avg_f1_completed_only": 0.17795996088582502,
+        "micro_fdr_NOT_PAPER_METRIC": 0.9689101469080971,
+        "total_alerts": 8781,
+        "total_tp_alerts": 273,
+        "total_paths": 10717,
+        "per_cwe": {
+          "CWE-022": {
+            "n_rows": 55,
+            "n_completed": 55,
+            "detected": 31,
+            "avg_fdr": 0.7995600580590385,
+            "avg_f1": 0.23806048198727273
+          },
+          "CWE-078": {
+            "n_rows": 13,
+            "n_completed": 13,
+            "detected": 3,
+            "avg_fdr": 0.7575757575727273,
+            "avg_f1": 0.21538461538461537
+          },
+          "CWE-079": {
+            "n_rows": 31,
+            "n_completed": 31,
+            "detected": 13,
+            "avg_fdr": 0.8927528298530324,
+            "avg_f1": 0.1331244844126129
+          },
+          "CWE-094": {
+            "n_rows": 21,
+            "n_completed": 21,
+            "detected": 7,
+            "avg_fdr": 0.95633377491505,
+            "avg_f1": 0.06357189429561905
+          }
+        }
+      },
+      "paper_table1": {
+        "detected": 55,
+        "avg_fdr": 0.8482,
+        "avg_f1": 0.177
+      },
+      "source_file": "vendor/iris-v1/results/IRIS+GPT-4.csv"
+    }
+  },
+  "inputs_sha256": {
+    "project_metrics.csv": "06b6f1998645f652d1e97c5641fa40013bc95bd5c79b49a2811b30918b3cb2c3"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "run_id": "iris-v1_gptoss20b_smoke_20261028T023424Z",
+  "created": "2026-10-28T02:34:27Z",
+  "cohort": "smoke",
+  "projects": [
+    "perwendel__spark_CVE-2018-9159_2.7.1",
+    "jenkinsci__perfecto-plugin_CVE-2020-2261_1.17",
+    "nahsra__antisamy_CVE-2022-29577_1.6.6.1",
+    "jmrozanec__cron-utils_CVE-2021-41269_9.1.5"
+  ],
+  "official": false,
+  "cost_limit_usd": 3.0,
+  "iris_commit": "67140e84e6a01da2b44803a6208be2ea7bd4bd51",
+  "compat_patch_sha256": "af4fd0bffd9268afb915091a232d18d6b406e26826a2fab4ca4ccf2d5ef6777a",
+  "llm_config_sha256": "5f006d6764013c47a9ecdbf614b032ad3f41a182a3400b52b0c9f5dfc6c507d8",
+  "experiment_config_sha256": "9f32bc5a20b7d504c7e8870a6bb336b6ce92f3d3cc5ac7be0fc9514df77c4c0e",
+  "configs": [
+    "b0",
+    "b2"
+  ]
+}

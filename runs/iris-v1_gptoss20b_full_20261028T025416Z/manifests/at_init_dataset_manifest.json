@@ -1,0 +1,203 @@
+{
+  "generated": "2026-10-28T02:54:16Z",
+  "dataset": "CWE-Bench-Java (IRIS v1 artifact)",
+  "upstream": {
+    "iris_commit": "67140e84e6a01da2b44803a6208be2ea7bd4bd51",
+    "cwe_bench_java_commit": "698fb7248ae30cb7f7782d59c841f05ad70ea9cc",
+    "cwe_bench_java_url": "https://github.com/iris-sast/cwe-bench-java"
+  },
+  "files_sha256": {
+    "project_info.csv": "f409c8cd4ff21268bca7a38193b2abb61f6e8914778cfb10bc2e1c56352d78fa",
+    "build_info.csv": "9f19f701079f43396a89d9546169fb648f37fb79ac3ea0082ff1d2f440870c9e",
+    "fix_info.csv": "86db2c52ee8001fc568535100cae32a085e3c82accb257f528067c286126b8d7"
+  },
+  "counts": {
+    "cases": 120,
+    "unique_cves": 120,
+    "per_cwe": {
+      "CWE-022": 55,
+      "CWE-078": 13,
+      "CWE-079": 31,
+      "CWE-094": 21
+    },
+    "expected_per_cwe": {
+      "CWE-022": 55,
+      "CWE-078": 13,
+      "CWE-079": 31,
+      "CWE-094": 21
+    },
+    "cases_without_evaluable_fixed_method": [
+      "apache__jspwiki_CVE-2019-0225_2.11.0.M2",
+      "asf__commons-io_CVE-2021-29425_2.6",
+      "alibaba__one-java-agent_CVE-2022-25842_0.0.1",
+      "apache__dolphinscheduler_CVE-2022-34662_2.0.9",
+      "eclipse-ee4j__glassfish_CVE-2022-2712_6.2.5",
+      "x-stream__xstream_CVE-2020-26217_1.4.14-java7",
+      "eclipse__hawkbit_CVE-2020-27219_0.3.0M6",
+      "alibaba__nacos_CVE-2021-44667_2.0.3",
+      "jstachio__jstachio_CVE-2023-33962_1.0.0",
+      "xwiki__xwiki-rendering_CVE-2023-37908_14.10.3",
+      "apache__activemq_CVE-2019-0222_5.15.8",
+      "fabric8io__kubernetes-client_CVE-2021-4178_5.0.2",
+      "asf__nifi_CVE-2023-34468_1.21.0"
+    ],
+    "source_ok": 4,
+    "db_ok": 4,
+    "db_failed": 0
+  },
+  "artifact_row_discrepancy": {
+    "summary": "The dataset has 120 unique CVE cases. The original IRIS results/*.csv files have 121 rows: x-stream__xstream_CVE-2021-21345_1.4.15 (dataset CWE-078) appears once under CWE-078 and once more under CWE-094. Paper Table 1 counts are reproducible from these 121 rows.",
+    "per_file": [
+      {
+        "file": "CodeQL.csv",
+        "rows": 121,
+        "cve_2021_21345_rows": [
+          {
+            "cwe": "CWE-078",
+            "recall": "0",
+            "alerts": "0"
+          },
+          {
+            "cwe": "CWE-094",
+            "recall": "0",
+            "alerts": "0"
+          }
+        ]
+      },
+      {
+        "file": "IRIS+DeepSeekCoder-33B.csv",
+        "rows": 121,
+        "cve_2021_21345_rows": [
+          {
+            "cwe": "CWE-078",
+            "recall": "1",
+            "alerts": "171"
+          },
+          {
+            "cwe": "CWE-094",
+            "recall": "1",
+            "alerts": "77"
+          }
+        ]
+      },
+      {
+        "file": "IRIS+DeepSeekCoder-7B.csv",
+        "rows": 121,
+        "cve_2021_21345_rows": [
+          {
+            "cwe": "CWE-078",
+            "recall": "0",
+            "alerts": "119"
+          },
+          {
+            "cwe": "CWE-094",
+            "recall": "0",
+            "alerts": "405"
+          }
+        ]
+      },
+      {
+        "file": "IRIS+GPT-3.5.csv",
+        "rows": 121,
+        "cve_2021_21345_rows": [
+          {
+            "cwe": "CWE-078",
+            "recall": "0",
+            "alerts": "0"
+          },
+          {
+            "cwe": "CWE-094",
+            "recall": "0",
+            "alerts": "53"
+          }
+        ]
+      },
+      {
+        "file": "IRIS+GPT-4.csv",
+        "rows": 121,
+        "cve_2021_21345_rows": [
+          {
+            "cwe": "CWE-078",
+            "recall": "0",
+            "alerts": "9"
+          },
+          {
+            "cwe": "CWE-094",
+            "recall": "1",
+            "alerts": "82"
+          }
+        ]
+      },
+      {
+        "file": "IRIS+Gemma2-27B.csv",
+        "rows": 121,
+        "cve_2021_21345_rows": [
+          {
+            "cwe": "CWE-078",
+            "recall": "1",
+            "alerts": "21"
+          },
+          {
+            "cwe": "CWE-094",
+            "recall": "1",
+            "alerts": "132"
+          }
+        ]
+      },
+      {
+        "file": "IRIS+Llama3-70B.csv",
+        "rows": 122,
+        "cve_2021_21345_rows": [
+          {
+            "cwe": "CWE-078",
+            "recall": "0",
+            "alerts": "1"
+          },
+          {
+            "cwe": "CWE-094",
+            "recall": "0",
+            "alerts": "98"
+          }
+        ]
+      },
+      {
+        "file": "IRIS+Llama3-8B.csv",
+        "rows": 121,
+        "cve_2021_21345_rows": [
+          {
+            "cwe": "CWE-078",
+            "recall": "0",
+            "alerts": "27"
+          },
+          {
+            "cwe": "CWE-094",
+            "recall": "0",
+            "alerts": "3"
+          }
+        ]
+      },
+      {
+        "file": "IRIS+Qwen2.5-32B.csv",
+        "rows": 121,
+        "cve_2021_21345_rows": [
+          {
+            "cwe": "CWE-078",
+            "recall": "0",
+            "alerts": "2"
+          },
+          {
+            "cwe": "CWE-094",
+            "recall": "0",
+            "alerts": "26"
+          }
+        ]
+      }
+    ]
+  },
+  "known_issues": [
+    "package-names missing for hapifhir__org.hl7.fhir.core_CVE-2023-24057_5.6.91; regenerated after DB build (documented override)",
+    "package-names missing for hapifhir__org.hl7.fhir.core_CVE-2023-28465_5.6.105; regenerated after DB build (documented override)"
+  ],
+  "errors": [],
+  "valid": true
+}

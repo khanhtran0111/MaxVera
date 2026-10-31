@@ -1,0 +1,24 @@
+{
+  "run_id": "iris-v1_gptoss20b_full_20261028T025416Z",
+  "rows": 109,
+  "totals": {
+    "returned": 33584,
+    "merged_exact": 32398,
+    "merged_exact_source": 5927,
+    "merged_exact_taint-propagator": 23143,
+    "dropped_signature": 514,
+    "dropped_signature_taint-propagator": 418,
+    "merged_exact_sink": 2560,
+    "dropped_other": 672,
+    "invalid_entry": 264,
+    "dropped_signature_sink": 22,
+    "dropped_signature_source": 58,
+    "merged_exact_none": 717,
+    "dropped_signature_none": 10,
+    "merged_exact_unknown": 51,
+    "dropped_signature_unknown": 6,
+    "dropped_signature_share": 0.015304907098618389,
+    "merged_exact_share": 0.9646855645545498
+  },
+  "note": "Diagnostic only; IRIS's exact-match merge is used unchanged for all predictions."
+}
